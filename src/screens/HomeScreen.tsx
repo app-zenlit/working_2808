@@ -230,7 +230,6 @@ export const HomeScreen: React.FC<Props> = ({ userGender }) => {
           </svg>
           <div>
             <h1 className="text-xl font-bold text-white">Nearby Feed</h1>
-            <p className="text-xs text-gray-400">Posts from people around you</p>
           </div>
         </div>
       </div>
