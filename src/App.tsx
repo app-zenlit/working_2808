@@ -9,7 +9,7 @@ import { UserProfileScreen } from './screens/UserProfileScreen';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { CreatePostScreen } from './screens/CreatePostScreen';
 import { MessagesScreen } from './screens/MessagesScreen';
-import { UserGroupIcon, Squares2X2Icon, UserIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline';
 import { User } from './types';
 import { supabase, onAuthStateChange } from './lib/supabase';
 import { checkSession, handleRefreshTokenError } from './lib/auth';
@@ -460,7 +460,7 @@ export default function App() {
                     activeTab === 'feed' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <Squares2X2Icon className="h-6 w-6 mb-1" />
+                  <HomeIcon className="h-6 w-6 mb-1" />
                   <span className="text-xs font-medium">Feed</span>
                 </button>
                 
@@ -470,7 +470,7 @@ export default function App() {
                     activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <UserIcon className="h-6 h-6 mb-1" />
+                  <UserIcon className="w-6 h-6 mb-1" />
                   <span className="text-xs font-medium">Profile</span>
                 </button>
               </div>
