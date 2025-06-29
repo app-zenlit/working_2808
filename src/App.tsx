@@ -15,6 +15,9 @@ import { supabase, onAuthStateChange } from './lib/supabase';
 import { checkSession, handleRefreshTokenError } from './lib/auth';
 import { locationToggleManager } from './lib/locationToggle';
 import { transformProfileToUser } from '../lib/utils';
+import { usePWA } from './hooks/usePWA';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
+import { OfflineIndicator } from './components/OfflineIndicator';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'welcome' | 'login' | 'profileSetup' | 'app'>('welcome');
@@ -30,9 +33,23 @@ export default function App() {
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
+  // PWA hooks
+  const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
+
   // Ensure we're on the client side before doing anything
   useEffect(() => {
     setIsClient(true);
+    
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('Service Worker registered successfully:', registration);
+        })
+        .catch((error) => {
+          console.log('Service Worker registration failed:', error);
+        });
+    }
   }, []);
 
   // Set up auth state listener
@@ -322,126 +339,153 @@ export default function App() {
 
   // Show welcome screen first
   if (currentScreen === 'welcome') {
-    return <WelcomeScreen onGetStarted={() => setCurrentScreen('login')} />;
+    return (
+      <>
+        <WelcomeScreen onGetStarted={() => setCurrentScreen('login')} />
+        <PWAInstallPrompt
+          isVisible={showInstallPrompt}
+          onInstall={installApp}
+          onDismiss={dismissInstallPrompt}
+        />
+      </>
+    );
   }
 
   // Show login screen after get started is clicked
   if (currentScreen === 'login') {
-    return <LoginScreen onLogin={handleLogin} />;
+    return (
+      <>
+        <LoginScreen onLogin={handleLogin} />
+        <OfflineIndicator isOffline={isOffline} />
+      </>
+    );
   }
 
   // Show profile setup screen for new users
   if (currentScreen === 'profileSetup') {
     return (
-      <ProfileSetupScreen 
-        onComplete={handleProfileSetupComplete}
-        onBack={() => setCurrentScreen('login')}
-      />
+      <>
+        <ProfileSetupScreen 
+          onComplete={handleProfileSetupComplete}
+          onBack={() => setCurrentScreen('login')}
+        />
+        <OfflineIndicator isOffline={isOffline} />
+      </>
     );
   }
 
   // Show main app after login and profile setup
   return (
-    <div className="h-screen bg-black text-white overflow-hidden flex flex-col mobile-container">
-      {/* Mobile App Container */}
-      <div className="flex-1 flex flex-col min-h-0">
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-hidden relative content-with-nav">
-          <div className="h-full">
-            {activeTab === 'radar' && (
-              <div className="h-full overflow-y-auto mobile-scroll">
-                <RadarScreen 
-                  userGender={userGender} 
-                  currentUser={currentUser}
-                  onMessageUser={handleMessageUser}
-                  onNavigateToCreate={handleNavigateToCreate}
-                  onNavigateToMessages={handleNavigateToMessages}
-                />
-              </div>
-            )}
-            {activeTab === 'feed' && (
-              <div className="h-full overflow-y-auto mobile-scroll">
-                <HomeScreen 
-                  userGender={userGender}
-                  onNavigateToCreate={handleNavigateToCreate}
-                  onNavigateToMessages={handleNavigateToMessages}
-                />
-              </div>
-            )}
-            {activeTab === 'create' && (
-              <div className="h-full overflow-y-auto mobile-scroll">
-                <CreatePostScreen />
-              </div>
-            )}
-            {activeTab === 'messages' && (
-              <div className="h-full">
-                <MessagesScreen
-                  selectedUser={selectedChatUser}
-                  onClearSelectedUser={() => setSelectedChatUser(null)}
-                  onViewProfile={handleViewProfile}
-                  onNavigationVisibilityChange={handleNavigationVisibilityChange}
-                  onUnreadChange={setHasUnreadMessages}
-                />
-              </div>
-            )}
-            {activeTab === 'profile' && profileUser && (
-              <div className="h-full overflow-y-auto mobile-scroll">
-                {isEditingProfile ? (
-                  <EditProfileScreen
-                    user={profileUser}
-                    onBack={() => setIsEditingProfile(false)}
-                    onSave={handleProfileSave}
+    <>
+      <div className="h-screen bg-black text-white overflow-hidden flex flex-col mobile-container">
+        {/* Mobile App Container */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Main Content Area */}
+          <main className="flex-1 overflow-hidden relative content-with-nav">
+            <div className="h-full">
+              {activeTab === 'radar' && (
+                <div className="h-full overflow-y-auto mobile-scroll">
+                  <RadarScreen 
+                    userGender={userGender} 
+                    currentUser={currentUser}
+                    onMessageUser={handleMessageUser}
+                    onNavigateToCreate={handleNavigateToCreate}
+                    onNavigateToMessages={handleNavigateToMessages}
                   />
-                ) : (
-                  <UserProfileScreen
-                    user={profileUser}
-                    onBack={selectedUser ? () => setSelectedUser(null) : undefined}
-                    onEditProfile={handleEditProfile}
-                    onLogout={handleLogout}
+                </div>
+              )}
+              {activeTab === 'feed' && (
+                <div className="h-full overflow-y-auto mobile-scroll">
+                  <HomeScreen 
+                    userGender={userGender}
+                    onNavigateToCreate={handleNavigateToCreate}
+                    onNavigateToMessages={handleNavigateToMessages}
                   />
-                )}
-              </div>
-            )}
-          </div>
-        </main>
-
-        {/* Bottom Navigation - Conditionally visible */}
-        {isNavigationVisible && (
-          <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav">
-            <div className="flex justify-around items-center py-2 px-4 h-16">
-              <button
-                onClick={() => setActiveTab('radar')}
-                className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
-                  activeTab === 'radar' ? 'text-blue-500' : 'text-gray-400'
-                }`}
-              >
-                <UserGroupIcon className="h-6 w-6 mb-1" />
-                <span className="text-xs font-medium">Radar</span>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('feed')}
-                className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
-                  activeTab === 'feed' ? 'text-blue-500' : 'text-gray-400'
-                }`}
-              >
-                <Squares2X2Icon className="h-6 w-6 mb-1" />
-                <span className="text-xs font-medium">Feed</span>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
-                  activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
-                }`}
-              >
-                <UserIcon className="h-6 h-6 mb-1" />
-                <span className="text-xs font-medium">Profile</span>
-              </button>
+                </div>
+              )}
+              {activeTab === 'create' && (
+                <div className="h-full overflow-y-auto mobile-scroll">
+                  <CreatePostScreen />
+                </div>
+              )}
+              {activeTab === 'messages' && (
+                <div className="h-full">
+                  <MessagesScreen
+                    selectedUser={selectedChatUser}
+                    onClearSelectedUser={() => setSelectedChatUser(null)}
+                    onViewProfile={handleViewProfile}
+                    onNavigationVisibilityChange={handleNavigationVisibilityChange}
+                    onUnreadChange={setHasUnreadMessages}
+                  />
+                </div>
+              )}
+              {activeTab === 'profile' && profileUser && (
+                <div className="h-full overflow-y-auto mobile-scroll">
+                  {isEditingProfile ? (
+                    <EditProfileScreen
+                      user={profileUser}
+                      onBack={() => setIsEditingProfile(false)}
+                      onSave={handleProfileSave}
+                    />
+                  ) : (
+                    <UserProfileScreen
+                      user={profileUser}
+                      onBack={selectedUser ? () => setSelectedUser(null) : undefined}
+                      onEditProfile={handleEditProfile}
+                      onLogout={handleLogout}
+                    />
+                  )}
+                </div>
+              )}
             </div>
-          </nav>
-        )}
+          </main>
+
+          {/* Bottom Navigation - Conditionally visible */}
+          {isNavigationVisible && (
+            <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav">
+              <div className="flex justify-around items-center py-2 px-4 h-16">
+                <button
+                  onClick={() => setActiveTab('radar')}
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                    activeTab === 'radar' ? 'text-blue-500' : 'text-gray-400'
+                  }`}
+                >
+                  <UserGroupIcon className="h-6 w-6 mb-1" />
+                  <span className="text-xs font-medium">Radar</span>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('feed')}
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                    activeTab === 'feed' ? 'text-blue-500' : 'text-gray-400'
+                  }`}
+                >
+                  <Squares2X2Icon className="h-6 w-6 mb-1" />
+                  <span className="text-xs font-medium">Feed</span>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                    activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
+                  }`}
+                >
+                  <UserIcon className="h-6 h-6 mb-1" />
+                  <span className="text-xs font-medium">Profile</span>
+                </button>
+              </div>
+            </nav>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* PWA Components */}
+      <PWAInstallPrompt
+        isVisible={showInstallPrompt}
+        onInstall={installApp}
+        onDismiss={dismissInstallPrompt}
+      />
+      <OfflineIndicator isOffline={isOffline} />
+    </>
   );
 }
