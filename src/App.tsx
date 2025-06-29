@@ -9,7 +9,7 @@ import { UserProfileScreen } from './screens/UserProfileScreen';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { CreatePostScreen } from './screens/CreatePostScreen';
 import { MessagesScreen } from './screens/MessagesScreen';
-import { MapPinIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline';
 import { User } from './types';
 import { supabase, onAuthStateChange } from './lib/supabase';
 import { checkSession, handleRefreshTokenError } from './lib/auth';
@@ -450,7 +450,7 @@ export default function App() {
                     activeTab === 'radar' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <MapPinIcon className="h-6 w-6" />
+                  <UserGroupIcon className="h-6 w-6" />
                 </button>
                 
                 <button
