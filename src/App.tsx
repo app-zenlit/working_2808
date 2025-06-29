@@ -9,7 +9,7 @@ import { UserProfileScreen } from './screens/UserProfileScreen';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { CreatePostScreen } from './screens/CreatePostScreen';
 import { MessagesScreen } from './screens/MessagesScreen';
-import { UserGroupIcon, Squares2X2Icon, UserIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import { User } from './types';
 import { supabase, onAuthStateChange } from './lib/supabase';
 import { checkSession, handleRefreshTokenError } from './lib/auth';
@@ -435,7 +435,14 @@ export default function App() {
                   activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
                 }`}
               >
-                <UserIcon className="h-6 h-6 mb-1" />
+                {/* Instagram-style profile icon - rounded square */}
+                <div className={`w-6 h-6 mb-1 rounded-md border-2 flex items-center justify-center ${
+                  activeTab === 'profile' ? 'border-blue-500' : 'border-gray-400'
+                }`}>
+                  <div className={`w-3 h-3 rounded-full ${
+                    activeTab === 'profile' ? 'bg-blue-500' : 'bg-gray-400'
+                  }`}></div>
+                </div>
                 <span className="text-xs font-medium">Profile</span>
               </button>
             </div>
