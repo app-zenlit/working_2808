@@ -314,6 +314,16 @@ export default function App() {
     setIsNavigationVisible(visible);
   };
 
+  // Handle back navigation from Messages and CreatePost
+  const handleBackFromMessages = () => {
+    setActiveTab('radar'); // Go back to radar screen
+    setSelectedChatUser(null);
+  };
+
+  const handleBackFromCreatePost = () => {
+    setActiveTab('radar'); // Go back to radar screen
+  };
+
   const profileUser = selectedUser
     ? selectedUser
     : currentUser
@@ -405,7 +415,7 @@ export default function App() {
               )}
               {activeTab === 'create' && (
                 <div className="h-full overflow-y-auto mobile-scroll">
-                  <CreatePostScreen />
+                  <CreatePostScreen onBack={handleBackFromCreatePost} />
                 </div>
               )}
               {activeTab === 'messages' && (
@@ -416,6 +426,7 @@ export default function App() {
                     onViewProfile={handleViewProfile}
                     onNavigationVisibilityChange={handleNavigationVisibilityChange}
                     onUnreadChange={setHasUnreadMessages}
+                    onBack={handleBackFromMessages}
                   />
                 </div>
               )}

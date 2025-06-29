@@ -1,12 +1,16 @@
 import React, { useState, useRef } from 'react';
-import { CameraIcon, PhotoIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { CameraIcon, PhotoIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { generateId } from '../utils/generateId';
 import { supabase } from '../lib/supabase';
 import { uploadPostImage } from '../lib/storage';
 import { generatePlaceholderImage, checkStorageAvailability } from '../lib/storage';
 import { createPost } from '../lib/posts';
 
-export const CreatePostScreen: React.FC = () => {
+interface Props {
+  onBack?: () => void; // Add back button handler
+}
+
+export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const [caption, setCaption] = useState('');
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
@@ -466,7 +470,17 @@ export const CreatePostScreen: React.FC = () => {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
         <div className="flex items-center justify-between px-4 py-3">
-          <h1 className="text-xl font-bold text-white">Create Post</h1>
+          <div className="flex items-center">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="mr-3 p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+              >
+                <ChevronLeftIcon className="w-6 h-6 text-white" />
+              </button>
+            )}
+            <h1 className="text-xl font-bold text-white">Create Post</h1>
+          </div>
           <button
             onClick={handlePost}
             disabled={(!selectedMedia && !caption.trim()) || isPosting}

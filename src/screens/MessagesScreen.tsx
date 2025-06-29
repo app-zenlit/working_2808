@@ -5,7 +5,7 @@ import { User, Message } from '../types';
 import { supabase } from '../lib/supabase';
 import { sendMessage, getConversationsForUser, markMessagesAsRead } from '../lib/messages';
 import { getNearbyUsers } from '../lib/location';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XMarkIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { isValidUuid } from '../utils/uuid';
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
   onViewProfile?: (user: User) => void;
   onNavigationVisibilityChange?: (visible: boolean) => void; // New prop to control nav visibility
   onUnreadChange?: (hasUnread: boolean) => void;
+  onBack?: () => void; // Add back button handler
 }
 
 export const MessagesScreen: React.FC<Props> = ({
@@ -21,7 +22,8 @@ export const MessagesScreen: React.FC<Props> = ({
   onClearSelectedUser,
   onViewProfile,
   onNavigationVisibilityChange,
-  onUnreadChange
+  onUnreadChange,
+  onBack
 }) => {
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -296,9 +298,20 @@ export const MessagesScreen: React.FC<Props> = ({
         <>
           {!selectedUser ? (
             <div className="w-full flex flex-col">
-              {/* Header with Search */}
+              {/* Header with Search and Back Button */}
               <div className="px-4 py-3 bg-black border-b border-gray-800 flex-shrink-0">
-                <h2 className="text-xl font-bold text-white mb-3">Messages</h2>
+                <div className="flex items-center justify-between mb-3">
+                  {onBack && (
+                    <button
+                      onClick={onBack}
+                      className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+                    >
+                      <ChevronLeftIcon className="w-6 h-6 text-white" />
+                    </button>
+                  )}
+                  <h2 className="text-xl font-bold text-white flex-1 text-center">Messages</h2>
+                  <div className="w-10" /> {/* Spacer for centering */}
+                </div>
                 
                 {/* Search Input */}
                 <div className="relative">
@@ -363,9 +376,20 @@ export const MessagesScreen: React.FC<Props> = ({
         /* Desktop: Show both panels */
         <>
           <div className="w-80 border-r border-gray-800 flex flex-col">
-            {/* Header with Search */}
+            {/* Header with Search and Back Button */}
             <div className="px-4 py-3 bg-black border-b border-gray-800 flex-shrink-0">
-              <h2 className="text-xl font-bold text-white mb-3">Messages</h2>
+              <div className="flex items-center justify-between mb-3">
+                {onBack && (
+                  <button
+                    onClick={onBack}
+                    className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+                  >
+                    <ChevronLeftIcon className="w-6 h-6 text-white" />
+                  </button>
+                )}
+                <h2 className="text-xl font-bold text-white flex-1 text-center">Messages</h2>
+                <div className="w-10" /> {/* Spacer for centering */}
+              </div>
               
               {/* Search Input */}
               <div className="relative">
