@@ -254,13 +254,13 @@ export const HomeScreen: React.FC<Props> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={handleCreateClick}
-              className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+              className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
             >
               <PlusIcon className="w-6 h-6 text-white" />
             </button>
             <button
               onClick={handleMessagesClick}
-              className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+              className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
             >
               <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
             </button>

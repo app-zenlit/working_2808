@@ -9,7 +9,7 @@ import { UserProfileScreen } from './screens/UserProfileScreen';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { CreatePostScreen } from './screens/CreatePostScreen';
 import { MessagesScreen } from './screens/MessagesScreen';
-import { UserGroupIcon, Squares2X2Icon, UserIcon, PlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, Squares2X2Icon, UserIcon } from '@heroicons/react/24/outline';
 import { User } from './types';
 import { supabase, onAuthStateChange } from './lib/supabase';
 import { checkSession, handleRefreshTokenError } from './lib/auth';
@@ -355,6 +355,7 @@ export default function App() {
                   currentUser={currentUser}
                   onMessageUser={handleMessageUser}
                   onNavigateToCreate={handleNavigateToCreate}
+                  onNavigateToMessages={handleNavigateToMessages}
                 />
               </div>
             )}
@@ -427,31 +428,6 @@ export default function App() {
                 <Squares2X2Icon className="h-6 w-6 mb-1" />
                 <span className="text-xs font-medium">Feed</span>
               </button>
-
-              <button
-                onClick={() => setActiveTab('create')}
-                className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
-                  activeTab === 'create' ? 'text-blue-500' : 'text-gray-400'
-                }`}
-              >
-                <PlusIcon className="h-6 w-6 mb-1" />
-                <span className="text-xs font-medium">Create</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('messages')}
-                className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
-                  activeTab === 'messages' ? 'text-blue-500' : 'text-gray-400'
-                }`}
-              >
-                <div className="relative">
-                  <ChatBubbleLeftIcon className="h-6 w-6 mb-1" />
-                  {hasUnreadMessages && activeTab !== 'messages' && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
-                  )}
-                </div>
-                <span className="text-xs font-medium">Messages</span>
-              </button>
               
               <button
                 onClick={() => setActiveTab('profile')}
@@ -459,7 +435,7 @@ export default function App() {
                   activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
                 }`}
               >
-                <UserIcon className="h-6 w-6 mb-1" />
+                <UserIcon className="h-6 h-6 mb-1" />
                 <span className="text-xs font-medium">Profile</span>
               </button>
             </div>

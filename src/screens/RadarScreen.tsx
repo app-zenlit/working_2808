@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RadarUserCard } from '../components/radar/RadarUserCard';
-import { LocationPermissionModal } from '../components/radar/LocationPermissionModal';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
 import { User, UserLocation, LocationPermissionStatus, Post } from '../types';
@@ -21,13 +20,15 @@ interface Props {
   currentUser: any;
   onMessageUser?: (user: User) => void;
   onNavigateToCreate?: () => void;
+  onNavigateToMessages?: () => void;
 }
 
 export const RadarScreen: React.FC<Props> = ({ 
   userGender, 
   currentUser,
   onMessageUser,
-  onNavigateToCreate
+  onNavigateToCreate,
+  onNavigateToMessages
 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +38,6 @@ export const RadarScreen: React.FC<Props> = ({
     denied: false,
     pending: true
   });
-  const [showLocationModal, setShowLocationModal] = useState(false);
   const [isRequestingLocation, setIsRequestingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -317,23 +317,15 @@ export const RadarScreen: React.FC<Props> = ({
     setShowPostsGallery(false);
   };
 
-  const handleEnablePreciseLocation = () => {
-    setShowLocationModal(true);
+  const handleCreateClick = () => {
+    if (onNavigateToCreate) {
+      onNavigateToCreate();
+    }
   };
 
-  const handleRequestLocation = async () => {
-    setIsRequestingLocation(true);
-    setLocationError(null);
-
-    try {
-      // This will trigger the location toggle ON
-      await handleLocationToggle(true);
-      setShowLocationModal(false);
-    } catch (error) {
-      console.error('Location request error:', error);
-      setLocationError('Failed to enable location');
-    } finally {
-      setIsRequestingLocation(false);
+  const handleMessagesClick = () => {
+    if (onNavigateToMessages) {
+      onNavigateToMessages();
     }
   };
 
@@ -362,20 +354,6 @@ export const RadarScreen: React.FC<Props> = ({
       setLocationError('Failed to refresh. Please try again.');
     } finally {
       setIsRefreshing(false);
-    }
-  };
-
-  const handleCreateClick = () => {
-    if (onNavigateToCreate) {
-      onNavigateToCreate();
-    }
-  };
-
-  const handleMessagesClick = () => {
-    // Navigate to messages - this will be handled by the parent component
-    if (onMessageUser) {
-      // For now, we'll just trigger the message functionality
-      // In a real app, this would navigate to the messages screen
     }
   };
 
@@ -442,13 +420,13 @@ export const RadarScreen: React.FC<Props> = ({
             <div className="flex items-center gap-3">
               <button
                 onClick={handleCreateClick}
-                className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
               >
                 <PlusIcon className="w-6 h-6 text-white" />
               </button>
               <button
                 onClick={handleMessagesClick}
-                className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
               >
                 <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
               </button>
@@ -534,10 +512,11 @@ export const RadarScreen: React.FC<Props> = ({
                 Please allow location access to find people nearby
               </p>
               <button
-                onClick={handleEnablePreciseLocation}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all"
+                onClick={() => handleLocationToggle(true)}
+                disabled={isTogglingLocation}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
               >
-                Enable Location
+                {isTogglingLocation ? 'Enabling...' : 'Enable Location'}
               </button>
             </div>
           )
@@ -560,15 +539,6 @@ export const RadarScreen: React.FC<Props> = ({
           </div>
         )}
       </div>
-
-      {/* Location Permission Modal */}
-      <LocationPermissionModal
-        isOpen={showLocationModal}
-        onClose={() => setShowLocationModal(false)}
-        onRequestLocation={handleRequestLocation}
-        isRequesting={isRequestingLocation}
-        error={locationError || undefined}
-      />
     </div>
   );
 };
