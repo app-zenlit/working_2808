@@ -443,7 +443,7 @@ export default function App() {
           {/* Bottom Navigation - Conditionally visible */}
           {isNavigationVisible && (
             <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav">
-              <div className="flex justify-around items-center py-2 px-4 h-16">
+              <div className="flex justify-around items-center py-3 px-4 h-12">
                 <button
                   onClick={() => setActiveTab('radar')}
                   className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
