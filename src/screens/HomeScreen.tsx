@@ -244,7 +244,7 @@ export const HomeScreen: React.FC<Props> = ({
       <div className="bg-black border-b border-gray-800">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-white">Zenlit</h1>
+            <h1 className="text-2xl font-bold text-white">Zenlit</h1>
           </div>
           
           {/* Top Right Icons */}
