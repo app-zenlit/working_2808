@@ -388,7 +388,7 @@ export const RadarScreen: React.FC<Props> = ({
           <div className="flex items-center justify-between">
             {/* Title with Toggle */}
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-white">Nearby</h1>
+              <h1 className="text-xl font-bold text-white">Feed</h1>
               <input
                 type="checkbox"
                 className="relative w-10 h-5 rounded-full appearance-none bg-gray-700 checked:bg-blue-600 transition-colors cursor-pointer before:absolute before:left-1 before:top-1 before:w-3 before:h-3 before:bg-white before:rounded-full before:transition-transform checked:before:translate-x-5 disabled:opacity-50 disabled:cursor-not-allowed"
