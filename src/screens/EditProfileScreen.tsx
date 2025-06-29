@@ -420,8 +420,8 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
         </div>
       </div>
 
-      {/* Form Content */}
-      <div className="px-4 space-y-8 pb-8">
+      {/* Form Content - Fixed scrolling with proper padding */}
+      <div className="px-4 space-y-8 pb-32">
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-white">Basic Information</h2>
           
