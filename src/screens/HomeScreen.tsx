@@ -247,9 +247,9 @@ export const HomeScreen: React.FC<Props> = ({
             <img
               src="/logo.png"
               alt="Zenlit"
-              className="w-12 h-12 object-contain rounded mr-4"
+              className="w-8 h-8 object-contain rounded mr-3"
             />
-            <h1 className="text-3xl font-bold text-white">Zenlit</h1>
+            <h1 className="text-xl font-bold text-white">Zenlit</h1>
           </div>
           
           {/* Top Right Icons */}
