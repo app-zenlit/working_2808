@@ -415,26 +415,22 @@ export const RadarScreen: React.FC<Props> = ({
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
         <div className="px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left side - Title and Location Status */}
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-white">People Nearby</h1>
-              <div className="flex items-center gap-2 mt-1">
-                {/* Location status */}
-                <div className="flex items-center gap-1">
-                  {isLocationEnabled ? (
-                    <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse" />
-                  ) : (
-                    <MapPinIcon className="w-4 h-4 text-gray-500" />
-                  )}
-                  <span className={`text-xs ${
-                    isLocationEnabled ? 'text-green-400' : 'text-gray-400'
-                  }`}>
-                    {isLocationEnabled ? 'Location tracking active' : 'Location tracking off'}
-                  </span>
-                </div>
-                
-                {/* Update indicator */}
+          <div className="flex flex-col space-y-3">
+            {/* Title */}
+            <h1 className="text-xl font-bold text-white">People Nearby</h1>
+            
+            {/* Controls Row */}
+            <div className="flex items-center justify-between">
+              {/* Location Toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400">Show Nearby</span>
+                <input
+                  type="checkbox"
+                  className="relative w-10 h-5 rounded-full appearance-none bg-gray-700 checked:bg-blue-600 transition-colors cursor-pointer before:absolute before:left-1 before:top-1 before:w-3 before:h-3 before:bg-white before:rounded-full before:transition-transform checked:before:translate-x-5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  checked={isLocationEnabled}
+                  onChange={(e) => handleLocationToggle(e.target.checked)}
+                  disabled={isTogglingLocation}
+                />
                 {(isRefreshing || isTogglingLocation) && (
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -444,24 +440,12 @@ export const RadarScreen: React.FC<Props> = ({
                   </div>
                 )}
               </div>
-            </div>
-            
-            {/* Right side - Location Toggle and Refresh */}
-            <div className="flex flex-col items-end gap-1 ml-4">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">Show Nearby</span>
-                <input
-                  type="checkbox"
-                  className="relative w-10 h-5 rounded-full appearance-none bg-gray-700 checked:bg-blue-600 transition-colors cursor-pointer before:absolute before:left-1 before:top-1 before:w-3 before:h-3 before:bg-white before:rounded-full before:transition-transform checked:before:translate-x-5 disabled:opacity-50 disabled:cursor-not-allowed"
-                  checked={isLocationEnabled}
-                  onChange={(e) => handleLocationToggle(e.target.checked)}
-                  disabled={isTogglingLocation}
-                />
-              </div>
+              
+              {/* Refresh Button */}
               <button
                 onClick={handleRefresh}
                 disabled={!isLocationEnabled || isRefreshing}
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1 text-sm text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowPathIcon className="w-4 h-4" />
                 Refresh
@@ -470,32 +454,6 @@ export const RadarScreen: React.FC<Props> = ({
           </div>
         </div>
       </div>
-
-      {/* Location Status Info */}
-      {!isLocationEnabled && (
-        <div className="px-4 py-3 bg-blue-900/20 border-b border-blue-700/30">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ExclamationTriangleIcon className="w-5 h-5 text-blue-500" />
-              <div>
-                <span className="text-sm text-blue-400 font-medium">Location Tracking Off</span>
-                <p className="text-xs text-blue-300">
-                  Turn on -Show Nearby- to find people around you
-                </p>
-              </div>
-            </div>
-            {isGeolocationSupported() && isSecureContext() && (
-              <button
-                onClick={() => handleLocationToggle(true)}
-                disabled={isTogglingLocation}
-                className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {isTogglingLocation ? 'Enabling...' : 'Enable'}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Error Message */}
       {locationError && (
@@ -555,7 +513,7 @@ export const RadarScreen: React.FC<Props> = ({
             </div>
             <p className="text-gray-400 mb-2">Location tracking is off</p>
             <p className="text-gray-500 text-sm mb-4">
-              Turn on -Show Nearby- to see people around you
+              Turn on "Show Nearby" to see people around you
             </p>
             <button
               onClick={() => handleLocationToggle(true)}
