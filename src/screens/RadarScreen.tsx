@@ -3,7 +3,7 @@ import { RadarUserCard } from '../components/radar/RadarUserCard';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
 import { User, UserLocation, LocationPermissionStatus, Post } from '../types';
-import { MapPinIcon, ExclamationTriangleIcon, ArrowPathIcon, ChevronLeftIcon, PlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ExclamationTriangleIcon, ChevronLeftIcon, PlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabase';
 import { transformProfileToUser } from '../../lib/utils';
 import { getUserPosts } from '../lib/posts';
@@ -329,34 +329,6 @@ export const RadarScreen: React.FC<Props> = ({
     }
   };
 
-  // Pull to refresh handler
-  const handleRefresh = async () => {
-    if (isRefreshing || !currentUser || !isLocationEnabled) return;
-    
-    setIsRefreshing(true);
-    setLocationError(null);
-    
-    try {
-      // Refresh location if toggle is ON
-      const result = await locationToggleManager.refreshLocation();
-
-      if (result.success) {
-        const state = locationToggleManager.getState();
-        if (state.currentLocation && currentUser) {
-          await loadNearbyUsers(currentUser.id, state.currentLocation);
-          setCurrentLocation(state.currentLocation);
-        }
-      } else {
-        setLocationError(result.error || 'Failed to refresh location');
-      }
-    } catch (error) {
-      console.error('Refresh error:', error);
-      setLocationError('Failed to refresh. Please try again.');
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-full bg-black flex items-center justify-center">
@@ -413,7 +385,7 @@ export const RadarScreen: React.FC<Props> = ({
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
         <div className="px-4 py-4">
           {/* Top Row with Title and Icons */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             {/* Title with Toggle */}
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold text-white">Nearby</h1>
@@ -449,18 +421,6 @@ export const RadarScreen: React.FC<Props> = ({
                 <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
               </button>
             </div>
-          </div>
-          
-          {/* Refresh Button - Left aligned below title */}
-          <div className="flex justify-start">
-            <button
-              onClick={handleRefresh}
-              disabled={!isLocationEnabled || isRefreshing}
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ArrowPathIcon className="w-4 h-4" />
-              Refresh
-            </button>
           </div>
         </div>
       </div>
