@@ -244,11 +244,6 @@ export const HomeScreen: React.FC<Props> = ({
       <div className="bg-black border-b border-gray-800">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="Zenlit"
-              className="w-8 h-8 object-contain rounded mr-3"
-            />
             <h1 className="text-xl font-bold text-white">Zenlit</h1>
           </div>
           
