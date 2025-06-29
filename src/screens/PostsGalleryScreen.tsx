@@ -97,8 +97,8 @@ export const PostsGalleryScreen: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Posts Feed */}
-      <div className="px-4 py-4">
+      {/* Posts Feed - Fixed scrolling with proper bottom padding */}
+      <div className="px-4 py-4 pb-32">
         {displayPosts.length > 0 ? (
           <div className="space-y-6">
             {displayPosts.map((post) => (
