@@ -6,7 +6,7 @@ import {
   IconBrandLinkedin, 
   IconBrandX
 } from '@tabler/icons-react';
-import { LinkIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { LinkIcon, PlusIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../../lib/supabase';
 import { transformProfileToUser } from '../../../lib/utils';
 
@@ -44,7 +44,7 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
       icon: IconBrandInstagram,
       placeholder: 'https://instagram.com/yourusername',
       getCurrentUrl: () => user.instagramUrl,
-      getIsVerified: () => !!user.instagramUrl // Changed from instagramVerified to just check if URL exists
+      getIsVerified: () => !!user.instagramUrl
     },
     {
       id: 'linkedin',
@@ -53,7 +53,7 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
       icon: IconBrandLinkedin,
       placeholder: 'https://linkedin.com/in/yourprofile',
       getCurrentUrl: () => user.linkedInUrl,
-      getIsVerified: () => !!user.linkedInUrl // Changed from linkedInVerified to just check if URL exists
+      getIsVerified: () => !!user.linkedInUrl
     },
     {
       id: 'twitter',
@@ -62,7 +62,7 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
       icon: IconBrandX,
       placeholder: 'https://twitter.com/yourusername',
       getCurrentUrl: () => user.twitterUrl,
-      getIsVerified: () => !!user.twitterUrl // Changed from twitterVerified to just check if URL exists
+      getIsVerified: () => !!user.twitterUrl
     }
   ];
 
@@ -124,7 +124,7 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">Social Media Links</h2>
         <div className="text-sm text-gray-400">
@@ -136,7 +136,7 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
         Add links to your social media profiles to help others connect with you and build trust.
       </p>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {socialProviders.map((provider) => {
           const currentUrl = provider.getCurrentUrl();
           const isConnected = !!currentUrl;
@@ -145,26 +145,27 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
           console.log(`🔍 [SocialAccountsSection] Rendering ${provider.id} - currentUrl: "${currentUrl}", isConnected: ${isConnected}`);
 
           return (
-            <div key={provider.id} className="space-y-2">
+            <div key={provider.id}>
               <div className="flex items-center justify-between p-4 bg-gray-800 border border-gray-600 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <IconComponent size={24} className="text-gray-300" />
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                  <IconComponent size={24} className="text-gray-300 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-white">{provider.name}</h3>
-                    {isConnected ? (
-                      <p className="text-sm text-green-400 mt-1 truncate">
-                        {currentUrl}
-                      </p>
-                    ) : (
-                      <p className="text-sm text-gray-500">Not connected</p>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-white text-sm">{provider.name}</h3>
+                      {isConnected && (
+                        <CheckCircleIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {isConnected ? 'Connected' : 'Not connected'}
+                    </p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => openModal(provider.id)}
                   disabled={isLoading}
-                  className={`px-3 py-2 rounded-lg font-medium text-white transition-all active:scale-95 disabled:cursor-not-allowed flex items-center gap-2 text-sm ${
+                  className={`px-3 py-2 rounded-lg font-medium text-white transition-all active:scale-95 disabled:cursor-not-allowed flex items-center gap-2 text-xs flex-shrink-0 ml-3 ${
                     isConnected
                       ? 'bg-blue-600 hover:bg-blue-700'
                       : 'bg-gray-700 hover:bg-gray-600'
@@ -172,13 +173,13 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
                 >
                   {isConnected ? (
                     <>
-                      <LinkIcon className="w-4 h-4" />
-                      Edit Link
+                      <LinkIcon className="w-3 h-3" />
+                      Edit
                     </>
                   ) : (
                     <>
-                      <PlusIcon className="w-4 h-4" />
-                      Add Link
+                      <PlusIcon className="w-3 h-3" />
+                      Add
                     </>
                   )}
                 </button>

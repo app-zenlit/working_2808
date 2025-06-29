@@ -27,8 +27,6 @@ export const SocialLinkModal: React.FC<Props> = ({
 }) => {
   const [url, setUrl] = useState(currentUrl);
   const [error, setError] = useState<string | null>(null);
-
-
   const [checking, setChecking] = useState(false);
 
   const handleSave = async () => {
@@ -85,7 +83,7 @@ export const SocialLinkModal: React.FC<Props> = ({
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-gray-700"
+        className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-gray-700 max-h-[90vh] overflow-y-auto"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
@@ -94,7 +92,7 @@ export const SocialLinkModal: React.FC<Props> = ({
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <IconComponent size={24} className="text-gray-300" />
-            <h2 className="text-xl font-bold text-white">Add {platform.name} Link</h2>
+            <h2 className="text-xl font-bold text-white">{platform.name}</h2>
           </div>
           <button
             onClick={handleClose}
@@ -114,7 +112,7 @@ export const SocialLinkModal: React.FC<Props> = ({
               type="url"
               value={url}
               onChange={(e) => handleUrlChange(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               placeholder={platform.placeholder}
               disabled={isLoading || checking}
             />
@@ -136,7 +134,7 @@ export const SocialLinkModal: React.FC<Props> = ({
           {/* Example URLs */}
           <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-3">
             <h4 className="text-sm font-medium text-blue-300 mb-2">Example:</h4>
-            <p className="text-xs text-blue-200 font-mono">
+            <p className="text-xs text-blue-200 font-mono break-all">
               {platform.placeholder}
             </p>
           </div>
@@ -146,14 +144,14 @@ export const SocialLinkModal: React.FC<Props> = ({
             <button
               onClick={handleClose}
               disabled={isLoading || checking}
-              className="flex-1 bg-gray-700 text-white py-3 rounded-lg font-medium hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-gray-700 text-white py-3 rounded-lg font-medium hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={isLoading || checking}
-              className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
             >
               {isLoading || checking ? (
                 <>
@@ -163,7 +161,7 @@ export const SocialLinkModal: React.FC<Props> = ({
               ) : (
                 <>
                   <CheckIcon className="w-4 h-4" />
-                  Save Link
+                  Save
                 </>
               )}
             </button>
