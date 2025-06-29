@@ -9,7 +9,7 @@ import { UserProfileScreen } from './screens/UserProfileScreen';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { CreatePostScreen } from './screens/CreatePostScreen';
 import { MessagesScreen } from './screens/MessagesScreen';
-import { HomeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline';
 import { User } from './types';
 import { supabase, onAuthStateChange } from './lib/supabase';
 import { checkSession, handleRefreshTokenError } from './lib/auth';
@@ -18,16 +18,6 @@ import { transformProfileToUser } from '../lib/utils';
 import { usePWA } from './hooks/usePWA';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { OfflineIndicator } from './components/OfflineIndicator';
-
-// Custom Radar Icon Component
-const RadarIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="2" strokeWidth="2"/>
-    <circle cx="12" cy="12" r="6" strokeWidth="1.5" opacity="0.7"/>
-    <circle cx="12" cy="12" r="10" strokeWidth="1" opacity="0.4"/>
-    <path d="M12 2v4M12 18v4M2 12h4M18 12h4" strokeWidth="1.5" strokeLinecap="round"/>
-  </svg>
-);
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'welcome' | 'login' | 'profileSetup' | 'app'>('welcome');
@@ -460,7 +450,7 @@ export default function App() {
                     activeTab === 'radar' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <RadarIcon className="h-6 w-6" />
+                  <MapPinIcon className="h-6 w-6" />
                 </button>
                 
                 <button
