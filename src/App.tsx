@@ -450,8 +450,7 @@ export default function App() {
                     activeTab === 'radar' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <UserGroupIcon className="h-6 w-6 mb-1" />
-                  <span className="text-xs font-medium">Radar</span>
+                  <UserGroupIcon className="h-6 w-6" />
                 </button>
                 
                 <button
@@ -460,8 +459,7 @@ export default function App() {
                     activeTab === 'feed' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <HomeIcon className="h-6 w-6 mb-1" />
-                  <span className="text-xs font-medium">Feed</span>
+                  <HomeIcon className="h-6 w-6" />
                 </button>
                 
                 <button
@@ -470,8 +468,7 @@ export default function App() {
                     activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <UserIcon className="w-6 h-6 mb-1" />
-                  <span className="text-xs font-medium">Profile</span>
+                  <UserIcon className="w-6 h-6" />
                 </button>
               </div>
             </nav>
