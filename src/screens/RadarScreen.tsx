@@ -4,7 +4,7 @@ import { LocationPermissionModal } from '../components/radar/LocationPermissionM
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
 import { User, UserLocation, LocationPermissionStatus, Post } from '../types';
-import { MapPinIcon, ExclamationTriangleIcon, ArrowPathIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ExclamationTriangleIcon, ArrowPathIcon, ChevronLeftIcon, PlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabase';
 import { transformProfileToUser } from '../../lib/utils';
 import { getUserPosts } from '../lib/posts';
@@ -20,12 +20,14 @@ interface Props {
   userGender: 'male' | 'female';
   currentUser: any;
   onMessageUser?: (user: User) => void;
+  onNavigateToCreate?: () => void;
 }
 
 export const RadarScreen: React.FC<Props> = ({ 
   userGender, 
   currentUser,
-  onMessageUser 
+  onMessageUser,
+  onNavigateToCreate
 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -363,6 +365,20 @@ export const RadarScreen: React.FC<Props> = ({
     }
   };
 
+  const handleCreateClick = () => {
+    if (onNavigateToCreate) {
+      onNavigateToCreate();
+    }
+  };
+
+  const handleMessagesClick = () => {
+    // Navigate to messages - this will be handled by the parent component
+    if (onMessageUser) {
+      // For now, we'll just trigger the message functionality
+      // In a real app, this would navigate to the messages screen
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-full bg-black flex items-center justify-center">
@@ -397,7 +413,10 @@ export const RadarScreen: React.FC<Props> = ({
         </button>
         {isLoadingProfile ? (
           <div className="min-h-full bg-black flex items-center justify-center">
-            ...loading spinner...
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading profile...</p>
+            </div>
           </div>
         ) : (
           <UserProfile
@@ -415,42 +434,58 @@ export const RadarScreen: React.FC<Props> = ({
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
         <div className="px-4 py-4">
-          <div className="flex flex-col space-y-3">
+          <div className="flex items-center justify-between mb-3">
             {/* Title */}
             <h1 className="text-xl font-bold text-white">People Nearby</h1>
             
-            {/* Controls Row */}
-            <div className="flex items-center justify-between">
-              {/* Location Toggle */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">Show Nearby</span>
-                <input
-                  type="checkbox"
-                  className="relative w-10 h-5 rounded-full appearance-none bg-gray-700 checked:bg-blue-600 transition-colors cursor-pointer before:absolute before:left-1 before:top-1 before:w-3 before:h-3 before:bg-white before:rounded-full before:transition-transform checked:before:translate-x-5 disabled:opacity-50 disabled:cursor-not-allowed"
-                  checked={isLocationEnabled}
-                  onChange={(e) => handleLocationToggle(e.target.checked)}
-                  disabled={isTogglingLocation}
-                />
-                {(isRefreshing || isTogglingLocation) && (
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs text-blue-400">
-                      {isTogglingLocation ? 'Updating...' : 'Refreshing...'}
-                    </span>
-                  </div>
-                )}
-              </div>
-              
-              {/* Refresh Button */}
+            {/* Top Right Icons */}
+            <div className="flex items-center gap-3">
               <button
-                onClick={handleRefresh}
-                disabled={!isLocationEnabled || isRefreshing}
-                className="flex items-center gap-1 text-sm text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleCreateClick}
+                className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
               >
-                <ArrowPathIcon className="w-4 h-4" />
-                Refresh
+                <PlusIcon className="w-6 h-6 text-white" />
+              </button>
+              <button
+                onClick={handleMessagesClick}
+                className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+              >
+                <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
               </button>
             </div>
+          </div>
+          
+          {/* Controls Row */}
+          <div className="flex items-center justify-between">
+            {/* Location Toggle */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-400">Show Nearby</span>
+              <input
+                type="checkbox"
+                className="relative w-10 h-5 rounded-full appearance-none bg-gray-700 checked:bg-blue-600 transition-colors cursor-pointer before:absolute before:left-1 before:top-1 before:w-3 before:h-3 before:bg-white before:rounded-full before:transition-transform checked:before:translate-x-5 disabled:opacity-50 disabled:cursor-not-allowed"
+                checked={isLocationEnabled}
+                onChange={(e) => handleLocationToggle(e.target.checked)}
+                disabled={isTogglingLocation}
+              />
+              {(isRefreshing || isTogglingLocation) && (
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs text-blue-400">
+                    {isTogglingLocation ? 'Updating...' : 'Refreshing...'}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {/* Refresh Button */}
+            <button
+              onClick={handleRefresh}
+              disabled={!isLocationEnabled || isRefreshing}
+              className="flex items-center gap-1 text-sm text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ArrowPathIcon className="w-4 h-4" />
+              Refresh
+            </button>
           </div>
         </div>
       </div>

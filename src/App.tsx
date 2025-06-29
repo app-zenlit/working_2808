@@ -288,6 +288,10 @@ export default function App() {
     setActiveTab('create');
   };
 
+  const handleNavigateToMessages = () => {
+    setActiveTab('messages');
+  };
+
   // Handle navigation visibility changes from MessagesScreen
   const handleNavigationVisibilityChange = (visible: boolean) => {
     setIsNavigationVisible(visible);
@@ -350,12 +354,17 @@ export default function App() {
                   userGender={userGender} 
                   currentUser={currentUser}
                   onMessageUser={handleMessageUser}
+                  onNavigateToCreate={handleNavigateToCreate}
                 />
               </div>
             )}
             {activeTab === 'feed' && (
               <div className="h-full overflow-y-auto mobile-scroll">
-                <HomeScreen userGender={userGender} />
+                <HomeScreen 
+                  userGender={userGender}
+                  onNavigateToCreate={handleNavigateToCreate}
+                  onNavigateToMessages={handleNavigateToMessages}
+                />
               </div>
             )}
             {activeTab === 'create' && (

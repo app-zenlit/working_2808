@@ -3,7 +3,7 @@ import { PostsFeed } from '../components/post/PostsFeed';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
 import { User, Post } from '../types';
-import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, PlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabase';
 import { getAllPosts, getUserPosts } from '../lib/posts';
 import { getNearbyUsers } from '../lib/location';
@@ -11,9 +11,15 @@ import { transformProfileToUser } from '../../lib/utils';
 
 interface Props {
   userGender: 'male' | 'female';
+  onNavigateToCreate?: () => void;
+  onNavigateToMessages?: () => void;
 }
 
-export const HomeScreen: React.FC<Props> = ({ userGender }) => {
+export const HomeScreen: React.FC<Props> = ({ 
+  userGender,
+  onNavigateToCreate,
+  onNavigateToMessages
+}) => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedUserPosts, setSelectedUserPosts] = useState<Post[]>([]);
   const [showPostsGallery, setShowPostsGallery] = useState(false);
@@ -170,6 +176,18 @@ export const HomeScreen: React.FC<Props> = ({ userGender }) => {
     setShowPostsGallery(false);
   };
 
+  const handleCreateClick = () => {
+    if (onNavigateToCreate) {
+      onNavigateToCreate();
+    }
+  };
+
+  const handleMessagesClick = () => {
+    if (onNavigateToMessages) {
+      onNavigateToMessages();
+    }
+  };
+
   if (selectedUser) {
     if (showPostsGallery) {
       return (
@@ -224,12 +242,28 @@ export const HomeScreen: React.FC<Props> = ({ userGender }) => {
     <div className="min-h-full bg-black">
       {/* Header */}
       <div className="bg-black border-b border-gray-800">
-        <div className="px-4 py-3 flex items-center">
-          <svg className="w-8 h-8 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-          <div>
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center">
+            <svg className="w-8 h-8 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
             <h1 className="text-xl font-bold text-white">Nearby Feed</h1>
+          </div>
+          
+          {/* Top Right Icons */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCreateClick}
+              className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+            >
+              <PlusIcon className="w-6 h-6 text-white" />
+            </button>
+            <button
+              onClick={handleMessagesClick}
+              className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+            >
+              <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
+            </button>
           </div>
         </div>
       </div>
