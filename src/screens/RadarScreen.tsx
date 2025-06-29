@@ -451,8 +451,8 @@ export const RadarScreen: React.FC<Props> = ({
             </div>
           </div>
           
-          {/* Refresh Button - Centered below title */}
-          <div className="flex justify-center">
+          {/* Refresh Button - Left aligned below title */}
+          <div className="flex justify-start">
             <button
               onClick={handleRefresh}
               disabled={!isLocationEnabled || isRefreshing}
