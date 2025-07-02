@@ -31,6 +31,7 @@ export const Avatar: React.FC<Props> = ({
           cursor-pointer
           ring-2
           ring-blue-500
+          border-4 border-black
         `}
         onClick={onClick}
       />

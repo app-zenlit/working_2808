@@ -29,7 +29,7 @@ export const UserProfile: React.FC<Props> = ({ user, posts = [], onPostClick }) 
 
       {/* Profile Info */}
       <div className="relative px-4 pb-4">
-        <div className="flex flex-col items-center -mt-16">
+        <div className="flex flex-col items-center -mt-8">
           <Avatar
             src={user.dpUrl}
             alt={user.name}
