@@ -145,15 +145,40 @@ export async function uploadBannerImage(file: File): Promise<{ publicUrl: string
 }
 
 /**
- * Uploads a post image to the "posts" bucket and returns its storage path.
+ * Uploads a post image to the "posts" bucket and returns its public URL.
  */
 export async function uploadPostImage(file: File, path: string): Promise<string> {
-  const { data, error } = await supabase
-    .storage
-    .from('posts')
-    .upload(path, file, { upsert: true });
-  if (error) throw error;
-  return data.path;
+  try {
+    console.log(`Uploading post image: ${file.name} (${Math.round(file.size / 1024)} KB) to path: ${path}`);
+    
+    // Upload the file directly to Supabase storage
+    const { data, error } = await supabase
+      .storage
+      .from('posts')
+      .upload(path, file, { 
+        upsert: true,
+        contentType: file.type,
+        cacheControl: '3600'
+      });
+      
+    if (error) {
+      console.error('Post image upload error:', error);
+      throw error;
+    }
+    
+    // Get the public URL
+    const { data: urlData } = supabase.storage.from('posts').getPublicUrl(data.path);
+    
+    if (!urlData?.publicUrl) {
+      throw new Error('Failed to get public URL for uploaded image');
+    }
+    
+    console.log(`Post image uploaded successfully. Public URL: ${urlData.publicUrl}`);
+    return data.path;
+  } catch (error) {
+    console.error('Post image upload error:', error);
+    throw error;
+  }
 }
 
 // Delete image from storage

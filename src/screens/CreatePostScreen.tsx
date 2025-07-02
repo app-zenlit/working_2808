@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { CameraIcon, PhotoIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { generateId } from '../utils/generateId';
 import { supabase } from '../lib/supabase';
@@ -42,7 +42,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load current user data and check storage
-  React.useEffect(() => {
+  useEffect(() => {
     loadCurrentUser();
     checkStorage();
   }, []);
@@ -129,7 +129,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   };
 
   const handlePost = async () => {
-    if (!selectedMedia && !caption.trim()) {
+    if (!selectedFile && !caption.trim()) {
       alert('Please add some content to your post');
       return;
     }
@@ -142,34 +142,31 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     setIsPosting(true);
     
     try {
-      let mediaUrl = selectedMedia;
-      let uploadAttempted = false;
+      let mediaUrl = '';
       
-      // If we have a compressed file, try to upload it
-      if (selectedFile && selectedMedia && selectedMedia.startsWith('data:')) {
-        uploadAttempted = true;
-        
+      // If we have a compressed file, upload it directly to Supabase
+      if (selectedFile) {
         if (storageStatus.available) {
-          console.log('Attempting to upload compressed image to Supabase...');
+          console.log('Uploading compressed image to Supabase...');
           
           try {
-            const fileName = `${generateId()}.jpg`;
+            // Generate a unique filename
+            const fileName = `${generateId()}.${selectedFile.name.split('.').pop() || 'jpg'}`;
             const filePath = `${currentUser.id}/${fileName}`;
             
-            // Use the compressed file for upload
-            const fileToUpload = compressionResult?.compressedFile || selectedFile;
-            const uploadedPath = await uploadPostImage(fileToUpload, filePath);
+            // Upload the compressed file directly to Supabase
+            const uploadedPath = await uploadPostImage(selectedFile, filePath);
+            
+            // Get the public URL for the uploaded file
             const { data: urlData } = supabase.storage.from('posts').getPublicUrl(uploadedPath);
-            const uploadedUrl = urlData.publicUrl;
-
-            if (uploadedUrl) {
-              mediaUrl = uploadedUrl;
-              console.log('Compressed image uploaded successfully:', uploadedUrl);
-              console.log('Final file size:', formatFileSize(Math.round(fileToUpload.size / 1024)));
-            } else {
-              console.warn('Image upload failed, using placeholder');
-              mediaUrl = generatePlaceholderImage();
+            
+            if (!urlData?.publicUrl) {
+              throw new Error('Failed to get public URL for uploaded image');
             }
+            
+            mediaUrl = urlData.publicUrl;
+            console.log('Image uploaded successfully:', mediaUrl);
+            console.log('Final file size:', formatFileSize(Math.round(selectedFile.size / 1024)));
           } catch (uploadError) {
             console.error('Upload error:', uploadError);
             mediaUrl = generatePlaceholderImage();
@@ -178,7 +175,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
           console.warn('Storage not available, using placeholder image');
           mediaUrl = generatePlaceholderImage();
         }
-      } else if (!selectedMedia) {
+      } else {
         // If no media selected, use a placeholder
         mediaUrl = generatePlaceholderImage();
       }
@@ -187,7 +184,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       const newPost = await createPost({
         title: `Post by ${currentUser.name}`,
         caption: caption.trim() || 'New post from Zenlit!',
-        mediaUrl: mediaUrl!,
+        mediaUrl: mediaUrl,
         mediaType: 'image'
       });
 
@@ -372,10 +369,12 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
       setCompressionResult(result);
 
-      // Create preview URL from compressed file
+      // Store the compressed file for later upload
+      setSelectedFile(result.compressedFile);
+      
+      // Create a temporary preview URL
       const previewUrl = URL.createObjectURL(result.compressedFile);
       setSelectedMedia(previewUrl);
-      setSelectedFile(result.compressedFile);
 
       console.log('Compression complete:', {
         original: formatFileSize(result.originalSizeKB),
