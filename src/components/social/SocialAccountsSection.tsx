@@ -106,52 +106,43 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
         Add links to your social media profiles to help others connect with you and build trust.
       </p>
 
-      {/* Connected Platforms Summary - Simple List */}
-      {connectedCount > 0 && (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-white mb-3">Connected Accounts</h3>
-          <div className="space-y-2">
-            {socialProviders
-              .filter(provider => provider.isConnected)
-              .map((provider) => {
-                const IconComponent = provider.icon;
-                return (
-                  <div key={provider.id} className="flex items-center gap-3">
-                    <IconComponent size={18} className="text-gray-300 flex-shrink-0" />
-                    <span className="text-sm text-white">{provider.name}</span>
-                    <CheckCircleIcon className="w-4 h-4 text-green-500 ml-auto" />
-                  </div>
-                );
-              })}
-          </div>
-          <button
-            onClick={handleOpenModal}
-            className="mt-3 text-blue-400 hover:text-blue-300 text-sm transition-colors"
-          >
-            Edit connections
-          </button>
-        </div>
-      )}
+      {/* Connected Platforms Display */}
+      <div className="space-y-3">
+        {socialProviders.map((provider) => {
+          const IconComponent = provider.icon;
 
-      {/* No connections state */}
-      {connectedCount === 0 && (
-        <div className="bg-gray-800/30 border border-gray-700 border-dashed rounded-lg p-6 text-center">
-          <div className="flex justify-center mb-3">
-            <div className="flex -space-x-2">
-              <IconBrandInstagram size={20} className="text-gray-500" />
-              <IconBrandLinkedin size={20} className="text-gray-500" />
-              <IconBrandX size={20} className="text-gray-500" />
+          return (
+            <div key={provider.id} className="flex items-center justify-between p-4 bg-gray-800 border border-gray-600 rounded-lg">
+              <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <IconComponent size={24} className="text-gray-300 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-white text-sm">{provider.name}</h3>
+                    {provider.isConnected && (
+                      <CheckCircleIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {provider.isConnected ? 'Connected' : 'Not connected'}
+                  </p>
+                  {provider.isConnected && provider.url && (
+                    <p className="text-xs text-blue-400 truncate mt-1">
+                      {provider.url}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={handleOpenModal}
+                className="px-3 py-2 rounded-lg font-medium text-white transition-all active:scale-95 text-xs flex-shrink-0 ml-3 bg-gray-700 hover:bg-gray-600"
+              >
+                {provider.isConnected ? 'Edit' : 'Add'}
+              </button>
             </div>
-          </div>
-          <p className="text-gray-400 text-sm mb-3">No social media accounts connected</p>
-          <button
-            onClick={handleOpenModal}
-            className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
-          >
-            Connect your first account
-          </button>
-        </div>
-      )}
+          );
+        })}
+      </div>
 
       {/* Social Links Modal */}
       <SocialLinksModal
