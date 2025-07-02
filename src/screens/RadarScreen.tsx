@@ -14,6 +14,8 @@ import {
   isSecureContext
 } from '../lib/location';
 import { locationToggleManager } from '../lib/locationToggle';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
 
 interface Props {
   userGender: 'male' | 'female';
@@ -54,6 +56,44 @@ export const RadarScreen: React.FC<Props> = ({
 
   // Refs for cleanup
   const mountedRef = useRef(true);
+
+  // Refresh function for pull-to-refresh
+  const handleRefresh = useCallback(async () => {
+    if (!currentUser || !isLocationEnabled || !currentLocation) return;
+    
+    setIsRefreshing(true);
+    try {
+      await loadNearbyUsers(currentUser.id, currentLocation);
+    } catch (error) {
+      console.error('Refresh error:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [currentUser, isLocationEnabled, currentLocation]);
+
+  // Pull-to-refresh hook
+  const {
+    containerRef,
+    isRefreshing: isPullRefreshing,
+    pullDistance,
+    isPulling,
+    triggerRefresh
+  } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    enabled: isLocationEnabled && !!currentLocation
+  });
+
+  // Listen for refresh events from tab clicks
+  useEffect(() => {
+    const handleRefreshEvent = () => {
+      triggerRefresh();
+    };
+
+    window.addEventListener('refreshCurrentScreen', handleRefreshEvent);
+    return () => {
+      window.removeEventListener('refreshCurrentScreen', handleRefreshEvent);
+    };
+  }, [triggerRefresh]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -380,121 +420,132 @@ export const RadarScreen: React.FC<Props> = ({
   }
 
   return (
-    <div className="min-h-full bg-black">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
-        <div className="px-4 py-4">
-          {/* Top Row with Title and Icons */}
-          <div className="flex items-center justify-between">
-            {/* Title with Toggle */}
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-white">Nearby</h1>
-              <input
-                type="checkbox"
-                className="relative w-10 h-5 rounded-full appearance-none bg-gray-700 checked:bg-blue-600 transition-colors cursor-pointer before:absolute before:left-1 before:top-1 before:w-3 before:h-3 before:bg-white before:rounded-full before:transition-transform checked:before:translate-x-5 disabled:opacity-50 disabled:cursor-not-allowed"
-                checked={isLocationEnabled}
-                onChange={(e) => handleLocationToggle(e.target.checked)}
-                disabled={isTogglingLocation}
-              />
-              {(isRefreshing || isTogglingLocation) && (
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs text-blue-400">
-                    {isTogglingLocation ? 'Updating...' : 'Refreshing...'}
-                  </span>
-                </div>
-              )}
-            </div>
-            
-            {/* Top Right Icons */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleCreateClick}
-                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
-              >
-                <PlusIcon className="w-6 h-6 text-white" />
-              </button>
-              <button
-                onClick={handleMessagesClick}
-                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
-              >
-                <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-full bg-black relative">
+      {/* Pull-to-refresh indicator */}
+      <PullToRefreshIndicator
+        isRefreshing={isPullRefreshing || isRefreshing}
+        pullDistance={pullDistance}
+        isPulling={isPulling}
+        threshold={80}
+      />
 
-      {/* Error Message */}
-      {locationError && (
-        <div className="px-4 py-3 bg-red-900/20 border-b border-red-700/30">
-          <div className="flex items-center gap-2">
-            <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />
-            <span className="text-sm text-red-400">{locationError}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Users List */}
-      <div className="px-4 py-4 space-y-4 pb-20 overflow-y-auto">
-        {isLocationEnabled ? (
-          currentLocation ? (
-            users.length > 0 ? (
-              users.map((user) => (
-                <RadarUserCard
-                  key={user.id}
-                  user={user}
-                  onMessage={handleMessage}
-                  onViewProfile={() => handleViewProfile(user)}
+      {/* Scrollable container with pull-to-refresh */}
+      <div ref={containerRef} className="min-h-full overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
+          <div className="px-4 py-4">
+            {/* Top Row with Title and Icons */}
+            <div className="flex items-center justify-between">
+              {/* Title with Toggle */}
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-bold text-white">Nearby</h1>
+                <input
+                  type="checkbox"
+                  className="relative w-10 h-5 rounded-full appearance-none bg-gray-700 checked:bg-blue-600 transition-colors cursor-pointer before:absolute before:left-1 before:top-1 before:w-3 before:h-3 before:bg-white before:rounded-full before:transition-transform checked:before:translate-x-5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  checked={isLocationEnabled}
+                  onChange={(e) => handleLocationToggle(e.target.checked)}
+                  disabled={isTogglingLocation}
                 />
-              ))
+                {(isRefreshing || isTogglingLocation || isPullRefreshing) && (
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs text-blue-400">
+                      {isTogglingLocation ? 'Updating...' : 'Refreshing...'}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Top Right Icons */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleCreateClick}
+                  className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
+                >
+                  <PlusIcon className="w-6 h-6 text-white" />
+                </button>
+                <button
+                  onClick={handleMessagesClick}
+                  className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
+                >
+                  <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {locationError && (
+          <div className="px-4 py-3 bg-red-900/20 border-b border-red-700/30">
+            <div className="flex items-center gap-2">
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />
+              <span className="text-sm text-red-400">{locationError}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Users List */}
+        <div className="px-4 py-4 space-y-4 pb-20">
+          {isLocationEnabled ? (
+            currentLocation ? (
+              users.length > 0 ? (
+                users.map((user) => (
+                  <RadarUserCard
+                    key={user.id}
+                    user={user}
+                    onMessage={handleMessage}
+                    onViewProfile={() => handleViewProfile(user)}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MapPinIcon className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-400 mb-2">No one nearby right now</p>
+                  <p className="text-gray-500 text-sm">
+                    Move around or check back later to find people nearby!
+                  </p>
+                </div>
+              )
             ) : (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MapPinIcon className="w-8 h-8 text-gray-400" />
+                  <ExclamationTriangleIcon className="w-8 h-8 text-gray-400" />
                 </div>
-                <p className="text-gray-400 mb-2">No one nearby right now</p>
-                <p className="text-gray-500 text-sm">
-                  Move around or check back later to find people nearby!
+                <p className="text-gray-400 mb-2">Getting your location...</p>
+                <p className="text-gray-500 text-sm mb-4">
+                  Please allow location access to find people nearby
                 </p>
+                <button
+                  onClick={() => handleLocationToggle(true)}
+                  disabled={isTogglingLocation}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {isTogglingLocation ? 'Enabling...' : 'Enable Location'}
+                </button>
               </div>
             )
           ) : (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ExclamationTriangleIcon className="w-8 h-8 text-gray-400" />
+                <MapPinIcon className="w-8 h-8 text-gray-400" />
               </div>
-              <p className="text-gray-400 mb-2">Getting your location...</p>
+              <p className="text-gray-400 mb-2">Location tracking is off</p>
               <p className="text-gray-500 text-sm mb-4">
-                Please allow location access to find people nearby
+                Turn on the toggle to see people around you
               </p>
               <button
                 onClick={() => handleLocationToggle(true)}
                 disabled={isTogglingLocation}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
               >
-                {isTogglingLocation ? 'Enabling...' : 'Enable Location'}
+                {isTogglingLocation ? 'Enabling...' : 'Turn On Location'}
               </button>
             </div>
-          )
-        ) : (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MapPinIcon className="w-8 h-8 text-gray-400" />
-            </div>
-            <p className="text-gray-400 mb-2">Location tracking is off</p>
-            <p className="text-gray-500 text-sm mb-4">
-              Turn on the toggle to see people around you
-            </p>
-            <button
-              onClick={() => handleLocationToggle(true)}
-              disabled={isTogglingLocation}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
-            >
-              {isTogglingLocation ? 'Enabling...' : 'Turn On Location'}
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

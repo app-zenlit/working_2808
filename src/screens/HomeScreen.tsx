@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PostsFeed } from '../components/post/PostsFeed';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
@@ -8,6 +8,8 @@ import { supabase } from '../lib/supabase';
 import { getAllPosts, getUserPosts } from '../lib/posts';
 import { getNearbyUsers } from '../lib/location';
 import { transformProfileToUser } from '../../lib/utils';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
 
 interface Props {
   userGender: 'male' | 'female';
@@ -29,12 +31,43 @@ export const HomeScreen: React.FC<Props> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingUserProfile, setIsLoadingUserProfile] = useState(false);
   
+  // Refresh function for pull-to-refresh
+  const handleRefresh = useCallback(async () => {
+    await loadCurrentUserAndNearbyPosts();
+  }, []);
+
+  // Pull-to-refresh hook
+  const {
+    containerRef,
+    isRefreshing: isPullRefreshing,
+    pullDistance,
+    isPulling,
+    triggerRefresh
+  } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    enabled: true
+  });
+
+  // Listen for refresh events from tab clicks
+  useEffect(() => {
+    const handleRefreshEvent = () => {
+      triggerRefresh();
+    };
+
+    window.addEventListener('refreshCurrentScreen', handleRefreshEvent);
+    return () => {
+      window.removeEventListener('refreshCurrentScreen', handleRefreshEvent);
+    };
+  }, [triggerRefresh]);
+  
   useEffect(() => {
     loadCurrentUserAndNearbyPosts();
   }, []);
 
   const loadCurrentUserAndNearbyPosts = async () => {
     try {
+      setIsLoading(true);
+      
       // Get current user ID and location first
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
@@ -239,53 +272,64 @@ export const HomeScreen: React.FC<Props> = ({
   }
 
   return (
-    <div className="min-h-full bg-black">
-      {/* Header */}
-      <div className="bg-black border-b border-gray-800">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-white">Zenlit</h1>
-          </div>
-          
-          {/* Top Right Icons */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleCreateClick}
-              className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
-            >
-              <PlusIcon className="w-6 h-6 text-white" />
-            </button>
-            <button
-              onClick={handleMessagesClick}
-              className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
-            >
-              <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
-            </button>
+    <div className="min-h-full bg-black relative">
+      {/* Pull-to-refresh indicator */}
+      <PullToRefreshIndicator
+        isRefreshing={isPullRefreshing}
+        pullDistance={pullDistance}
+        isPulling={isPulling}
+        threshold={80}
+      />
+
+      {/* Scrollable container with pull-to-refresh */}
+      <div ref={containerRef} className="min-h-full overflow-y-auto">
+        {/* Header */}
+        <div className="bg-black border-b border-gray-800">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-white">Zenlit</h1>
+            </div>
+            
+            {/* Top Right Icons */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleCreateClick}
+                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
+              >
+                <PlusIcon className="w-6 h-6 text-white" />
+              </button>
+              <button
+                onClick={handleMessagesClick}
+                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
+              >
+                <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Posts Feed - Only showing posts from nearby users */}
-      <div className="px-4 py-4 space-y-6 pb-20">
-        {posts.length > 0 ? (
-          <PostsFeed posts={posts} onUserClick={handleUserClick} />
-        ) : (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+        {/* Posts Feed - Only showing posts from nearby users */}
+        <div className="px-4 py-4 space-y-6 pb-20">
+          {posts.length > 0 ? (
+            <PostsFeed posts={posts} onUserClick={handleUserClick} />
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <p className="text-gray-400 mb-2">No posts from nearby people</p>
+              <p className="text-gray-500 text-sm">
+                {!currentUserLocation ? 
+                  "Enable location in Radar to see posts from people around you!" : 
+                  "When people nearby create posts, they'll appear here!"
+                }
+              </p>
             </div>
-            <p className="text-gray-400 mb-2">No posts from nearby people</p>
-            <p className="text-gray-500 text-sm">
-              {!currentUserLocation ? 
-                "Enable location in Radar to see posts from people around you!" : 
-                "When people nearby create posts, they'll appear here!"
-              }
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

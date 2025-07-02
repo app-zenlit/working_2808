@@ -324,6 +324,17 @@ export default function App() {
     setActiveTab('radar'); // Go back to radar screen
   };
 
+  // Handle tab click refresh
+  const handleTabClick = (tabName: string) => {
+    if (activeTab === tabName) {
+      // If already on this tab, trigger refresh
+      const event = new CustomEvent('refreshCurrentScreen');
+      window.dispatchEvent(event);
+    } else {
+      setActiveTab(tabName);
+    }
+  };
+
   const profileUser = selectedUser
     ? selectedUser
     : currentUser
@@ -456,7 +467,7 @@ export default function App() {
             <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav">
               <div className="flex justify-around items-center py-3 px-4 h-12">
                 <button
-                  onClick={() => setActiveTab('radar')}
+                  onClick={() => handleTabClick('radar')}
                   className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
                     activeTab === 'radar' ? 'text-blue-500' : 'text-gray-400'
                   }`}
@@ -465,7 +476,7 @@ export default function App() {
                 </button>
                 
                 <button
-                  onClick={() => setActiveTab('feed')}
+                  onClick={() => handleTabClick('feed')}
                   className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
                     activeTab === 'feed' ? 'text-blue-500' : 'text-gray-400'
                   }`}
