@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { User, Post } from '../types';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
-import { ChevronLeftIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { getUserPosts } from '../lib/posts';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   user: User;
@@ -17,6 +18,7 @@ export const UserProfileScreen: React.FC<Props> = ({ user, onBack, onEditProfile
   const [isLoading, setIsLoading] = useState(true);
   const [showGallery, setShowGallery] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const loadPosts = async () => {
@@ -27,6 +29,11 @@ export const UserProfileScreen: React.FC<Props> = ({ user, onBack, onEditProfile
     };
     loadPosts();
   }, [user]);
+
+  const handleFeedbackClick = () => {
+    setShowMenu(false);
+    router.push('/feedback');
+  };
 
   if (showGallery) {
     return (
@@ -51,38 +58,46 @@ export const UserProfileScreen: React.FC<Props> = ({ user, onBack, onEditProfile
       )}
       {(onEditProfile || onLogout) && (
         <div className="fixed top-4 right-4 z-50">
-          <button
-            onClick={() => setShowMenu((m) => !m)}
-            className="p-3 bg-gray-900/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-gray-800 active:scale-95"
-          >
-            <Cog6ToothIcon className="w-5 h-5 text-white" />
-          </button>
-          {showMenu && (
-            <div className="mt-2 bg-gray-800 rounded-lg shadow-lg py-1">
-              {onEditProfile && (
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu((m) => !m)}
+              className="p-3 bg-gray-900/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-gray-800 active:scale-95 transition-all"
+            >
+              <Bars3Icon className="w-5 h-5 text-white" />
+            </button>
+            {showMenu && (
+              <div className="absolute top-full right-0 mt-2 bg-gray-800 rounded-lg shadow-lg py-1 min-w-[120px]">
+                {onEditProfile && (
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      onEditProfile();
+                    }}
+                    className="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left"
+                  >
+                    Edit Profile
+                  </button>
+                )}
                 <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    onEditProfile();
-                  }}
+                  onClick={handleFeedbackClick}
                   className="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left"
                 >
-                  Edit Profile
+                  Feedback
                 </button>
-              )}
-              {onLogout && (
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    onLogout();
-                  }}
-                  className="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left"
-                >
-                  Logout
-                </button>
-              )}
-            </div>
-          )}
+                {onLogout && (
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      onLogout();
+                    }}
+                    className="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
       {isLoading ? (
