@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase';
 import { uploadPostImage } from '../lib/storage';
 import { generatePlaceholderImage, checkStorageAvailability } from '../lib/storage';
 import { createPost } from '../lib/posts';
+import { compressImage, validateImageFile, formatFileSize, CompressionResult } from '../utils/imageCompression';
+import { ImageCompressionModal } from '../components/common/ImageCompressionModal';
 
 interface Props {
   onBack?: () => void; // Add back button handler
@@ -13,6 +15,7 @@ interface Props {
 export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const [caption, setCaption] = useState('');
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isPosting, setIsPosting] = useState(false);
@@ -24,6 +27,16 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     available: boolean;
     message: string;
   }>({ available: true, message: '' });
+  
+  // Image compression states
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState<{
+    stage: string;
+    quality?: number;
+    sizeKB?: number;
+  }>({ stage: '' });
+  const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -132,26 +145,27 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       let mediaUrl = selectedMedia;
       let uploadAttempted = false;
       
-      // If we have a selected media that's a data URL (captured photo), try to upload it
-      if (selectedMedia && selectedMedia.startsWith('data:')) {
+      // If we have a compressed file, try to upload it
+      if (selectedFile && selectedMedia && selectedMedia.startsWith('data:')) {
         uploadAttempted = true;
         
         if (storageStatus.available) {
-          console.log('Attempting to upload image to Supabase...');
+          console.log('Attempting to upload compressed image to Supabase...');
           
           try {
-            const response = await fetch(selectedMedia);
-            const blob = await response.blob();
             const fileName = `${generateId()}.jpg`;
             const filePath = `${currentUser.id}/${fileName}`;
-            const file = new File([blob], fileName, { type: blob.type });
-            const uploadedPath = await uploadPostImage(file, filePath);
+            
+            // Use the compressed file for upload
+            const fileToUpload = compressionResult?.compressedFile || selectedFile;
+            const uploadedPath = await uploadPostImage(fileToUpload, filePath);
             const { data: urlData } = supabase.storage.from('posts').getPublicUrl(uploadedPath);
             const uploadedUrl = urlData.publicUrl;
 
             if (uploadedUrl) {
               mediaUrl = uploadedUrl;
-              console.log('Image uploaded successfully:', uploadedUrl);
+              console.log('Compressed image uploaded successfully:', uploadedUrl);
+              console.log('Final file size:', formatFileSize(Math.round(fileToUpload.size / 1024)));
             } else {
               console.warn('Image upload failed, using placeholder');
               mediaUrl = generatePlaceholderImage();
@@ -190,6 +204,8 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       setTimeout(() => {
         setCaption('');
         setSelectedMedia(null);
+        setSelectedFile(null);
+        setCompressionResult(null);
         setShowSuccess(false);
       }, 2000);
 
@@ -289,7 +305,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     setCameraError(null);
   };
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -300,9 +316,14 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0);
         
-        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        setSelectedMedia(imageDataUrl);
-        stopCamera();
+        // Convert to blob and then to file for compression
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+            await processImageFile(file);
+            stopCamera();
+          }
+        }, 'image/jpeg', 0.9);
       } else {
         setCameraError('Camera preview not ready. Please try again.');
       }
@@ -313,19 +334,61 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check if it's an image
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setSelectedMedia(e.target?.result as string);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        alert('Please select an image file');
-      }
+      await processImageFile(file);
+    }
+  };
+
+  const processImageFile = async (file: File) => {
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
+    }
+
+    const originalSizeKB = Math.round(file.size / 1024);
+    console.log('Processing image:', file.name, formatFileSize(originalSizeKB));
+
+    try {
+      setIsCompressing(true);
+      setCompressionProgress({ stage: 'Starting compression...' });
+
+      // Compress the image
+      const result = await compressImage(
+        file,
+        {
+          minSizeKB: 350,
+          maxSizeKB: 800,
+          maxWidth: 1920,
+          maxHeight: 1920
+        },
+        (progress) => {
+          setCompressionProgress(progress);
+        }
+      );
+
+      setCompressionResult(result);
+
+      // Create preview URL from compressed file
+      const previewUrl = URL.createObjectURL(result.compressedFile);
+      setSelectedMedia(previewUrl);
+      setSelectedFile(result.compressedFile);
+
+      console.log('Compression complete:', {
+        original: formatFileSize(result.originalSizeKB),
+        compressed: formatFileSize(result.compressedSizeKB),
+        ratio: `${result.compressionRatio.toFixed(1)}x`,
+        quality: `${Math.round(result.quality * 100)}%`
+      });
+
+    } catch (error) {
+      console.error('Image compression error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to process image');
+    } finally {
+      setIsCompressing(false);
     }
   };
 
@@ -338,7 +401,12 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   };
 
   const removeMedia = () => {
+    if (selectedMedia && selectedMedia.startsWith('blob:')) {
+      URL.revokeObjectURL(selectedMedia);
+    }
     setSelectedMedia(null);
+    setSelectedFile(null);
+    setCompressionResult(null);
   };
 
   // Show loading if user not loaded yet
@@ -378,6 +446,11 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Post Shared!</h2>
           <p className="text-gray-400">Your post has been saved successfully</p>
+          {compressionResult && (
+            <div className="mt-4 text-sm text-gray-500">
+              <p>Image optimized: {formatFileSize(compressionResult.originalSizeKB)} → {formatFileSize(compressionResult.compressedSizeKB)}</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -467,6 +540,14 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="min-h-full bg-black">
+      {/* Image Compression Modal */}
+      <ImageCompressionModal
+        isOpen={isCompressing}
+        onClose={() => setIsCompressing(false)}
+        progress={compressionProgress}
+        originalSizeKB={selectedFile ? Math.round(selectedFile.size / 1024) : undefined}
+      />
+
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
         <div className="flex items-center justify-between px-4 py-3">
@@ -483,7 +564,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
           </div>
           <button
             onClick={handlePost}
-            disabled={(!selectedMedia && !caption.trim()) || isPosting}
+            disabled={(!selectedMedia && !caption.trim()) || isPosting || isCompressing}
             className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isPosting ? (
@@ -556,6 +637,20 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
+            
+            {/* Compression Info */}
+            {compressionResult && (
+              <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full">
+                <span className="text-xs text-white">
+                  Optimized: {formatFileSize(compressionResult.compressedSizeKB)}
+                  {compressionResult.compressionRatio > 1 && (
+                    <span className="text-green-400 ml-1">
+                      ({compressionResult.compressionRatio.toFixed(1)}x smaller)
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -581,7 +676,10 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
                   <span className="text-xs text-gray-400 mt-1">Choose from library</span>
                 </button>
               </div>
-              <p className="text-gray-400 text-sm">Add photos or videos to your post</p>
+              <p className="text-gray-400 text-sm">Add photos to your post</p>
+              <p className="text-gray-500 text-xs mt-1">
+                Images will be automatically optimized (350KB - 800KB)
+              </p>
             </div>
           </div>
         )}
@@ -590,7 +688,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/jpg,image/png"
           onChange={handleFileSelect}
           className="hidden"
         />
