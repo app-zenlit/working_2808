@@ -11,7 +11,6 @@ const nextConfig = {
     webVitalsAttribution: ['CLS', 'LCP']
   },
   // Enable service worker
-  swcMinify: true,
   // Optimize for mobile
   compress: true,
   // Enable static optimization
