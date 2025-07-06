@@ -119,7 +119,7 @@ export class OfflineQueue {
     // Register background sync if available
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       try {
-        const registration = (await navigator.serviceWorker.ready) as ServiceWorkerRegistration & { sync: SyncManager };
+        const registration = await navigator.serviceWorker.ready;
         if (registration.sync) {
           await registration.sync.register('background-sync-posts');
         }
@@ -142,7 +142,7 @@ export class OfflineQueue {
     // Register background sync if available
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       try {
-        const registration = (await navigator.serviceWorker.ready) as ServiceWorkerRegistration & { sync: SyncManager };
+        const registration = await navigator.serviceWorker.ready;
         if (registration.sync) {
           await registration.sync.register('background-sync-messages');
         }
