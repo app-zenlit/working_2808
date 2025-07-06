@@ -117,10 +117,12 @@ export class OfflineQueue {
     await this.storage.store('posts', offlinePost);
     
     // Register background sync if available
-    if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       try {
         const registration = (await navigator.serviceWorker.ready) as ServiceWorkerRegistration & { sync: SyncManager };
-        await registration.sync.register('background-sync-posts');
+        if (registration.sync) {
+          await registration.sync.register('background-sync-posts');
+        }
       } catch (error) {
         console.error('Background sync registration failed:', error);
       }
@@ -138,10 +140,12 @@ export class OfflineQueue {
     await this.storage.store('messages', offlineMessage);
     
     // Register background sync if available
-    if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       try {
         const registration = (await navigator.serviceWorker.ready) as ServiceWorkerRegistration & { sync: SyncManager };
-        await registration.sync.register('background-sync-messages');
+        if (registration.sync) {
+          await registration.sync.register('background-sync-messages');
+        }
       } catch (error) {
         console.error('Background sync registration failed:', error);
       }
