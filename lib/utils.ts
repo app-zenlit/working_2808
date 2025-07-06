@@ -64,3 +64,4 @@ export async function validateProfileUrl(url: string): Promise<boolean> {
 
 // Re-export uploadProfileImage for backward compatibility
 export { uploadProfileImage };
+
