@@ -19,7 +19,7 @@ export const OfflineIndicator: React.FC<Props> = ({ isOffline }) => {
         >
           <div className="flex items-center justify-center gap-2 text-sm font-medium">
             <ExclamationTriangleIcon className="w-4 h-4" />
-            <span>You're offline - some features may be limited</span>
+            <span>You&apos;re offline - some features may be limited</span>
             <WifiIcon className="w-4 h-4 opacity-50" />
           </div>
         </motion.div>
