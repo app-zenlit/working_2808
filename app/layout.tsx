@@ -123,14 +123,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta name="theme-color" content="#3B82F6" />
 
         {/* Apple Touch Icons */}
-        <link rel="apple-touch-icon" href="/icon-192.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
-        <link rel="apple-touch-icon" sizes="167x167" href="/icon-192.png" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="167x167" href="/icon-192x192.png" />
 
         {/* Favicons */}
-        <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icon-16.png" />
+        <link rel="icon" type="image/png" sizes="48x48" href="/icon-48x48.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icon-48x48.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icon-48x48.png" />
         <link rel="icon" href="/favicon.ico" />
 
         {/* Manifest */}
@@ -155,7 +156,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta name="apple-touch-callout" content="no" />
         
         {/* Windows 8/10 Tiles */}
-        <meta name="msapplication-TileImage" content="/icon-144.png" />
+        <meta name="msapplication-TileImage" content="/icon-144x144.png" />
         <meta name="msapplication-TileColor" content="#000000" />
         
         {/* Splash screens for iOS */}
