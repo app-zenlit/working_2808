@@ -13,7 +13,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">ZenLit</span>
+              <img
+                src="/logo.png"
+                alt="Zenlit Logo"
+                className="w-8 h-8 mr-2"
+              />
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">Zenlit</span>
             </div>
             <div>
               <Link href="/login">
@@ -46,8 +51,13 @@ export default function Home() {
         
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <div className="mb-8">
+            <img
+              src="/logo.png"
+              alt="Zenlit Logo"
+              className="w-20 h-20 mx-auto mb-4"
+            />
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-              ZenLit
+              Zenlit
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8">
               Real-World Networking. Reinvented.
@@ -126,7 +136,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-gray-900/20">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Why ZenLit?</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Why Zenlit?</h2>
             <p className="text-xl text-gray-400">
               Social networking without the social pressure
             </p>
@@ -371,7 +381,7 @@ export default function Home() {
       <footer className="py-12 px-4 border-t border-gray-800">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-gray-400">
-            © 2025 ZenLit. Built with Bolt.new
+            © 2025 Zenlit. Built with Bolt.new
           </p>
         </div>
       </footer>

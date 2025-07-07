@@ -7,15 +7,15 @@ import {
   MapPinIcon, 
   UserGroupIcon, 
   ChatBubbleLeftIcon,
-  ShieldCheckIcon,
   EyeSlashIcon,
-  HeartIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CheckCircleIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
 import { Button } from '../../components/ui/button'
+import Image from 'next/image'
+import Link from 'next/link'
 
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000, suffix = '' }: { end: number; duration?: number; suffix?: string }) => {
@@ -211,7 +211,12 @@ export default function LandingPage() {
   }, [testimonials.length])
 
   const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    const element = document.getElementById(id)
+    if (element) {
+      const yOffset = -80 // Adjust this value based on your header height
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
+      window.scrollTo({ top: y, behavior: 'smooth' })
+    }
   }
 
   const handleInstallPWA = () => {
@@ -221,8 +226,33 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Image 
+                src="/logo.png" 
+                alt="Zenlit Logo" 
+                width={32} 
+                height={32} 
+                className="mr-2"
+              />
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">Zenlit</span>
+            </div>
+            <div>
+              <Link href="/login">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105">
+                  Get Started
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center">
+      <section className="relative min-h-screen flex items-center justify-center pt-16">
         <FloatingParticles />
         
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
@@ -231,8 +261,17 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
+            <div className="flex items-center justify-center mb-6">
+              <Image 
+                src="/logo.png" 
+                alt="Zenlit Logo" 
+                width={80} 
+                height={80} 
+                className="mr-3"
+              />
+            </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-              ZenLit
+              Zenlit
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8">
               Real-World Networking. Reinvented.
@@ -599,7 +638,7 @@ export default function LandingPage() {
       <footer className="py-12 px-4 border-t border-gray-800">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-gray-400">
-            © 2025 ZenLit. Built with Bolt.new
+            © 2025 Zenlit. Built with Bolt.new
           </p>
         </div>
       </footer>
