@@ -347,3 +347,40 @@ input, textarea, select {
 .modal-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
 }
+
+/* iOS Install Banner Styles */
+.install-banner {
+  display: none;
+  animation: slideUp 0.3s ease-out;
+}
+
+.install-banner.visible {
+  display: block;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Ensure banner doesn't interfere with existing content */
+.install-banner + * {
+  margin-bottom: 0;
+}
+
+/* Mobile-specific adjustments for the banner */
+@media screen and (max-width: 768px) {
+  .install-banner {
+    padding: 1rem;
+  }
+  
+  .install-banner .max-w-md {
+    max-width: 100%;
+  }
+}

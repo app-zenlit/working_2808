@@ -1,5 +1,6 @@
 import './globals.css'
 import type { ReactNode } from 'react'
+import { IOSInstallBanner } from '../src/components/IOSInstallBanner'
 
 export const metadata = {
   title: 'Zenlit - Connect Locally',
@@ -171,6 +172,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="mobile-container bg-black text-white overflow-hidden" suppressHydrationWarning>
         {children}
+        <IOSInstallBanner />
       </body>
     </html>
   )
