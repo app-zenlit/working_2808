@@ -46,7 +46,7 @@ export const usePWA = (): PWAHook => {
       // Show install prompt after a delay (better UX)
       setTimeout(() => {
         setShowInstallPrompt(true);
-      }, 3000);
+      }, 100); // TESTING: Reduced delay for immediate prompt (REVERT TO 3000 FOR PRODUCTION)
     };
 
     // Listen for app installed
@@ -106,18 +106,19 @@ export const usePWA = (): PWAHook => {
     if (typeof window === 'undefined') return;
     
     setShowInstallPrompt(false);
-    // Don't show again for this session
-    sessionStorage.setItem('pwa-install-dismissed', 'true');
+    // TESTING: Commented out to allow repeated testing (UNCOMMENT FOR PRODUCTION)
+    // sessionStorage.setItem('pwa-install-dismissed', 'true');
   };
 
   // Don't show install prompt if dismissed in this session
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    const dismissed = sessionStorage.getItem('pwa-install-dismissed');
-    if (dismissed) {
-      setShowInstallPrompt(false);
-    }
+    // TESTING: Commented out to allow repeated testing (UNCOMMENT FOR PRODUCTION)
+    // const dismissed = sessionStorage.getItem('pwa-install-dismissed');
+    // if (dismissed) {
+    //   setShowInstallPrompt(false);
+    // }
   }, []);
 
   return {
