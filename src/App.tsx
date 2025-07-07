@@ -18,8 +18,6 @@ import { transformProfileToUser } from '../lib/utils';
 import { usePWA } from './hooks/usePWA';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { OfflineIndicator } from './components/OfflineIndicator';
-import { PWAIOSInstallGuide } from './components/PWAIOSInstallGuide';
-import { isIOS, isInStandaloneMode } from './components/pwaUtils';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'welcome' | 'login' | 'profileSetup' | 'app'>('welcome');
@@ -34,9 +32,6 @@ export default function App() {
   const [isNavigationVisible, setIsNavigationVisible] = useState(true);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-
-  // iOS PWA install guide state
-  const [showIOSInstallGuide, setShowIOSInstallGuide] = useState(false);
 
   // PWA hooks
   const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
@@ -86,17 +81,6 @@ export default function App() {
   useEffect(() => {
     if (isClient) {
       checkAuthStatus();
-    }
-  }, [isClient]);
-
-  // Show iOS install guide after a delay if on iOS and not installed
-  useEffect(() => {
-    if (isClient && isIOS() && !isInStandaloneMode()) {
-      const timer = setTimeout(() => {
-        setShowIOSInstallGuide(true);
-      }, 5000); // Show after 5 seconds on iOS
-
-      return () => clearTimeout(timer);
     }
   }, [isClient]);
 
@@ -519,10 +503,6 @@ export default function App() {
         isVisible={showInstallPrompt}
         onInstall={installApp}
         onDismiss={dismissInstallPrompt}
-      />
-      <PWAIOSInstallGuide
-        isVisible={showIOSInstallGuide}
-        onClose={() => setShowIOSInstallGuide(false)}
       />
       <OfflineIndicator isOffline={isOffline} />
     </>
