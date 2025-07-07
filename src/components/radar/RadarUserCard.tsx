@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import { User } from '../../types';
 import { IconBrandInstagram, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react';

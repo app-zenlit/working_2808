@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';

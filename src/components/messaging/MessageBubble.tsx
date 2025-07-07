@@ -1,3 +1,5 @@
+'use client'
+
 import { Message } from '../../types';
 import { format } from 'date-fns';
 

@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect } from 'react';
 import { User, Message } from '../../types';
 import { format } from 'date-fns';

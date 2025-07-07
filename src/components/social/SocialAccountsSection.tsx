@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { User } from '../../types';
 import { SocialLinksModal } from './SocialLinksModal';

@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPinIcon, XMarkIcon, ShieldCheckIcon, ArrowPathIcon } from '@heroicons/react/24/outline';

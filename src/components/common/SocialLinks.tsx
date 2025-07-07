@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react';
 import { IconBrandInstagram, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react';
 
