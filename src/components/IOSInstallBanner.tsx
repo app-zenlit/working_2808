@@ -48,8 +48,8 @@ export const IOSInstallBanner: React.FC = () => {
             </p>
             <ol className="text-gray-300 text-xs space-y-1 list-decimal list-inside">
               <li>Tap the Share icon <span className="inline-block">⎘</span></li>
-              <li>Select "Add to Home Screen"</li>
-              <li>Tap "Add"</li>
+              <li>Select &quot;Add to Home Screen&quot;</li>
+              <li>Tap &quot;Add&quot;</li>
             </ol>
           </div>
           <button
