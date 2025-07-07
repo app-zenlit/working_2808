@@ -1,3 +1,5 @@
+'use client'
+
 import { redirect } from 'next/navigation'
 import { Button } from '../components/ui/button'
 import { SparklesIcon, ArrowDownIcon, MapPinIcon, UserGroupIcon, ChatBubbleLeftIcon, CheckCircleIcon, EyeSlashIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
