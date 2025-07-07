@@ -611,7 +611,7 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-4 bg-gradient-to-r from-blue-600/10 to-purple-600/10">
+      <section className="py-20 px-4 bg-gradient-to-r from-blue-600/10 to-purple-600/10 mb-0">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -632,62 +632,110 @@ export default function LandingPage() {
               <SparklesIcon className="w-6 h-6 mr-3" />
               Install PWA
             </Button>
+          </motion.div>          
+        </div>
+      </section>
+      
+      {/* How We Built It Section */}
+      <section className="py-20 px-4 border-t border-gray-800">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">How We Built Zenlit</h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              From zero code to live in 15 days—here's our story.
+            </p>
           </motion.div>
           
-          {/* How We Built It Section */}
-          <section className="py-20 px-4 border-t border-gray-800 mt-20">
-            <div className="max-w-4xl mx-auto">
+          <div className="space-y-6">
+            {[
+              "Built entirely in Bolt.new + Codex with 0 lines of custom code",
+              "Integrated Supabase via ChatGPT SQL prompts to create our backend database",
+              "Crafted the landing page and PWA manifest entirely within Bolt",
+              "Deployed seamlessly to Vercel for instant global access"
+            ].map((item, index) => (
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-center mb-16"
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="flex items-start bg-gray-900/30 border border-gray-800 rounded-xl p-5 hover:border-blue-500/30 transition-all duration-300"
               >
-                <h2 className="text-4xl md:text-5xl font-bold mb-6">How We Built Zenlit</h2>
-                <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                  From zero code to live in 15 days—here's our story.
-                </p>
-              </motion.div>
-              
-              <div className="space-y-6">
-                {[
-                  "Built entirely in Bolt.new + Codex with 0 lines of custom code",
-                  "Integrated Supabase via ChatGPT SQL prompts to create our backend database",
-                  "Crafted the landing page and PWA manifest entirely within Bolt",
-                  "Deployed seamlessly to Vercel for instant global access"
-                ].map((item, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="flex items-start bg-gray-900/30 border border-gray-800 rounded-xl p-5 hover:border-blue-500/30 transition-all duration-300"
-                  >
-                    <div className="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <CheckCircleIcon className="w-5 h-5 text-blue-500" />
-                    </div>
-                    <p className="text-gray-300">{item}</p>
-                  </motion.div>
-                ))}
-              </div>
-              
-              <div className="mt-10 text-center">
-                <a 
-                  href="#" 
-                  className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  <span>Read the full build story</span>
-                  <span className="ml-1">→</span>
-                </a>
-              </div>
-              
-              <div className="mt-16 flex justify-center">
-                <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center">
-                  <CodeBracketIcon className="w-8 h-8 text-blue-500" />
+                <div className="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                  <CheckCircleIcon className="w-5 h-5 text-blue-500" />
                 </div>
-              </div>
+                <p className="text-gray-300">{item}</p>
+              </motion.div>
+            ))}
+          </div>
+          
+          <div className="mt-10 text-center">
+            <a 
+              href="#build-details"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('build-details')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              <span>Read the full build story</span>
+              <span className="ml-1">→</span>
+            </a>
+          </div>
+          
+          <div className="mt-16 flex justify-center">
+            <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center">
+              <CodeBracketIcon className="w-8 h-8 text-blue-500" />
             </div>
-          </section>
+          </div>
+        </div>
+      </section>
+
+      {/* Build Details Section (Target for scroll) */}
+      <section id="build-details" className="py-20 px-4 bg-gray-900/30">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl font-bold mb-6">The Build Process</h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Our journey from concept to production in just over two weeks.
+            </p>
+          </motion.div>
+          
+          <div className="space-y-8">
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-3">Week 1: Foundation</h3>
+              <p className="text-gray-400">
+                We started with a simple concept: create a proximity-based social network that respects privacy.
+                Using Bolt.new, we rapidly prototyped the core UI components and established our Supabase database schema.
+              </p>
+            </div>
+            
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-3">Week 2: Features & Polish</h3>
+              <p className="text-gray-400">
+                With the foundation in place, we implemented the core features: location-based discovery,
+                real-time messaging, and social verification. The PWA manifest was created to enable
+                installation on mobile devices.
+              </p>
+            </div>
+            
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-3">Week 3: Launch</h3>
+              <p className="text-gray-400">
+                After thorough testing and optimization, we deployed to Vercel and launched our beta.
+                The entire process was streamlined by using Bolt.new's integrated development environment.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
