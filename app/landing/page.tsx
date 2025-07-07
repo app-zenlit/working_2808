@@ -647,16 +647,16 @@ export default function LandingPage() {
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">How We Built Zenlit</h2>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              From zero code to live in 15 days—here's our story.
+              From zero code to live in <span className="font-semibold">15 days</span>—here's our story.
             </p>
           </motion.div>
           
           <div className="space-y-6">
             {[
-              "Built entirely in Bolt.new + Codex with 0 lines of custom code",
-              "Integrated Supabase via ChatGPT SQL prompts to create our backend database",
-              "Crafted the landing page and PWA manifest entirely within Bolt",
-              "Deployed seamlessly to Vercel for instant global access"
+              <>Built entirely in Bolt.new + Codex with <span className="font-semibold">0 lines of custom code</span></>,
+              <>Integrated Supabase via ChatGPT SQL prompts to create our backend database</>,
+              <>Crafted the landing page and PWA manifest entirely within Bolt</>,
+              <>Deployed seamlessly to Vercel for instant global access</>
             ].map((item, index) => (
               <motion.div
                 key={index}
@@ -672,7 +672,9 @@ export default function LandingPage() {
               </motion.div>
             ))}
           </div>
-          
+
+          <div className="h-0.5 bg-gray-700 my-12" />
+
           <div className="mt-10 text-center">
             <a 
               href="#build-details"
