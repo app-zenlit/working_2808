@@ -11,7 +11,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CheckCircleIcon,
-  SparklesIcon
+  SparklesIcon,
+  CodeBracketIcon
 } from '@heroicons/react/24/outline'
 import { Button } from '../../components/ui/button'
 import Image from 'next/image'
@@ -213,7 +214,7 @@ export default function LandingPage() {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
-      const yOffset = -80 // Adjust this value based on your header height
+      const yOffset = -100 // Adjust this value based on your header height
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
       window.scrollTo({ top: y, behavior: 'smooth' })
     }
@@ -304,6 +305,7 @@ export default function LandingPage() {
             </Button>
           </motion.div>
         </div>
+        
 
         {/* Scroll indicator */}
         <motion.div
@@ -631,6 +633,61 @@ export default function LandingPage() {
               Install PWA
             </Button>
           </motion.div>
+          
+          {/* How We Built It Section */}
+          <section className="py-20 px-4 border-t border-gray-800 mt-20">
+            <div className="max-w-4xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-center mb-16"
+              >
+                <h2 className="text-4xl md:text-5xl font-bold mb-6">How We Built Zenlit</h2>
+                <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                  From zero code to live in 15 days—here's our story.
+                </p>
+              </motion.div>
+              
+              <div className="space-y-6">
+                {[
+                  "Built entirely in Bolt.new + Codex with 0 lines of custom code",
+                  "Integrated Supabase via ChatGPT SQL prompts to create our backend database",
+                  "Crafted the landing page and PWA manifest entirely within Bolt",
+                  "Deployed seamlessly to Vercel for instant global access"
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="flex items-start bg-gray-900/30 border border-gray-800 rounded-xl p-5 hover:border-blue-500/30 transition-all duration-300"
+                  >
+                    <div className="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <CheckCircleIcon className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <p className="text-gray-300">{item}</p>
+                  </motion.div>
+                ))}
+              </div>
+              
+              <div className="mt-10 text-center">
+                <a 
+                  href="#" 
+                  className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  <span>Read the full build story</span>
+                  <span className="ml-1">→</span>
+                </a>
+              </div>
+              
+              <div className="mt-16 flex justify-center">
+                <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center">
+                  <CodeBracketIcon className="w-8 h-8 text-blue-500" />
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
 
