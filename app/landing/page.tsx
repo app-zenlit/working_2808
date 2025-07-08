@@ -11,8 +11,15 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CheckCircleIcon,
-  SparklesIcon,
-  CodeBracketIcon
+  SparklesIcon
+} from '@heroicons/react/24/outline'
+import { 
+  CodeBracketIcon, 
+  CommandLineIcon, 
+  CpuChipIcon, 
+  ServerIcon, 
+  RocketLaunchIcon,
+  LightBulbIcon
 } from '@heroicons/react/24/outline'
 import { Button } from '../../components/ui/button'
 import Image from 'next/image'
@@ -637,7 +644,7 @@ export default function LandingPage() {
       </section>
       
       {/* How We Built It Section */}
-      <section className="py-20 px-4 border-t border-gray-800">
+      <section className="py-20 px-4 border-t border-gray-800 bg-gradient-to-b from-black to-gray-900/30">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -646,7 +653,7 @@ export default function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">How We Built Zenlit</h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               From zero code to live in <span className="font-semibold">15 days</span>—here's our story.
             </p>
           </motion.div>
@@ -674,6 +681,184 @@ export default function LandingPage() {
           </div>
 
           <div className="h-0.5 bg-gray-700 my-12" />
+          
+          {/* Build Process Timeline */}
+          <div className="mt-16">
+            <h3 className="text-2xl font-bold text-white text-center mb-10">The Build Journey</h3>
+            
+            <div className="relative">
+              {/* Timeline line */}
+              <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-blue-600/50" />
+              
+              {/* Day 1-3: Concept & Design */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="relative mb-16"
+              >
+                <div className="flex flex-col md:flex-row items-center">
+                  <div className="md:w-1/2 md:pr-12 mb-6 md:mb-0 md:text-right">
+                    <h4 className="text-xl font-bold text-white mb-2">Days 1-3: Concept & Design</h4>
+                    <p className="text-gray-400">We started with a clear vision: create a proximity-based social network that respects privacy and encourages real-world connections.</p>
+                  </div>
+                  
+                  <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 top-1/2 z-10">
+                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                      <LightBulbIcon className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  
+                  <div className="md:w-1/2 md:pl-12">
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+                      <ul className="space-y-2 text-sm text-gray-300">
+                        <li className="flex items-start">
+                          <span className="w-4 h-4 mr-2 mt-0.5 bg-blue-600/20 rounded-full flex-shrink-0" />
+                          <span>Defined core features: proximity discovery, social verification, and ephemeral connections</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="w-4 h-4 mr-2 mt-0.5 bg-blue-600/20 rounded-full flex-shrink-0" />
+                          <span>Created wireframes and user flows in Bolt.new</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="w-4 h-4 mr-2 mt-0.5 bg-blue-600/20 rounded-full flex-shrink-0" />
+                          <span>Established design system with dark theme and Tailwind CSS</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Day 4-7: Database & Auth */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="relative mb-16"
+              >
+                <div className="flex flex-col md:flex-row items-center">
+                  <div className="md:w-1/2 md:pr-12 mb-6 md:mb-0 md:text-right order-1 md:order-1">
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+                      <ul className="space-y-2 text-sm text-gray-300">
+                        <li className="flex items-start md:justify-end">
+                          <span className="md:order-2 w-4 h-4 mr-2 md:mr-0 md:ml-2 mt-0.5 bg-green-600/20 rounded-full flex-shrink-0" />
+                          <span className="md:order-1">Set up Supabase with RLS policies for security</span>
+                        </li>
+                        <li className="flex items-start md:justify-end">
+                          <span className="md:order-2 w-4 h-4 mr-2 md:mr-0 md:ml-2 mt-0.5 bg-green-600/20 rounded-full flex-shrink-0" />
+                          <span className="md:order-1">Implemented email verification and secure auth flow</span>
+                        </li>
+                        <li className="flex items-start md:justify-end">
+                          <span className="md:order-2 w-4 h-4 mr-2 md:mr-0 md:ml-2 mt-0.5 bg-green-600/20 rounded-full flex-shrink-0" />
+                          <span className="md:order-1">Created database schema for profiles, posts, and messages</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 top-1/2 z-10">
+                    <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                      <ServerIcon className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  
+                  <div className="md:w-1/2 md:pl-12 order-2 md:order-2">
+                    <h4 className="text-xl font-bold text-white mb-2">Days 4-7: Database & Auth</h4>
+                    <p className="text-gray-400">We built a secure foundation with Supabase, focusing on data integrity and user privacy from day one.</p>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Day 8-12: Core Features */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="relative mb-16"
+              >
+                <div className="flex flex-col md:flex-row items-center">
+                  <div className="md:w-1/2 md:pr-12 mb-6 md:mb-0 md:text-right">
+                    <h4 className="text-xl font-bold text-white mb-2">Days 8-12: Core Features</h4>
+                    <p className="text-gray-400">With our foundation in place, we rapidly built out the core features that make Zenlit unique.</p>
+                  </div>
+                  
+                  <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 top-1/2 z-10">
+                    <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                      <CpuChipIcon className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  
+                  <div className="md:w-1/2 md:pl-12">
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+                      <ul className="space-y-2 text-sm text-gray-300">
+                        <li className="flex items-start">
+                          <span className="w-4 h-4 mr-2 mt-0.5 bg-purple-600/20 rounded-full flex-shrink-0" />
+                          <span>Implemented location-based discovery with privacy safeguards</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="w-4 h-4 mr-2 mt-0.5 bg-purple-600/20 rounded-full flex-shrink-0" />
+                          <span>Built real-time messaging system with Supabase Realtime</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="w-4 h-4 mr-2 mt-0.5 bg-purple-600/20 rounded-full flex-shrink-0" />
+                          <span>Created social verification system for profile authenticity</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="w-4 h-4 mr-2 mt-0.5 bg-purple-600/20 rounded-full flex-shrink-0" />
+                          <span>Developed post creation with image optimization</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Day 13-15: PWA & Launch */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="relative"
+              >
+                <div className="flex flex-col md:flex-row items-center">
+                  <div className="md:w-1/2 md:pr-12 mb-6 md:mb-0 md:text-right order-1 md:order-1">
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+                      <ul className="space-y-2 text-sm text-gray-300">
+                        <li className="flex items-start md:justify-end">
+                          <span className="md:order-2 w-4 h-4 mr-2 md:mr-0 md:ml-2 mt-0.5 bg-blue-600/20 rounded-full flex-shrink-0" />
+                          <span className="md:order-1">Configured PWA manifest and service worker</span>
+                        </li>
+                        <li className="flex items-start md:justify-end">
+                          <span className="md:order-2 w-4 h-4 mr-2 md:mr-0 md:ml-2 mt-0.5 bg-blue-600/20 rounded-full flex-shrink-0" />
+                          <span className="md:order-1">Implemented offline capabilities and data sync</span>
+                        </li>
+                        <li className="flex items-start md:justify-end">
+                          <span className="md:order-2 w-4 h-4 mr-2 md:mr-0 md:ml-2 mt-0.5 bg-blue-600/20 rounded-full flex-shrink-0" />
+                          <span className="md:order-1">Created this landing page to showcase the app</span>
+                        </li>
+                        <li className="flex items-start md:justify-end">
+                          <span className="md:order-2 w-4 h-4 mr-2 md:mr-0 md:ml-2 mt-0.5 bg-blue-600/20 rounded-full flex-shrink-0" />
+                          <span className="md:order-1">Deployed to Vercel with CI/CD pipeline</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 top-1/2 z-10">
+                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                      <RocketLaunchIcon className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  
+                  <div className="md:w-1/2 md:pl-12 order-2 md:order-2">
+                    <h4 className="text-xl font-bold text-white mb-2">Days 13-15: PWA & Launch</h4>
+                    <p className="text-gray-400">In the final stretch, we transformed Zenlit into a full Progressive Web App and prepared for launch.</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
 
           <div className="mt-10 text-center">
             <a 
@@ -698,7 +883,7 @@ export default function LandingPage() {
       </section>
 
       {/* Build Details Section (Target for scroll) */}
-      <section id="build-details" className="py-20 px-4 bg-gray-900/30">
+      <section id="build-details" className="py-20 px-4 bg-gray-900/50">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -706,7 +891,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl font-bold mb-6">The Build Process</h2>
+            <h2 className="text-3xl font-bold mb-6">Technical Deep Dive</h2>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Our journey from concept to production in just over two weeks.
             </p>
@@ -714,39 +899,157 @@ export default function LandingPage() {
           
           <div className="space-y-8">
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">Week 1: Foundation</h3>
-              <p className="text-gray-400">
-                We started with a simple concept: create a proximity-based social network that respects privacy.
-                Using Bolt.new, we rapidly prototyped the core UI components and established our Supabase database schema.
-              </p>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <CodeBracketIcon className="w-6 h-6 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-3">Frontend Architecture</h3>
+                  <p className="text-gray-400 mb-4">
+                    We built Zenlit using Next.js 15 with the App Router, TypeScript, and Tailwind CSS. This stack gave us the perfect balance of performance, type safety, and rapid development.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="bg-gray-700/50 rounded-lg p-4">
+                      <h4 className="font-medium text-blue-300 mb-2">Component Architecture</h4>
+                      <ul className="space-y-1 text-sm text-gray-300">
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                          <span>Atomic design principles</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                          <span>Reusable UI components</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                          <span>Custom hooks for shared logic</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="bg-gray-700/50 rounded-lg p-4">
+                      <h4 className="font-medium text-green-300 mb-2">State Management</h4>
+                      <ul className="space-y-1 text-sm text-gray-300">
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                          <span>React Context for global state</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                          <span>Local state with useState</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                          <span>Optimistic UI updates</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">Week 2: Features & Polish</h3>
-              <p className="text-gray-400">
-                With the foundation in place, we implemented the core features: location-based discovery,
-                real-time messaging, and social verification. The PWA manifest was created to enable
-                installation on mobile devices.
-              </p>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <ServerIcon className="w-6 h-6 text-green-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-3">Backend & Database</h3>
+                  <p className="text-gray-400 mb-4">
+                    Supabase provided our entire backend infrastructure, from authentication to database and real-time messaging. We leveraged PostgreSQL's powerful features for location-based queries.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="bg-gray-700/50 rounded-lg p-4">
+                      <h4 className="font-medium text-green-300 mb-2">Database Schema</h4>
+                      <ul className="space-y-1 text-sm text-gray-300">
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                          <span>Profiles with location data</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                          <span>Posts with media storage</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                          <span>Real-time messaging system</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="bg-gray-700/50 rounded-lg p-4">
+                      <h4 className="font-medium text-purple-300 mb-2">Security & Privacy</h4>
+                      <ul className="space-y-1 text-sm text-gray-300">
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                          <span>Row-Level Security policies</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                          <span>Location data anonymization</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                          <span>Secure authentication flow</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">Week 3: Launch</h3>
-              <p className="text-gray-400">
-                After thorough testing and optimization, we deployed to Vercel and launched our beta.
-                The entire process was streamlined by using Bolt.new's integrated development environment.
-              </p>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <CommandLineIcon className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-3">Development Workflow</h3>
+                  <p className="text-gray-400 mb-4">
+                    Our development process was streamlined using Bolt.new, which allowed us to rapidly iterate and deploy changes without traditional DevOps overhead.
+                  </p>
+                  <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4 mt-2">
+                    <h4 className="font-medium text-blue-300 mb-2">Key Advantages</h4>
+                    <p className="text-sm text-blue-200">
+                      Using Bolt.new allowed us to go from concept to production in just 15 days, with zero infrastructure management and seamless collaboration. The integrated AI assistance helped us solve complex problems quickly and maintain consistent code quality throughout the project.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-gray-800">
+      <footer className="py-12 px-4 border-t border-gray-800 bg-black">
         <div className="max-w-4xl mx-auto text-center">
+          <div className="flex items-center justify-center mb-6">
+            <Image 
+              src="/logo.png" 
+              alt="Zenlit Logo" 
+              width={40} 
+              height={40} 
+              className="mr-3"
+            />
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+              Zenlit
+            </span>
+          </div>
           <p className="text-gray-400">
-            © 2025 Zenlit. Built with Bolt.new
+            © 2025 Zenlit. Built with <a href="https://bolt.new" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">Bolt.new</a>
           </p>
+          <div className="mt-4 flex justify-center space-x-4">
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              Privacy
+            </a>
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              Terms
+            </a>
+            <a href="/feedback" className="text-gray-400 hover:text-white transition-colors">
+              Feedback
+            </a>
+          </div>
         </div>
       </footer>
     </div>
