@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { GradientLogo } from './common/GradientLogo';
 
 export const IOSInstallBanner: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -44,7 +45,7 @@ export const IOSInstallBanner: React.FC = () => {
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <p className="text-white font-medium text-sm mb-2">
-              To install Zenlit on your iPhone:
+              To install <GradientLogo size="sm" className="inline" /> on your iPhone:
             </p>
             <ol className="text-gray-300 text-xs space-y-1 list-decimal list-inside">
               <li>Tap the Share icon <span className="inline-block">⎘</span></li>

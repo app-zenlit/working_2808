@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon, CheckCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { PasswordResetScreen } from './PasswordResetScreen';
 import { sendSignupOTP, verifySignupOTP, setUserPassword, signInWithPassword } from '../lib/auth';
+import { GradientLogo } from '../components/common/GradientLogo';
 
 interface Props {
   onLogin: () => void;
@@ -301,7 +302,9 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
               </div>
             )}
             
-            <h1 className="text-3xl font-bold text-white mb-2">Zenlit</h1>
+            <div className="mb-2">
+              <GradientLogo size="lg" />
+            </div>
             <p className="text-gray-400">Connect with people around you</p>
           </div>
 

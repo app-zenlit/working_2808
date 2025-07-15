@@ -10,6 +10,7 @@ import { getNearbyUsers } from '../lib/location';
 import { transformProfileToUser } from '../../lib/utils';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
+import { GradientLogo } from '../components/common/GradientLogo';
 
 interface Props {
   userGender: 'male' | 'female';
@@ -287,7 +288,7 @@ export const HomeScreen: React.FC<Props> = ({
         <div className="bg-black border-b border-gray-800">
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-white">Zenlit</h1>
+              <GradientLogo size="md" />
             </div>
             
             {/* Top Right Icons */}

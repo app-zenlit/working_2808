@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeftIcon, CheckCircleIcon, EnvelopeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { sendPasswordResetOTP, verifyPasswordResetOTP, setNewPassword } from '../lib/auth';
+import { GradientLogo } from '../components/common/GradientLogo';
 
 interface Props {
   onBack: () => void;
@@ -420,12 +421,7 @@ export const PasswordResetScreen: React.FC<Props> = ({ onBack }) => {
               <ChevronLeftIcon className="w-5 h-5 text-white" />
             </button>
             <div className="flex items-center">
-              <img
-                src="/logo.png"
-                alt="Zenlit"
-                className="w-8 h-8 object-contain rounded mr-3"
-              />
-              <h1 className="text-xl font-bold text-white">Zenlit</h1>
+              <GradientLogo size="md" />
             </div>
           </div>
 

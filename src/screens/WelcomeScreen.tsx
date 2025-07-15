@@ -1,6 +1,7 @@
 'use client'
 import React from 'react';
 import { motion } from 'framer-motion';
+import { GradientLogo } from '../components/common/GradientLogo';
 
 interface Props {
   onGetStarted: () => void;
@@ -17,13 +18,9 @@ export const WelcomeScreen: React.FC<Props> = ({ onGetStarted }) => {
       >
         {/* Logo */}
         <div className="mb-12">
-          <img
-            src="/logo.png"
-            alt="Zenlit"
-            className="w-60 h-60 mx-auto object-contain rounded-lg mb-8"
-          />
-          
-          <h1 className="text-5xl font-bold text-white">Zenlit</h1>
+          <div className="mb-8">
+            <GradientLogo size="xl" className="block mx-auto" />
+          </div>
           <p className="text-sm text-gray-400 mt-2">Built with Bolt.new</p>
         </div>
         

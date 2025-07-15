@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { GradientLogo } from './common/GradientLogo';
 
 interface Props {
   isVisible: boolean;
@@ -22,11 +23,11 @@ export const PWAInstallPrompt: React.FC<Props> = ({ isVisible, onInstall, onDism
           <div className="bg-gray-900 border border-gray-700 rounded-2xl p-4 shadow-2xl backdrop-blur-sm">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">Z</span>
+                <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center">
+                  <GradientLogo size="sm" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white text-sm">Install Zenlit</h3>
+                  <h3 className="font-semibold text-white text-sm">Install <GradientLogo size="sm" className="inline" /></h3>
                   <p className="text-gray-400 text-xs">Get the full app experience</p>
                 </div>
               </div>

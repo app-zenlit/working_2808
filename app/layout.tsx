@@ -139,7 +139,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="manifest" href="/manifest.json" />
         
         {/* Preload critical resources */}
-        <link rel="preload" href="/logo.png" as="image" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet" />
         
         {/* DNS prefetch for external resources */}
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
