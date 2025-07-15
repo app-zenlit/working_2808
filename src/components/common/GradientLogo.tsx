@@ -10,7 +10,7 @@ export const GradientLogo: React.FC<Props> = ({ className = '', size = 'md' }) =
     sm: 'text-lg',
     md: 'text-2xl',
     lg: 'text-4xl',
-    xl: 'text-5xl'
+    xl: 'text-5xl text-6xl'
   };
 
   return (

@@ -17,17 +17,17 @@ export const WelcomeScreen: React.FC<Props> = ({ onGetStarted }) => {
         transition={{ duration: 0.5 }}
       >
         {/* Logo */}
-        <div className="mb-12">
-          <div className="mb-8">
-            <GradientLogo size="xl" className="block mx-auto" />
+        <div className="mb-16">
+          <div className="mb-4">
+            <GradientLogo size="xl" className="block mx-auto text-6xl" />
           </div>
-          <p className="text-sm text-gray-400 mt-2">Built with Bolt.new</p>
+          <p className="text-sm text-gray-400">Built with Bolt.new</p>
         </div>
         
         {/* Get Started Button */}
         <button
           onClick={onGetStarted}
-          className="bg-blue-600 text-white px-12 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 active:scale-95 transition-all shadow-lg"
+          className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold text-base hover:bg-blue-700 active:scale-95 transition-all shadow-lg"
         >
           Get Started
         </button>
