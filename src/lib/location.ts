@@ -411,7 +411,7 @@ export const getNearbyUsers = async (
 // Check location permission status
 export const checkLocationPermission = async (): Promise<LocationPermissionStatus> => {
   try {
-    if (!isGeolocationSupported()) {
+    if (!isGeolocationSupported() || !('permissions' in navigator)) {
       return {
         granted: false,
         denied: true,
@@ -421,24 +421,18 @@ export const checkLocationPermission = async (): Promise<LocationPermissionStatu
     }
 
     // Check permission using the Permissions API if available
-    if ('permissions' in navigator) {
-      const permission = await navigator.permissions.query({ name: 'geolocation' });
-      
-      switch (permission.state) {
-        case 'granted':
-          return { granted: true, denied: false, pending: false };
-        case 'denied':
-          return { granted: false, denied: true, pending: false };
-        case 'prompt':
-          return { granted: false, denied: false, pending: true };
-        default:
-          return { granted: false, denied: false, pending: true };
-      }
+    const permission = await navigator.permissions.query({ name: 'geolocation' });
+    
+    switch (permission.state) {
+      case 'granted':
+        return { granted: true, denied: false, pending: false };
+      case 'denied':
+        return { granted: false, denied: true, pending: false };
+      case 'prompt':
+        return { granted: false, denied: false, pending: true };
+      default:
+        return { granted: false, denied: false, pending: true };
     }
-
-    // Fallback: assume permission is pending if we can't check
-    return { granted: false, denied: false, pending: true };
-
   } catch (error) {
     console.error('Error checking location permission:', error);
     return {

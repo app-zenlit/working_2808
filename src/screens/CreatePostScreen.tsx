@@ -7,6 +7,7 @@ import { generatePlaceholderImage, checkStorageAvailability } from '../lib/stora
 import { createPost } from '../lib/posts';
 import { compressImage, validateImageFile, formatFileSize, CompressionResult } from '../utils/imageCompression';
 import { ImageCompressionModal } from '../components/common/ImageCompressionModal';
+import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
 
 interface Props {
   onBack?: () => void; // Add back button handler
@@ -36,6 +37,9 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     sizeKB?: number;
   }>({ stage: '' });
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
+  
+  // New state for permission denied banner
+  const [showCameraDeniedBanner, setShowCameraDeniedBanner] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -227,6 +231,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
   const startCamera = async () => {
     setCameraError(null);
+    setShowCameraDeniedBanner(false); // Dismiss any previous denied banner
     
     try {
       // Check if we're on HTTPS or localhost
@@ -240,6 +245,18 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Camera access is not supported in this browser');
       }
+
+      // --- NEW: Check camera permission status ---
+      if ('permissions' in navigator) {
+        const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+        console.log('Camera permission status:', permissionStatus.state);
+
+        if (permissionStatus.state === 'denied') {
+          setShowCameraDeniedBanner(true);
+          return; // Do not proceed with getUserMedia if permission is denied
+        }
+      }
+      // --- END NEW ---
 
       console.log('Requesting camera access...');
       
@@ -545,6 +562,13 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         onClose={() => setIsCompressing(false)}
         progress={compressionProgress}
         originalSizeKB={selectedFile ? Math.round(selectedFile.size / 1024) : undefined}
+      />
+
+      {/* Camera Denied Banner */}
+      <PermissionDeniedBanner
+        isVisible={showCameraDeniedBanner}
+        permissionType="Camera"
+        onDismiss={() => setShowCameraDeniedBanner(false)}
       />
 
       {/* Header */}
