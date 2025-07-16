@@ -273,7 +273,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       let errorMessage = 'Unable to access camera. ';
       
       if (error.name === 'NotAllowedError') {
-        errorMessage += 'Please allow camera permissions and try again.';
+        errorMessage += 'Camera access was denied. Please check your browser settings to allow camera permissions for this site, then refresh the page and try again.';
       } else if (error.name === 'NotFoundError') {
         errorMessage += 'No camera found on this device.';
       } else if (error.name === 'NotReadableError') {
