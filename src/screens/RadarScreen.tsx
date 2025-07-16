@@ -473,6 +473,10 @@ export const RadarScreen: React.FC<Props> = ({
         isVisible={showLocationDeniedBanner}
         permissionType="Location"
         onDismiss={() => setShowLocationDeniedBanner(false)}
+        onRetry={() => {
+          setShowLocationDeniedBanner(false)
+          handleLocationToggle(true)
+        }}
       />
 
       {/* Scrollable container with pull-to-refresh */}

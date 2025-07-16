@@ -6,12 +6,14 @@ interface Props {
   isVisible: boolean;
   permissionType: 'Camera' | 'Location';
   onDismiss: () => void;
+  onRetry: () => void;
 }
 
 export const PermissionDeniedBanner: React.FC<Props> = ({
   isVisible,
   permissionType,
   onDismiss,
+  onRetry,
 }) => {
   return (
     <AnimatePresence>
@@ -30,12 +32,20 @@ export const PermissionDeniedBanner: React.FC<Props> = ({
                 {permissionType} access permanently denied.
               </p>
             </div>
-            <button
-              onClick={onDismiss}
-              className="p-1 rounded-full hover:bg-red-700 transition-colors"
-            >
-              <XMarkIcon className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onRetry}
+                className="text-xs bg-white/20 px-2 py-1 rounded hover:bg-white/30"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={onDismiss}
+                className="p-1 rounded-full hover:bg-red-700 transition-colors"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           <p className="text-xs text-red-200 mt-2">
             Please enable {permissionType.toLowerCase()} permissions in your device's app settings or browser settings to use this feature.
