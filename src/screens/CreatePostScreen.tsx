@@ -248,7 +248,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
       // Check camera permission status
       try {
-        const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+        const permissionStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
         console.log('Camera permission status:', permissionStatus.state);
 
         if (permissionStatus.state === 'denied') {
@@ -277,16 +277,23 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       
       // Immediately set the video source
       if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        
-        // Add event listener for when video can play
-        videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded, starting playback');
-          videoRef.current?.play().catch(err => {
-            console.error('Error playing video:', err);
-            setCameraError('Failed to start camera preview');
-          });
-        };
+        try {
+          videoRef.current.srcObject = mediaStream;
+          
+          // Add event listener for when video can play
+          videoRef.current.onloadedmetadata = () => {
+            console.log('Video metadata loaded, starting playback');
+            if (videoRef.current) {
+              videoRef.current.play().catch(err => {
+                console.error('Error playing video:', err);
+                setCameraError('Failed to start camera preview');
+              });
+            }
+          };
+        } catch (videoErr) {
+          console.error('Error setting video source:', videoErr);
+          throw new Error('Failed to initialize camera preview');
+        }
       } else {
         console.error('Video ref is not available');
         throw new Error('Camera preview not available');
@@ -298,7 +305,9 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       let errorMessage = 'Unable to access camera. ';
       
       if (error.name === 'NotAllowedError') {
-        errorMessage += 'Camera access was denied. Please check your browser settings to allow camera permissions for this site, then refresh the page and try again.';
+        // This is a permanent denial - show the banner instead of an error message
+        setShowCameraDeniedBanner(true);
+        return;
       } else if (error.name === 'NotFoundError') {
         errorMessage += 'No camera found on this device.';
       } else if (error.name === 'NotReadableError') {
@@ -536,11 +545,11 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
             muted
             playsInline
             className="w-full h-full object-cover"
+            style={{ transform: 'scaleX(1)' }} /* Ensure proper orientation */
             onError={(e) => {
               console.error('Video error:', e);
               setCameraError('Failed to load camera preview');
             }}
-            style={{ transform: 'scaleX(1)' }} /* Ensure proper orientation */
           />
           
           {/* Camera Controls */}

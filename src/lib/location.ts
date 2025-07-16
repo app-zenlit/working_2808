@@ -431,7 +431,7 @@ export const checkLocationPermission = async (): Promise<LocationPermissionStatu
 
     try {
       // Check permission using the Permissions API
-      const permission = await navigator.permissions.query({ name: 'geolocation' });
+      const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
       
       switch (permission.state) {
         case 'granted':
