@@ -246,8 +246,8 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         throw new Error('Camera access is not supported in this browser');
       }
 
-      // --- NEW: Check camera permission status ---
-      if ('permissions' in navigator) {
+      // Check camera permission status
+      try {
         const permissionStatus = await navigator.permissions.query({ name: 'camera' });
         console.log('Camera permission status:', permissionStatus.state);
 
@@ -255,8 +255,10 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
           setShowCameraDeniedBanner(true);
           return; // Do not proceed with getUserMedia if permission is denied
         }
+      } catch (permError) {
+        console.warn('Could not query camera permission status:', permError);
+        // Continue anyway, getUserMedia will handle permission errors
       }
-      // --- END NEW ---
 
       console.log('Requesting camera access...');
       
@@ -273,16 +275,22 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       setStream(mediaStream);
       setShowCamera(true);
       
-      // Wait for video element to be ready
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-          videoRef.current.play().catch(err => {
+      // Immediately set the video source
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        
+        // Add event listener for when video can play
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Video metadata loaded, starting playback');
+          videoRef.current?.play().catch(err => {
             console.error('Error playing video:', err);
             setCameraError('Failed to start camera preview');
           });
-        }
-      }, 100);
+        };
+      } else {
+        console.error('Video ref is not available');
+        throw new Error('Camera preview not available');
+      }
       
     } catch (error: any) {
       console.error('Camera error:', error);
@@ -525,16 +533,14 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
           <video
             ref={videoRef}
             autoPlay
-            playsInline
             muted
+            playsInline
             className="w-full h-full object-cover"
-            onLoadedMetadata={() => {
-              console.log('Video metadata loaded');
-            }}
             onError={(e) => {
               console.error('Video error:', e);
               setCameraError('Failed to load camera preview');
             }}
+            style={{ transform: 'scaleX(1)' }} /* Ensure proper orientation */
           />
           
           {/* Camera Controls */}

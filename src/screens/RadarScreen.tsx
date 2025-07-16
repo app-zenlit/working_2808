@@ -134,13 +134,12 @@ export const RadarScreen: React.FC<Props> = ({
       setIsLocationEnabled(toggleState.isEnabled);
 
       // --- NEW: Check initial permission status and set banner if denied ---
-      if ('permissions' in navigator) {
-        const initialPermissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-        if (initialPermissionStatus.state === 'denied') {
-          setShowLocationDeniedBanner(true);
-        } else {
-          setShowLocationDeniedBanner(false);
-        }
+      const initialPermissionStatus = await checkLocationPermission();
+      setLocationPermission(initialPermissionStatus);
+      if (initialPermissionStatus.denied) {
+        setShowLocationDeniedBanner(true);
+      } else {
+        setShowLocationDeniedBanner(false);
       }
       // --- END NEW ---
 
@@ -272,15 +271,13 @@ export const RadarScreen: React.FC<Props> = ({
         console.log('🔄 Turning location toggle ON');
         
         // --- NEW: Check geolocation permission status before turning on ---
-        if ('permissions' in navigator) {
-          const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-          console.log('Geolocation permission status:', permissionStatus.state);
+        const permissionStatus = await checkLocationPermission();
+        console.log('Geolocation permission status:', permissionStatus);
 
-          if (permissionStatus.state === 'denied') {
-            setShowLocationDeniedBanner(true);
-            setIsTogglingLocation(false);
-            return; // Do not proceed if permission is denied
-          }
+        if (permissionStatus.denied) {
+          setShowLocationDeniedBanner(true);
+          setIsTogglingLocation(false);
+          return; // Do not proceed if permission is denied
         }
         // --- END NEW ---
 
