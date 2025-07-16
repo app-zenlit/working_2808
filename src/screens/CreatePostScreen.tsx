@@ -22,6 +22,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const [isPosting, setIsPosting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [fullscreenSupported, setFullscreenSupported] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [storageStatus, setStorageStatus] = useState<{
@@ -265,13 +266,14 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       }
 
       console.log('Requesting camera access...');
-      
+
+      // Detect available cameras and automatically choose the first device
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+      const preferred = videoDevices.find(d => d.label.toLowerCase().includes('front')) || videoDevices[0];
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
+        video: preferred ? { deviceId: { exact: preferred.deviceId } } : { facingMode: { ideal: 'user' } },
         audio: false
       });
       
@@ -285,13 +287,28 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
           videoRef.current.srcObject = mediaStream;
           
           // Add event listener for when video can play
-          videoRef.current.onloadedmetadata = () => {
+          videoRef.current.onloadedmetadata = async () => {
             console.log('Video metadata loaded, starting playback');
             if (videoRef.current) {
-              videoRef.current.play().catch(err => {
+              try {
+                await videoRef.current.play();
+
+                const supportsFS = !!(document.fullscreenEnabled && videoRef.current!.requestFullscreen);
+                setFullscreenSupported(supportsFS);
+
+                if (supportsFS) {
+                  try {
+                    await videoRef.current!.requestFullscreen();
+                  } catch (fsErr) {
+                    console.warn('Unable to enter fullscreen:', fsErr);
+                  }
+                } else {
+                  document.body.classList.add('hide-controls');
+                }
+              } catch (err) {
                 console.error('Error playing video:', err);
                 setCameraError('Failed to start camera preview');
-              });
+              }
             }
           };
         } catch (videoErr) {
@@ -338,6 +355,14 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         console.log('Camera track stopped');
       });
       setStream(null);
+    }
+    if (document.fullscreenElement) {
+      document
+        .exitFullscreen()
+        .catch(err => console.warn('Exit fullscreen failed:', err))
+        .finally(() => document.body.classList.remove('hide-controls'));
+    } else {
+      document.body.classList.remove('hide-controls');
     }
     setShowCamera(false);
     setCameraError(null);
@@ -533,7 +558,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     return (
       <div className="h-full bg-black flex flex-col">
         {/* Camera Header */}
-        <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
+        <div className="camera-header flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
           <button
             onClick={stopCamera}
             className="text-white p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
@@ -558,6 +583,10 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
               setCameraError('Failed to load camera preview');
             }}
           />
+
+          {!fullscreenSupported && (
+            <div className="orientation-hint">Rotate your device or tap Close Preview to exit.</div>
+          )}
           
           {/* Camera Controls */}
           <div className="absolute bottom-8 left-0 right-0 flex justify-center">
