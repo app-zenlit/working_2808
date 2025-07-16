@@ -232,6 +232,10 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const startCamera = async () => {
     setCameraError(null);
     setShowCameraDeniedBanner(false); // Dismiss any previous denied banner
+    // Clear any stored denial flag so browsers can re-prompt
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('camera-access-denied');
+    }
     
     try {
       // Check if we're on HTTPS or localhost
@@ -252,8 +256,8 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         console.log('Camera permission status:', permissionStatus.state);
 
         if (permissionStatus.state === 'denied') {
+          // Show banner but still attempt to request camera so the browser can re-prompt
           setShowCameraDeniedBanner(true);
-          return; // Do not proceed with getUserMedia if permission is denied
         }
       } catch (permError) {
         console.warn('Could not query camera permission status:', permError);
@@ -306,6 +310,9 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       
       if (error.name === 'NotAllowedError') {
         // This is a permanent denial - show the banner instead of an error message
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('camera-access-denied', 'true');
+        }
         setShowCameraDeniedBanner(true);
         return;
       } else if (error.name === 'NotFoundError') {
@@ -584,6 +591,10 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         isVisible={showCameraDeniedBanner}
         permissionType="Camera"
         onDismiss={() => setShowCameraDeniedBanner(false)}
+        onRetry={() => {
+          setShowCameraDeniedBanner(false)
+          startCamera()
+        }}
       />
 
       {/* Header */}
