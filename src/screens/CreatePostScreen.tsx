@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { CameraIcon, PhotoIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { generateId } from '../utils/generateId';
 import { supabase } from '../lib/supabase';
 import { uploadPostImage } from '../lib/storage';
@@ -7,7 +7,6 @@ import { generatePlaceholderImage, checkStorageAvailability } from '../lib/stora
 import { createPost } from '../lib/posts';
 import { compressImage, validateImageFile, formatFileSize, CompressionResult } from '../utils/imageCompression';
 import { ImageCompressionModal } from '../components/common/ImageCompressionModal';
-import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
 
 interface Props {
   onBack?: () => void; // Add back button handler
@@ -17,12 +16,8 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const [caption, setCaption] = useState('');
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [showCamera, setShowCamera] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [isPosting, setIsPosting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [fullscreenSupported, setFullscreenSupported] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [storageStatus, setStorageStatus] = useState<{
@@ -39,11 +34,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   }>({ stage: '' });
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
   
-  // New state for permission denied banner
-  const [showCameraDeniedBanner, setShowCameraDeniedBanner] = useState(false);
-  
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load current user data and check storage
@@ -226,169 +216,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         }
       } else {
         alert('Failed to create post. Please try again.');
-      }
-    }
-  };
-
-  const startCamera = async () => {
-    setCameraError(null);
-    setShowCameraDeniedBanner(false); // Dismiss any previous denied banner
-    // Clear any stored denial flag so browsers can re-prompt
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('camera-access-denied');
-    }
-    
-    try {
-      // Check if we're on HTTPS or localhost
-      const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
-      
-      if (!isSecure) {
-        throw new Error('Camera access requires HTTPS or localhost');
-      }
-
-      // Check if getUserMedia is supported
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera access is not supported in this browser');
-      }
-
-      // Check camera permission status
-      try {
-        const permissionStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
-        console.log('Camera permission status:', permissionStatus.state);
-
-        if (permissionStatus.state === 'denied') {
-          // Show banner but still attempt to request camera so the browser can re-prompt
-          setShowCameraDeniedBanner(true);
-        }
-      } catch (permError) {
-        console.warn('Could not query camera permission status:', permError);
-        // Continue anyway, getUserMedia will handle permission errors
-      }
-
-      console.log('Requesting camera access...');
-
-      // Detect available cameras and automatically choose the first device
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(d => d.kind === 'videoinput');
-      const preferred = videoDevices.find(d => d.label.toLowerCase().includes('front')) || videoDevices[0];
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: preferred ? { deviceId: { exact: preferred.deviceId } } : { facingMode: { ideal: 'user' } },
-        audio: false
-      });
-      
-      console.log('Camera access granted');
-      setStream(mediaStream);
-      setShowCamera(true);
-      
-      // Immediately set the video source
-      if (videoRef.current) {
-        try {
-          videoRef.current.srcObject = mediaStream;
-          
-          // Add event listener for when video can play
-          videoRef.current.onloadedmetadata = async () => {
-            console.log('Video metadata loaded, starting playback');
-            if (videoRef.current) {
-              try {
-                await videoRef.current.play();
-
-                const supportsFS = !!(document.fullscreenEnabled && videoRef.current!.requestFullscreen);
-                setFullscreenSupported(supportsFS);
-
-                if (supportsFS) {
-                  try {
-                    await videoRef.current!.requestFullscreen();
-                  } catch (fsErr) {
-                    console.warn('Unable to enter fullscreen:', fsErr);
-                  }
-                } else {
-                  document.body.classList.add('hide-controls');
-                }
-              } catch (err) {
-                console.error('Error playing video:', err);
-                setCameraError('Failed to start camera preview');
-              }
-            }
-          };
-        } catch (videoErr) {
-          console.error('Error setting video source:', videoErr);
-          throw new Error('Failed to initialize camera preview');
-        }
-      } else {
-        console.error('Video ref is not available');
-        throw new Error('Camera preview not available');
-      }
-      
-    } catch (error: any) {
-      console.error('Camera error:', error);
-      
-      let errorMessage = 'Unable to access camera. ';
-      
-      if (error.name === 'NotAllowedError') {
-        // This is a permanent denial - show the banner instead of an error message
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('camera-access-denied', 'true');
-        }
-        setShowCameraDeniedBanner(true);
-        return;
-      } else if (error.name === 'NotFoundError') {
-        errorMessage += 'No camera found on this device.';
-      } else if (error.name === 'NotReadableError') {
-        errorMessage += 'The camera is currently in use by another application or process. Please close other applications that might be using the camera and try again.';
-      } else if (error.name === 'NotSupportedError') {
-        errorMessage += 'Camera is not supported in this browser.';
-      } else if (error.message.includes('HTTPS')) {
-        errorMessage += 'Camera requires HTTPS connection.';
-      } else {
-        errorMessage += error.message || 'Unknown error occurred.';
-      }
-      
-      setCameraError(errorMessage);
-    }
-  };
-
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => {
-        track.stop();
-        console.log('Camera track stopped');
-      });
-      setStream(null);
-    }
-    if (document.fullscreenElement) {
-      document
-        .exitFullscreen()
-        .catch(err => console.warn('Exit fullscreen failed:', err))
-        .finally(() => document.body.classList.remove('hide-controls'));
-    } else {
-      document.body.classList.remove('hide-controls');
-    }
-    setShowCamera(false);
-    setCameraError(null);
-  };
-
-  const capturePhoto = async () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-      
-      if (context && video.videoWidth > 0 && video.videoHeight > 0) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0);
-        
-        // Convert to blob and then to file for compression
-        canvas.toBlob(async (blob) => {
-          if (blob) {
-            const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
-            await processImageFile(file);
-            stopCamera();
-          }
-        }, 'image/jpeg', 0.9);
-      } else {
-        setCameraError('Camera preview not ready. Please try again.');
       }
     }
   };
