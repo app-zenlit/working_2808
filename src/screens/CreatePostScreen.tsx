@@ -355,11 +355,17 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
         <div className="flex items-center justify-between px-4 py-3">
-                {isPosting ? 'Sharing...' : 'Share'}
-              </Button>
-            )}
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="text-white hover:bg-gray-800"
+            >
+              <ChevronLeftIcon className="w-5 h-5" />
+            </Button>
+          )}
             <h1 className="text-xl font-bold text-white">Create Post</h1>
-          </div>
           <button
             onClick={handlePost}
             disabled={(!selectedMedia && !caption.trim()) || isPosting || isCompressing}
@@ -374,6 +380,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
               'Share'
             )}
           </button>
+        </div>
         </div>
       </div>
 
