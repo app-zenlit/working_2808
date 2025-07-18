@@ -381,7 +381,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
             )}
           </button>
         </div>
-        </div>
       </div>
 
       <div className="p-4 space-y-6 pb-20">
