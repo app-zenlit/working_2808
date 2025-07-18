@@ -5,12 +5,6 @@ import { EyeIcon, EyeSlashIcon, CheckCircleIcon, ArrowLeftIcon } from '@heroicon
 import { PasswordResetScreen } from './PasswordResetScreen';
 import { sendSignupOTP, verifySignupOTP, setUserPassword, signInWithPassword } from '../lib/auth';
 import { GradientLogo } from '../components/common/GradientLogo';
-import { Button } from '../components/common/Button';
-import { Input } from '../components/common/Input';
-import { FormField } from '../components/common/FormField';
-import { ErrorMessage } from '../components/common/ErrorMessage';
-import { validateLogin, validateEmailField, validatePassword, validateOTP } from '../utils/validation';
-import { UI_CONFIG } from '../constants';
 
 interface Props {
   onLogin: () => void;
@@ -31,7 +25,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [otpCountdown, setOtpCountdown] = useState(UI_CONFIG.OTP_RESEND_COUNTDOWN);
+  const [otpCountdown, setOtpCountdown] = useState(0);
 
   // Countdown timer effect for OTP resend
   useEffect(() => {
@@ -59,9 +53,8 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     e.preventDefault();
     setError(null);
 
-    const validation = validateLogin(formData.email, formData.password);
-    if (!validation.isValid) {
-      setError(Object.values(validation.errors)[0]);
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields');
       return;
     }
 
@@ -92,9 +85,14 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     e.preventDefault();
     setError(null);
 
-    const emailValidation = validateEmailField(formData.email);
-    if (!emailValidation.valid) {
-      setError(emailValidation.error!);
+    if (!formData.email) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
       return;
     }
 
@@ -107,7 +105,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       if (result.success) {
         console.log('OTP sent successfully');
         setSignupStep('otp');
-        setOtpCountdown(UI_CONFIG.OTP_RESEND_COUNTDOWN);
+        setOtpCountdown(60); // Start 60 second countdown
       } else {
         console.error('OTP send failed:', result.error);
         // Check if the error indicates an existing account
@@ -131,9 +129,8 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
   const handleVerifyOTP = async () => {
     setError(null);
 
-    const otpValidation = validateOTP(formData.otp);
-    if (!otpValidation.valid) {
-      setError(otpValidation.error!);
+    if (!formData.otp || formData.otp.length !== 6) {
+      setError('Please enter a valid 6-digit code');
       return;
     }
 
@@ -163,14 +160,18 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     e.preventDefault();
     setError(null);
 
+    if (!formData.password || !formData.confirmPassword) {
+      setError('Please fill in all password fields');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    const passwordValidation = validatePassword(formData.password);
-    if (!passwordValidation.valid) {
-      setError(passwordValidation.error!);
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
       return;
     }
 
@@ -210,7 +211,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       const result = await sendSignupOTP(formData.email);
       
       if (result.success) {
-        setOtpCountdown(UI_CONFIG.OTP_RESEND_COUNTDOWN);
+        setOtpCountdown(60);
         // Clear the OTP field
         setFormData(prev => ({ ...prev, otp: '' }));
       } else {
@@ -336,23 +337,30 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
             {/* LOGIN FORM */}
             {currentView === 'login' && (
               <form onSubmit={handleLoginSubmit} className="space-y-4">
-                <FormField label="Email Address" required>
-                  <Input
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Email Address
+                  </label>
+                  <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter your email"
                     required
                   />
-                </FormField>
+                </div>
 
-                <FormField label="Password" required>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Password
+                  </label>
                   <div className="relative">
-                    <Input
+                    <input
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={(e) => handleInputChange('password', e.target.value)}
-                      className="pr-12"
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
                       placeholder="Enter your password"
                       required
                     />
@@ -368,7 +376,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                       )}
                     </button>
                   </div>
-                </FormField>
+                </div>
 
                 <div className="text-right">
                   <button
@@ -380,14 +388,20 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                   </button>
                 </div>
 
-                <Button
+                <button
                   type="submit"
                   disabled={isLoading}
-                  loading={isLoading}
-                  className="w-full"
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {isLoading ? 'Signing In...' : 'Sign In'}
-                </Button>
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Signing In...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
+                </button>
               </form>
             )}
 

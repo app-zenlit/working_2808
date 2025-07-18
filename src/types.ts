@@ -1,8 +1,5 @@
 import type React from 'react';
 
-// Re-export auth types
-export type { AuthResponse } from './utils/auth';
-
 export interface User {
   id: string;
   name: string;
@@ -63,14 +60,17 @@ export interface CurrentUser extends User {
   posts: Post[];
 }
 
-export type SocialPlatformId = 'instagram' | 'linkedin' | 'twitter';
-
 export interface SocialProvider {
-  id: SocialPlatformId;
+  id: 'instagram' | 'linkedin' | 'twitter' | 'google'; // Removed 'facebook'
   name: string;
   color: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
-  placeholder: string;
+}
+
+export interface OAuthState {
+  isConnecting: boolean;
+  error: string | null;
+  provider: string | null;
 }
 
 export interface LocationPermissionStatus {
@@ -85,42 +85,4 @@ export interface UserLocation {
   longitude: number;
   accuracy?: number;
   timestamp: number;
-}
-
-// Form validation types
-export interface ValidationError {
-  field: string;
-  message: string;
-}
-
-export interface FormState<T> {
-  data: T;
-  errors: Record<keyof T, string>;
-  isValid: boolean;
-  isDirty: boolean;
-}
-
-// API response types
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
-// Storage types
-export interface StorageUploadResult {
-  publicUrl: string | null;
-  error: string | null;
-}
-
-// Component prop types
-export interface BaseComponentProps {
-  className?: string;
-  children?: React.ReactNode;
-}
-
-export interface LoadingProps {
-  loading?: boolean;
-  disabled?: boolean;
 }

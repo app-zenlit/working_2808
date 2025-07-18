@@ -1,17 +1,27 @@
 import { supabase, ensureSession } from './supabase'
-import { executeAuthOperation, validateAuthInput, handleAuthError } from '../utils/auth'
-import { UI_CONFIG } from '../constants'
 
-export type { AuthResponse } from '../utils/auth'
+export interface AuthResponse {
+  success: boolean
+  error?: string
+  data?: any
+}
+
+// Check if Supabase is available
+const isSupabaseAvailable = () => {
+  if (!supabase) {
+    console.error('Supabase client not initialized. Check environment variables.')
+    return false
+  }
+  return true
+}
 
 // STEP 1: Send OTP for email verification during signup
 export const sendSignupOTP = async (email: string): Promise<AuthResponse> => {
-  const validation = validateAuthInput(email);
-  if (!validation.valid) {
-    return { success: false, error: validation.error };
+  if (!isSupabaseAvailable()) {
+    return { success: false, error: 'Service temporarily unavailable' }
   }
 
-  return executeAuthOperation(async () => {
+  try {
     console.log('Sending signup OTP to:', email)
     
     const { data, error } = await supabase!.auth.signInWithOtp({
@@ -25,12 +35,42 @@ export const sendSignupOTP = async (email: string): Promise<AuthResponse> => {
     })
 
     if (error) {
-      throw error;
+      console.error('OTP send error:', error.message)
+      
+      // Handle specific Supabase errors
+      if (error.message.includes('User already registered')) {
+        return { 
+          success: false, 
+          error: 'An account with this email already exists. Please sign in instead or use "Forgot password?" if you need to reset your password.' 
+        }
+      }
+      
+      if (error.message.includes('Email not confirmed')) {
+        return { 
+          success: false, 
+          error: 'An account with this email already exists but is not verified. Please check your email for the verification link or contact support.' 
+        }
+      }
+      
+      if (error.message.includes('rate limit')) {
+        return { 
+          success: false, 
+          error: 'Too many requests. Please wait before requesting another code.' 
+        }
+      }
+      
+      return { success: false, error: error.message }
     }
 
     console.log('Signup OTP sent successfully')
-    return data;
-  }, 'OTP send');
+    return { success: true, data }
+  } catch (error) {
+    console.error('OTP send catch error:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Failed to send verification code' 
+    }
+  }
 }
 
 // STEP 2: Verify OTP and get authenticated session

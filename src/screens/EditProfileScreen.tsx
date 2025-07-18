@@ -7,12 +7,6 @@ import { uploadProfileImage, uploadBannerImage, deleteImage, extractFilePathFrom
 import { supabase } from '../lib/supabaseClient';
 import { transformProfileToUser } from '../../lib/utils';
 import { validateImageFile } from '../utils/imageUtils';
-import { Button } from '../components/common/Button';
-import { Input } from '../components/common/Input';
-import { TextArea } from '../components/common/TextArea';
-import { FormField } from '../components/common/FormField';
-import { useAsync } from '../hooks/useAsync';
-import { VALIDATION_RULES } from '../constants';
 
 interface Props {
   user: User;
@@ -33,18 +27,13 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
   const [profileUrl, setProfileUrl] = useState<string>(user.dpUrl);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverUrl, setCoverUrl] = useState<string>(user.coverPhotoUrl || '');
+  const [loading, setLoading] = useState<boolean>(false);
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
   const profileFileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const socialAccountsSectionRef = useRef<any>(null);
-
-  // Use async hook for save operation
-  const { loading, execute: executeSave } = useAsync(async () => {
-    // Move save logic here
-    return handleSaveProfile();
-  });
 
   console.log(`🔍 [EditProfileScreen] Component initialized with user:`, {
     id: user.id,
@@ -191,6 +180,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
     console.log(`🔍 [EditProfileScreen] handleSaveProfile called`);
     console.log(`🔍 [EditProfileScreen] Current formData before save:`, formData);
     
+    setLoading(true);
     try {
       // FIXED: Allow null values for profile and cover URLs
       let newProfileUrl: string | null = profileUrl;
@@ -317,6 +307,8 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
     } catch (err) {
       console.error(`🔍 [EditProfileScreen] Save profile error:`, err);
       alert(err instanceof Error ? err.message : 'Failed to save profile');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -345,14 +337,15 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
           <ChevronLeftIcon className="w-5 h-5 text-white" />
         </button>
         <h1 className="text-lg font-semibold text-white">Edit Profile</h1>
-        <Button
-          onClick={executeSave}
+        <button
+          onClick={handleSaveProfile}
           disabled={loading}
-          loading={loading}
-          size="sm"
+          className="bg-blue-600 px-4 py-2 rounded-full text-white disabled:bg-gray-600 flex items-center gap-2"
         >
-          Save
-        </Button>
+          {loading
+            ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            : 'Save'}
+        </button>
       </div>
 
       {/* Cover Photo Section */}
@@ -432,26 +425,33 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-white">Basic Information</h2>
           
-          <FormField label="Display Name" required>
-            <Input
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Display Name
+            </label>
+            <input
               type="text"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Your display name"
-              maxLength={VALIDATION_RULES.DISPLAY_NAME.MAX_LENGTH}
+              maxLength={50}
             />
-          </FormField>
+          </div>
 
-          <FormField label="Bio">
-            <TextArea
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Bio
+            </label>
+            <textarea
               value={formData.bio}
               onChange={e => handleInputChange('bio', e.target.value)}
-              className="h-24"
+              className="w-full h-24 p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               placeholder="Tell people about yourself…"
-              maxLength={VALIDATION_RULES.BIO.MAX_LENGTH}
-              showCharCount
+              maxLength={150}
             />
-          </FormField>
+            <p className="text-xs text-gray-400 text-right mt-1">{formData.bio.length}/150</p>
+          </div>
         </div>
 
         <SocialAccountsSection 

@@ -8,13 +8,6 @@ import { completeProfileSetup } from '../lib/auth';
 import { reserveUsername, checkUsernameAvailability } from '../lib/username';
 import { UsernameInput } from '../components/common/UsernameInput';
 import { SocialAccountsSection } from '../components/social/SocialAccountsSection';
-import { Button } from '../components/common/Button';
-import { Input } from '../components/common/Input';
-import { TextArea } from '../components/common/TextArea';
-import { FormField } from '../components/common/FormField';
-import { useAsync } from '../hooks/useAsync';
-import { validateProfile } from '../utils/validation';
-import { VALIDATION_RULES } from '../constants';
 
 interface Props {
   onComplete: (profileData: any) => void;
@@ -23,6 +16,7 @@ interface Props {
 
 export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
   const [step, setStep] = useState<'basic' | 'photo' | 'bio' | 'social'>('basic');
+  const [isLoading, setIsLoading] = useState(false);
   const [isUsernameValid, setIsUsernameValid] = useState(false);
   const [profileData, setProfileData] = useState({
     displayName: '',
@@ -36,11 +30,6 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
     twitterUrl: ''
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Use async hook for profile completion
-  const { loading: isLoading, execute: executeComplete } = useAsync(async () => {
-    return handleComplete();
-  });
 
   const handleInputChange = (field: string, value: any) => {
     setProfileData(prev => ({
@@ -105,17 +94,8 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
   };
 
   const handleComplete = async () => {
-    // Validate all profile data
-    const validation = validateProfile({
-      displayName: profileData.displayName,
-      username: profileData.username,
-      bio: profileData.bio,
-      dateOfBirth: profileData.dateOfBirth,
-      gender: profileData.gender,
-    });
-
-    if (!validation.isValid) {
-      alert(Object.values(validation.errors)[0]);
+    if (!profileData.bio.trim()) {
+      alert('Please add a bio to complete your profile');
       return;
     }
 
@@ -143,6 +123,8 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
       alert('Unable to verify username availability. Please try again.');
       return;
     }
+
+    setIsLoading(true);
 
     try {
       // Get current user
@@ -222,6 +204,8 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
       } else {
         alert('Failed to save profile. Please try again.');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -234,65 +218,77 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-white mb-2">Tell us about yourself</h2>
           <p className="text-gray-400">Let&apos;s set up your profile</p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Display Name *
+        </label>
+        <input
+          type="text"
+          value={profileData.displayName}
+          onChange={(e) => handleInputChange('displayName', e.target.value)}
+          className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="How should people know you?"
+          maxLength={50}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Username *
+        </label>
+        <UsernameInput
+          value={profileData.username}
+          onChange={(value) => handleInputChange('username', value)}
+          onValidationChange={handleUsernameValidation}
+          placeholder="username123"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Date of Birth *
+        </label>
+        <input
+          type="date"
+          value={profileData.dateOfBirth}
+          onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+          className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent [color-scheme:dark]"
+          max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
+          placeholder=""
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Gender *
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => handleInputChange('gender', 'male')}
+            className={`p-3 rounded-lg border-2 transition-all ${
+              profileData.gender === 'male'
+                ? 'border-blue-500 bg-blue-600/20 text-blue-400'
+                : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+            }`}
+          >
+            Male
+          </button>
+          <button
+            type="button"
+            onClick={() => handleInputChange('gender', 'female')}
+            className={`p-3 rounded-lg border-2 transition-all ${
+              profileData.gender === 'female'
+                ? 'border-blue-500 bg-blue-600/20 text-blue-400'
+                : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+            }`}
+          >
+            Female
+          </button>
         </div>
-
-        <div>
-          <FormField label="Display Name" required>
-            <Input
-            type="text"
-            value={profileData.displayName}
-            onChange={(e) => handleInputChange('displayName', e.target.value)}
-            placeholder="How should people know you?"
-            maxLength={VALIDATION_RULES.DISPLAY_NAME.MAX_LENGTH}
-          />
-          </FormField>
-
-        <FormField label="Username" required>
-          <UsernameInput
-            value={profileData.username}
-            onChange={(value) => handleInputChange('username', value)}
-            onValidationChange={handleUsernameValidation}
-            placeholder="username123"
-            required
-          />
-        </FormField>
-
-        <FormField label="Date of Birth" required>
-          <Input
-            type="date"
-            value={profileData.dateOfBirth}
-            onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-            className="[color-scheme:dark]"
-            max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
-          />
-        </FormField>
-
-        <FormField label="Gender" required>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => handleInputChange('gender', 'male')}
-              className={`p-3 rounded-lg border-2 transition-all ${
-                profileData.gender === 'male'
-                  ? 'border-blue-500 bg-blue-600/20 text-blue-400'
-                  : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
-              }`}
-            >
-              Male
-            </button>
-            <button
-              type="button"
-              onClick={() => handleInputChange('gender', 'female')}
-              className={`p-3 rounded-lg border-2 transition-all ${
-                profileData.gender === 'female'
-                  ? 'border-blue-500 bg-blue-600/20 text-blue-400'
-                  : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
-              }`}
-            >
-              Female
-            </button>
-          </div>
-        </FormField>
       </div>
     </motion.div>
   );
@@ -365,40 +361,45 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
       </div>
 
       <div>
-        <FormField label="Bio" required>
-          <TextArea
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Bio *
+        </label>
+        <textarea
           value={profileData.bio}
           onChange={(e) => handleInputChange('bio', e.target.value)}
-          className="h-32"
+          className="w-full h-32 px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           placeholder="Tell people about yourself, what you're looking for..."
-          maxLength={VALIDATION_RULES.BIO.MAX_LENGTH}
-          showCharCount
+          maxLength={200}
         />
-        </FormField>
+        <div className="flex justify-end mt-1">
+          <span className={`text-xs ${profileData.bio.length > 180 ? 'text-red-400' : 'text-gray-400'}`}>
+            {profileData.bio.length}/200
+          </span>
+        </div>
+      </div>
 
-        <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-blue-300 mb-2">Profile Preview</h3>
-          <div className="flex items-start gap-3">
-            {profileData.profilePhoto ? (
-              <img
-                src={profileData.profilePhoto}
-                alt="Profile"
-                className="w-12 h-12 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
-                <span className="text-gray-400 text-xs">No Photo</span>
-              </div>
-            )}
-            <div className="flex-1">
-              <h4 className="font-semibold text-white">{profileData.displayName || 'Your Name'}</h4>
-              {profileData.username && (
-                <p className="text-gray-400 text-sm">@{profileData.username}</p>
-              )}
-              <p className="text-gray-300 text-sm mt-1">
-                {profileData.bio || 'Your bio will appear here...'}
-              </p>
+      <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
+        <h3 className="text-sm font-medium text-blue-300 mb-2">Profile Preview</h3>
+        <div className="flex items-start gap-3">
+          {profileData.profilePhoto ? (
+            <img
+              src={profileData.profilePhoto}
+              alt="Profile"
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
+              <span className="text-gray-400 text-xs">No Photo</span>
             </div>
+          )}
+          <div className="flex-1">
+            <h4 className="font-semibold text-white">{profileData.displayName || 'Your Name'}</h4>
+            {profileData.username && (
+              <p className="text-gray-400 text-sm">@{profileData.username}</p>
+            )}
+            <p className="text-gray-300 text-sm mt-1">
+              {profileData.bio || 'Your bio will appear here...'}
+            </p>
           </div>
         </div>
       </div>
@@ -517,23 +518,31 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
           {/* Footer */}
           <div className="mt-6 pt-4">
             {step === 'social' ? (
-              <Button
-                onClick={executeComplete}
+              <button
+                onClick={handleComplete}
                 disabled={!canProceed() || isLoading}
-                loading={isLoading}
-                className="w-full"
-                icon={<CheckIcon className="w-5 h-5" />}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {isLoading ? 'Creating Profile...' : 'Complete Profile'}
-              </Button>
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Creating Profile...
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="w-5 h-5" />
+                    Complete Profile
+                  </>
+                )}
+              </button>
             ) : (
-              <Button
+              <button
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className="w-full"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed"
               >
                 Continue
-              </Button>
+              </button>
             )}
           </div>
         </div>
