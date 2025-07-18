@@ -7,6 +7,11 @@ import { generatePlaceholderImage, checkStorageAvailability } from '../lib/stora
 import { createPost } from '../lib/posts';
 import { compressImage, validateImageFile, formatFileSize, CompressionResult } from '../utils/imageCompression';
 import { ImageCompressionModal } from '../components/common/ImageCompressionModal';
+import { Button } from '../components/common/Button';
+import { TextArea } from '../components/common/TextArea';
+import { ErrorMessage } from '../components/common/ErrorMessage';
+import { useAsync } from '../hooks/useAsync';
+import { VALIDATION_RULES, FILE_LIMITS } from '../constants';
 
 interface Props {
   onBack?: () => void; // Add back button handler
@@ -16,7 +21,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const [caption, setCaption] = useState('');
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isPosting, setIsPosting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +39,9 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Use async hook for post creation
+  const { loading: isPosting, execute: executePost } = useAsync(createPost);
 
   // Load current user data and check storage
   useEffect(() => {
@@ -125,7 +132,10 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
   const handlePost = async () => {
     if (!selectedFile && !caption.trim()) {
-      alert('Please add some content to your post');
+      return;
+    }
+
+    if (caption.length > VALIDATION_RULES.CAPTION.MAX_LENGTH) {
       return;
     }
 
@@ -133,8 +143,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       alert('Please log in to create a post');
       return;
     }
-    
-    setIsPosting(true);
     
     try {
       let mediaUrl = '';
@@ -176,7 +184,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       }
 
       // Create post using the posts service
-      const newPost = await createPost({
+      const newPost = await executePost({
         title: `Post by ${currentUser.name}`,
         caption: caption.trim() || 'New post from Zenlit!',
         mediaUrl: mediaUrl,
@@ -189,7 +197,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
       console.log('Post created successfully:', newPost);
       
-      setIsPosting(false);
       setShowSuccess(true);
       
       // Reset form after success animation
@@ -203,7 +210,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
     } catch (error) {
       console.error('Post creation error:', error);
-      setIsPosting(false);
       
       // Show user-friendly error message
       if (error instanceof Error) {
@@ -249,12 +255,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       // Compress the image
       const result = await compressImage(
         file,
-        {
-          minSizeKB: 350,
-          maxSizeKB: 800,
-          maxWidth: 1920,
-          maxHeight: 1920
-        },
+        FILE_LIMITS.POST_IMAGE.COMPRESSION,
         (progress) => {
           setCompressionProgress(progress);
         }
@@ -354,14 +355,8 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
         <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center">
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="mr-3 p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
-              >
-                <ChevronLeftIcon className="w-6 h-6 text-white" />
-              </button>
+                {isPosting ? 'Sharing...' : 'Share'}
+              </Button>
             )}
             <h1 className="text-xl font-bold text-white">Create Post</h1>
           </div>
@@ -385,17 +380,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       <div className="p-4 space-y-6 pb-20">
         {/* Storage Status Info (only show if there might be issues) */}
         {!storageStatus.available && (
-          <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <ExclamationTriangleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm font-medium text-blue-300 mb-1">Storage Info</h3>
-                <p className="text-xs text-blue-200">
-                  {storageStatus.message}
-                </p>
-              </div>
-            </div>
-          </div>
+          <ErrorMessage message={storageStatus.message} type="info" />
         )}
 
         {/* User Info */}
@@ -412,18 +397,14 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
         {/* Caption Input */}
         <div>
-          <textarea
+          <TextArea
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="What's happening?"
-            className="w-full h-32 px-0 py-0 bg-transparent border-none text-white placeholder-gray-400 focus:outline-none resize-none text-lg"
-            maxLength={500}
+            className="h-32 px-0 py-0 bg-transparent border-none text-lg"
+            maxLength={VALIDATION_RULES.CAPTION.MAX_LENGTH}
+            showCharCount
           />
-          <div className="flex justify-end mt-2">
-            <span className={`text-xs ${caption.length > 450 ? 'text-red-400' : 'text-gray-400'}`}>
-              {caption.length}/500
-            </span>
-          </div>
         </div>
 
         {/* Selected Media Preview */}
