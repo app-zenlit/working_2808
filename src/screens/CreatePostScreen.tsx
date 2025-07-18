@@ -563,15 +563,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         {!selectedMedia && (
           <div className="border-2 border-dashed border-gray-700 rounded-xl p-8">
             <div className="text-center">
-              <div className="flex justify-center space-x-6 mb-4">
-                <button 
-                  onClick={() => handleMediaSelect('camera')}
-                  className="flex flex-col items-center p-6 bg-gray-800 rounded-xl hover:bg-gray-700 active:scale-95 transition-all"
-                >
-                  <CameraIcon className="w-10 h-10 text-blue-400 mb-3" />
-                  <span className="text-sm font-medium text-white">Camera</span>
-                  <span className="text-xs text-gray-400 mt-1">Take a photo</span>
-                </button>
+              <div className="flex justify-center mb-4">
                 <button 
                   onClick={() => handleMediaSelect('gallery')}
                   className="flex flex-col items-center p-6 bg-gray-800 rounded-xl hover:bg-gray-700 active:scale-95 transition-all"
@@ -583,7 +575,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
               </div>
               <p className="text-gray-400 text-sm">Add photos to your post</p>
               <p className="text-gray-500 text-xs mt-1">
-                Images will be automatically optimized (350KB - 800KB)
+                Choose images from your gallery - they will be automatically optimized (350KB - 800KB)
               </p>
             </div>
           </div>
