@@ -1,7 +1,7 @@
 // src/screens/EditProfileScreen.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { User } from '../types';
-import { ChevronLeftIcon, CameraIcon, CheckIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, PhotoIcon, CheckIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { SocialAccountsSection } from '../components/social/SocialAccountsSection';
 import { uploadProfileImage, uploadBannerImage, deleteImage, extractFilePathFromUrl } from '../lib/storage';
 import { supabase } from '../lib/supabaseClient';
@@ -358,7 +358,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-            <CameraIcon className="w-12 h-12 text-gray-400" />
+            <PhotoIcon className="w-12 h-12 text-gray-400" />
           </div>
         )}
         
@@ -369,7 +369,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
             className="bg-black/50 backdrop-blur-sm p-2 rounded-full text-white hover:bg-black/70 transition-colors"
             title="Change cover photo"
           >
-            <CameraIcon className="w-5 h-5" />
+            <PhotoIcon className="w-5 h-5" />
           </button>
           {coverUrl && (
             <button
@@ -394,7 +394,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
             />
           ) : (
             <div className="w-28 h-28 rounded-full border-4 border-black bg-gray-700 flex items-center justify-center shadow-xl">
-              <CameraIcon className="w-8 h-8 text-gray-400" />
+              <PhotoIcon className="w-8 h-8 text-gray-400" />
             </div>
           )}
           
@@ -405,7 +405,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
               className="bg-blue-600 p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
               title="Change profile photo"
             >
-              <CameraIcon className="w-4 h-4 text-white" />
+              <PhotoIcon className="w-4 h-4 text-white" />
             </button>
             {profileUrl && (
               <button

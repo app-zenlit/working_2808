@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { CameraIcon, CheckIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, CheckIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../../lib/supabase';
 import { uploadProfileImage } from '../../lib/utils';
 import { completeProfileSetup } from '../lib/auth';
@@ -314,7 +314,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
             />
           ) : (
             <div className="w-32 h-32 rounded-full bg-gray-800 border-4 border-gray-600 flex items-center justify-center">
-              <CameraIcon className="w-12 h-12 text-gray-400" />
+              <PhotoIcon className="w-12 h-12 text-gray-400" />
             </div>
           )}
           
@@ -322,7 +322,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
             onClick={handlePhotoSelect}
             className="absolute bottom-0 right-0 bg-blue-600 p-3 rounded-full text-white hover:bg-blue-700 active:scale-95 transition-all shadow-lg"
           >
-            <CameraIcon className="w-5 h-5" />
+            <PhotoIcon className="w-5 h-5" />
           </button>
         </div>
 

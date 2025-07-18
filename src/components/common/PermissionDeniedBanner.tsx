@@ -4,7 +4,7 @@ import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 interface Props {
   isVisible: boolean;
-  permissionType: 'Camera' | 'Location';
+  permissionType: 'Location';
   onDismiss: () => void;
   onRetry: () => void;
 }
@@ -29,7 +29,7 @@ export const PermissionDeniedBanner: React.FC<Props> = ({
             <div className="flex items-center gap-2">
               <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm font-medium">
-                {permissionType} access permanently denied.
+                Location access permanently denied.
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ export const PermissionDeniedBanner: React.FC<Props> = ({
             </div>
           </div>
           <p className="text-xs text-red-200 mt-2">
-            Please enable {permissionType.toLowerCase()} permissions in your device's app settings or browser settings to use this feature.
+            Please enable location permissions in your device's app settings or browser settings to use this feature.
           </p>
         </motion.div>
       )}

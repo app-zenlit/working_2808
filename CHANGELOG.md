@@ -11,7 +11,7 @@ All notable changes to the Zenlit Social Media App will be documented in this fi
 - **Profile Management** - Customizable user profiles
 - **Local Discovery** - Radar feature to find nearby users
 - **Messaging System** - Real-time chat functionality
-- **Content Sharing** - Photo/video posts with camera integration
+- **Content Sharing** - Photo/video posts with gallery upload
 - **Stories Feature** - Temporary content sharing
 - **Mobile-First Design** - Responsive layout optimized for mobile
 
@@ -20,7 +20,7 @@ All notable changes to the Zenlit Social Media App will be documented in this fi
 - **Authentication Flow** - Secure login/signup with email verification
 - **Radar Screen** - Discover and connect with nearby users
 - **Feed Screen** - Browse posts from all users
-- **Create Post Screen** - Share content with camera integration
+- **Create Post Screen** - Share content with gallery upload
 - **Messages Screen** - Chat with other users
 - **Profile Screen** - View and edit user profiles
 - **Social Verification** - Verify ownership of social media accounts

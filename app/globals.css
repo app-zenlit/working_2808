@@ -243,10 +243,6 @@ body.hide-controls .bottom-nav {
   display: none;
 }
 
-body.hide-controls .camera-header {
-  display: none;
-}
-
 .orientation-hint {
   position: absolute;
   bottom: 1rem;

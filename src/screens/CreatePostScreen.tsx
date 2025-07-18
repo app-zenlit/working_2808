@@ -284,14 +284,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     }
   };
 
-  const handleMediaSelect = (type: 'camera' | 'gallery') => {
-    if (type === 'camera') {
-      startCamera();
-    } else {
-      openGallery();
-    }
-  };
-
   const removeMedia = () => {
     if (selectedMedia && selectedMedia.startsWith('blob:')) {
       URL.revokeObjectURL(selectedMedia);
