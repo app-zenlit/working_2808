@@ -34,6 +34,8 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   }>({ stage: '' });
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
   
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load current user data and check storage
