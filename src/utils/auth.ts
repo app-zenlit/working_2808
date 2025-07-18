@@ -90,7 +90,6 @@ export const executeAuthOperation = async (
     console.error('Supabase client not initialized. Check environment variables.');
     return { success: false, error: 'Service temporarily unavailable' };
   }
-  }
 
   try {
     const result = await operation();
