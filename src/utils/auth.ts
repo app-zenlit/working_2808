@@ -13,7 +13,7 @@ export interface AuthResponse {
 }
 
 // Common error handling for auth operations
-const handleAuthError = (error: any, context: string): string => {
+export const handleAuthError = (error: any, context: string): string => {
   console.error(`${context} error:`, error);
   
   if (error.message.includes('User already registered')) {
@@ -51,17 +51,8 @@ const handleAuthError = (error: any, context: string): string => {
   return getErrorMessage(error);
 };
 
-// Check if Supabase is available
-const isSupabaseAvailable = (): boolean => {
-  if (!supabase) {
-    console.error('Supabase client not initialized. Check environment variables.');
-    return false;
-  }
-  return true;
-};
-
 // Validate input before making auth requests
-const validateAuthInput = (
+export const validateAuthInput = (
   email?: string,
   password?: string,
   otp?: string
@@ -91,12 +82,14 @@ const validateAuthInput = (
 };
 
 // Generic auth operation wrapper
-const executeAuthOperation = async (
+export const executeAuthOperation = async (
   operation: () => Promise<any>,
   context: string
 ): Promise<AuthResponse> => {
-  if (!isSupabaseAvailable()) {
+  if (!supabase) {
+    console.error('Supabase client not initialized. Check environment variables.');
     return { success: false, error: 'Service temporarily unavailable' };
+  }
   }
 
   try {
@@ -109,5 +102,3 @@ const executeAuthOperation = async (
     };
   }
 };
-
-export { executeAuthOperation, validateAuthInput, handleAuthError, isSupabaseAvailable };

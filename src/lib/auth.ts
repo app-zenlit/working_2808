@@ -4,6 +4,15 @@ import { UI_CONFIG } from '../constants'
 
 export type { AuthResponse } from '../utils/auth'
 
+// Check if Supabase is available
+const isSupabaseAvailable = (): boolean => {
+  if (!supabase) {
+    console.error('Supabase client not initialized. Check environment variables.');
+    return false;
+  }
+  return true;
+};
+
 // STEP 1: Send OTP for email verification during signup
 export const sendSignupOTP = async (email: string): Promise<AuthResponse> => {
   const validation = validateAuthInput(email);
