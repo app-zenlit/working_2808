@@ -16,6 +16,7 @@ import {
 import { locationToggleManager } from '../lib/locationToggle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
+import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
 
 interface Props {
   userGender: 'male' | 'female';
@@ -47,6 +48,9 @@ export const RadarScreen: React.FC<Props> = ({
   // Location toggle state - get from persistent manager
   const [isLocationEnabled, setIsLocationEnabled] = useState(locationToggleManager.isEnabled());
   const [isTogglingLocation, setIsTogglingLocation] = useState(false);
+
+  // New state for permission denied banner
+  const [showLocationDeniedBanner, setShowLocationDeniedBanner] = useState(false);
 
   // Profile viewing state
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
@@ -128,6 +132,16 @@ export const RadarScreen: React.FC<Props> = ({
       // Get the current toggle state from the manager
       const toggleState = locationToggleManager.getState();
       setIsLocationEnabled(toggleState.isEnabled);
+
+      // --- NEW: Check initial permission status and set banner if denied ---
+      const initialPermissionStatus = await checkLocationPermission();
+      setLocationPermission(initialPermissionStatus);
+      if (initialPermissionStatus.denied) {
+        setShowLocationDeniedBanner(true);
+      } else {
+        setShowLocationDeniedBanner(false);
+      }
+      // --- END NEW ---
 
       console.log('🚀 RADAR DEBUG: Location toggle state:', {
         isEnabled: toggleState.isEnabled,
@@ -250,11 +264,28 @@ export const RadarScreen: React.FC<Props> = ({
 
     setIsTogglingLocation(true);
     setLocationError(null);
+    setShowLocationDeniedBanner(false); // Dismiss any previous denied banner
 
     try {
       if (enabled) {
         console.log('🔄 Turning location toggle ON');
         
+        // --- NEW: Check geolocation permission status before turning on ---
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+          console.log('Geolocation permission status:', permissionStatus.state);
+
+          if (permissionStatus.state === 'denied') {
+            setShowLocationDeniedBanner(true);
+            setIsTogglingLocation(false);
+            return; // Do not proceed if permission is denied
+          }
+        } catch (permError) {
+          console.warn('Could not query geolocation permission status:', permError);
+          // Continue anyway, the location request will handle permission errors
+        }
+        // --- END NEW ---
+
         // Turn ON location tracking
         const result = await locationToggleManager.turnOn();
         
@@ -274,6 +305,14 @@ export const RadarScreen: React.FC<Props> = ({
           console.error('❌ Failed to turn ON location toggle:', result.error);
           setLocationError(result.error || 'Failed to enable location');
           setIsLocationEnabled(false);
+          if (result.error && (
+            result.error.includes('denied') || 
+            result.error.includes('permission') ||
+            result.error.includes('PERMISSION_DENIED')
+          )) {
+            setShowLocationDeniedBanner(true);
+          } else {
+          }
         }
       } else {
         console.log('🔄 Turning location toggle OFF');
@@ -429,6 +468,17 @@ export const RadarScreen: React.FC<Props> = ({
         threshold={80}
       />
 
+      {/* Location Denied Banner */}
+      <PermissionDeniedBanner
+        isVisible={showLocationDeniedBanner}
+        permissionType="Location"
+        onDismiss={() => setShowLocationDeniedBanner(false)}
+        onRetry={() => {
+          setShowLocationDeniedBanner(false)
+          handleLocationToggle(true)
+        }}
+      />
+
       {/* Scrollable container with pull-to-refresh */}
       <div ref={containerRef} className="min-h-full overflow-y-auto">
         {/* Header */}
@@ -520,7 +570,7 @@ export const RadarScreen: React.FC<Props> = ({
                 </p>
                 <button
                   onClick={() => handleLocationToggle(true)}
-                  disabled={isTogglingLocation}
+                  disabled={isTogglingLocation || showLocationDeniedBanner} // Disable if banner is shown
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
                 >
                   {isTogglingLocation ? 'Enabling...' : 'Enable Location'}
@@ -538,7 +588,7 @@ export const RadarScreen: React.FC<Props> = ({
               </p>
               <button
                 onClick={() => handleLocationToggle(true)}
-                disabled={isTogglingLocation}
+                disabled={isTogglingLocation || showLocationDeniedBanner} // Disable if banner is shown
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
               >
                 {isTogglingLocation ? 'Enabling...' : 'Turn On Location'}

@@ -411,6 +411,7 @@ export const getNearbyUsers = async (
 // Check location permission status
 export const checkLocationPermission = async (): Promise<LocationPermissionStatus> => {
   try {
+    // First check if geolocation is supported at all
     if (!isGeolocationSupported()) {
       return {
         granted: false,
@@ -420,9 +421,17 @@ export const checkLocationPermission = async (): Promise<LocationPermissionStatu
       };
     }
 
-    // Check permission using the Permissions API if available
-    if ('permissions' in navigator) {
-      const permission = await navigator.permissions.query({ name: 'geolocation' });
+    // Check if Permissions API is available
+    if (!('permissions' in navigator)) {
+      console.warn('Permissions API not available, falling back to feature detection');
+      // We can't determine permission state directly, so we'll have to assume it's available
+      // and let the actual geolocation request handle permissions
+      return { granted: false, denied: false, pending: true };
+    }
+
+    try {
+      // Check permission using the Permissions API
+      const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
       
       switch (permission.state) {
         case 'granted':
@@ -434,11 +443,11 @@ export const checkLocationPermission = async (): Promise<LocationPermissionStatu
         default:
           return { granted: false, denied: false, pending: true };
       }
+    } catch (permError) {
+      console.warn('Error querying geolocation permission:', permError);
+      // If we can't query permissions, assume we need to prompt
+        return { granted: false, denied: false, pending: true };
     }
-
-    // Fallback: assume permission is pending if we can't check
-    return { granted: false, denied: false, pending: true };
-
   } catch (error) {
     console.error('Error checking location permission:', error);
     return {

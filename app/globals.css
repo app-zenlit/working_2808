@@ -239,6 +239,26 @@ input, textarea, select {
   }
 }
 
+body.hide-controls .bottom-nav {
+  display: none;
+}
+
+body.hide-controls .camera-header {
+  display: none;
+}
+
+.orientation-hint {
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: white;
+  font-size: 0.875rem;
+  pointer-events: none;
+  z-index: 20;
+}
+
 /* Improved mobile touch targets */
 @media (hover: none) and (pointer: coarse) {
   button, .clickable {

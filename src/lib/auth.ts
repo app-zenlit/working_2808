@@ -202,6 +202,9 @@ export const completeProfileSetup = async (profileData: {
   dateOfBirth?: string
   gender?: string
   profilePhotoUrl?: string
+  instagramUrl?: string
+  linkedInUrl?: string
+  twitterUrl?: string
 }): Promise<AuthResponse> => {
   if (!isSupabaseAvailable()) {
     return { success: false, error: 'Service temporarily unavailable' }
@@ -246,6 +249,9 @@ export const completeProfileSetup = async (profileData: {
         gender: profileData.gender,
         profile_photo_url: profileData.profilePhotoUrl,
         profile_completed: true,
+        instagram_url: profileData.instagramUrl || null,
+        linked_in_url: profileData.linkedInUrl || null,
+        twitter_url: profileData.twitterUrl || null,
         updated_at: new Date().toISOString()
       })
       .select()

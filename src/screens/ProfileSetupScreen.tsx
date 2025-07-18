@@ -7,6 +7,7 @@ import { uploadProfileImage } from '../../lib/utils';
 import { completeProfileSetup } from '../lib/auth';
 import { reserveUsername, checkUsernameAvailability } from '../lib/username';
 import { UsernameInput } from '../components/common/UsernameInput';
+import { SocialAccountsSection } from '../components/social/SocialAccountsSection';
 
 interface Props {
   onComplete: (profileData: any) => void;
@@ -14,7 +15,7 @@ interface Props {
 }
 
 export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
-  const [step, setStep] = useState<'basic' | 'photo' | 'bio'>('basic');
+  const [step, setStep] = useState<'basic' | 'photo' | 'bio' | 'social'>('basic');
   const [isLoading, setIsLoading] = useState(false);
   const [isUsernameValid, setIsUsernameValid] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -23,7 +24,10 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
     dateOfBirth: '',
     gender: '' as 'male' | 'female' | '',
     profilePhoto: null as string | null,
-    bio: ''
+    bio: '',
+    instagramUrl: '',
+    linkedInUrl: '',
+    twitterUrl: ''
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,6 +76,8 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
       setStep('photo');
     } else if (step === 'photo') {
       setStep('bio');
+    } else if (step === 'bio' && profileData.bio.trim().length > 0) {
+      setStep('social');
     }
   };
 
@@ -80,6 +86,8 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
       setStep('basic');
     } else if (step === 'bio') {
       setStep('photo');
+    } else if (step === 'social') {
+      setStep('bio');
     } else if (onBack) {
       onBack();
     }
@@ -165,7 +173,10 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
         bio: profileData.bio,
         dateOfBirth: profileData.dateOfBirth,
         gender: profileData.gender,
-        profilePhotoUrl: profilePhotoUrl || undefined // FIXED: Extract publicUrl properly
+        profilePhotoUrl: profilePhotoUrl || undefined,
+        instagramUrl: profileData.instagramUrl,
+        linkedInUrl: profileData.linkedInUrl,
+        twitterUrl: profileData.twitterUrl
       });
 
       if (!result.success) {
@@ -395,8 +406,59 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
     </motion.div>
   );
 
+  const renderSocialStep = () => (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="space-y-6"
+    >
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-white mb-2">Connect Your Socials</h2>
+        <p className="text-gray-400">Add links to your social media profiles (optional)</p>
+      </div>
+      
+      <SocialAccountsSection
+        user={{
+          id: 'temp',
+          name: profileData.displayName,
+          username: profileData.username,
+          dpUrl: profileData.profilePhoto || '',
+          bio: profileData.bio,
+          gender: profileData.gender as 'male' | 'female',
+          age: 0,
+          distance: 0,
+          links: {
+            Twitter: profileData.twitterUrl,
+            Instagram: profileData.instagramUrl,
+            LinkedIn: profileData.linkedInUrl,
+          },
+          instagramUrl: profileData.instagramUrl,
+          linkedInUrl: profileData.linkedInUrl,
+          twitterUrl: profileData.twitterUrl,
+        }}
+        onUserUpdate={(updatedUser) => {
+          setProfileData(prev => ({
+            ...prev,
+            instagramUrl: updatedUser.instagramUrl || '',
+            linkedInUrl: updatedUser.linkedInUrl || '',
+            twitterUrl: updatedUser.twitterUrl || '',
+          }));
+        }}
+      />
+      
+      <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
+        <h3 className="text-sm font-medium text-blue-300 mb-2">Why add social links?</h3>
+        <ul className="text-xs text-blue-200 space-y-1">
+          <li>• Help others verify your identity</li>
+          <li>• Build trust in the community</li>
+          <li>• Make it easier for people to connect with you</li>
+        </ul>
+      </div>
+    </motion.div>
+  );
+
   const getStepProgress = () => {
-    const steps = ['basic', 'photo', 'bio'];
+    const steps = ['basic', 'photo', 'bio', 'social'];
     return ((steps.indexOf(step) + 1) / steps.length) * 100;
   };
 
@@ -408,6 +470,8 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
         return true; // Photo is optional
       case 'bio':
         return profileData.bio.trim().length > 0;
+      case 'social':
+        return true; // Social links are optional
       default:
         return false;
     }
@@ -436,9 +500,10 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
             </div>
             
             <span className="text-sm text-gray-400 min-w-0">
-              {step === 'basic' && '1/3'}
-              {step === 'photo' && '2/3'}
-              {step === 'bio' && '3/3'}
+              {step === 'basic' && '1/4'}
+              {step === 'photo' && '2/4'}
+              {step === 'bio' && '3/4'}
+              {step === 'social' && '4/4'}
             </span>
           </div>
 
@@ -447,11 +512,12 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
             {step === 'basic' && renderBasicInfo()}
             {step === 'photo' && renderPhotoStep()}
             {step === 'bio' && renderBioStep()}
+            {step === 'social' && renderSocialStep()}
           </div>
 
           {/* Footer */}
           <div className="mt-6 pt-4">
-            {step === 'bio' ? (
+            {step === 'social' ? (
               <button
                 onClick={handleComplete}
                 disabled={!canProceed() || isLoading}
