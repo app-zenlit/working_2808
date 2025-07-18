@@ -1,8 +1,14 @@
 import { supabase, ensureSession } from './supabase'
-import { executeAuthOperation, validateAuthInput, handleAuthError } from '../utils/auth'
+import {
+  executeAuthOperation,
+  validateAuthInput,
+  handleAuthError
+} from '../utils/auth'
 import { UI_CONFIG } from '../constants'
 
-export type { AuthResponse } from '../utils/auth'
+import type { AuthResponse } from '../utils/auth'
+
+export type { AuthResponse }
 
 // Check if Supabase is available
 const isSupabaseAvailable = (): boolean => {
