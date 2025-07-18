@@ -20,7 +20,7 @@ export const FeedbackScreen: React.FC = () => {
     return handleSubmit();
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
     if (!feedback.trim()) {
