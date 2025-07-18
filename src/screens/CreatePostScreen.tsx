@@ -358,6 +358,17 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         originalSizeKB={selectedFile ? Math.round(selectedFile.size / 1024) : undefined}
       />
 
+      {/* Camera Denied Banner */}
+      <PermissionDeniedBanner
+        isVisible={showCameraDeniedBanner}
+        permissionType="Camera"
+        onDismiss={() => setShowCameraDeniedBanner(false)}
+        onRetry={() => {
+          setShowCameraDeniedBanner(false)
+          startCamera()
+        }}
+      />
+
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
         <div className="flex items-center justify-between px-4 py-3">
@@ -470,7 +481,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
             <div className="text-center">
               <div className="flex justify-center mb-4">
                 <button 
-                  onClick={() => handleMediaSelect('gallery')}
+                  onClick={openGallery}
                   className="flex flex-col items-center p-6 bg-gray-800 rounded-xl hover:bg-gray-700 active:scale-95 transition-all"
                 >
                   <PhotoIcon className="w-10 h-10 text-green-400 mb-3" />
@@ -480,7 +491,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
               </div>
               <p className="text-gray-400 text-sm">Add photos to your post</p>
               <p className="text-gray-500 text-xs mt-1">
-                Choose images from your gallery - they will be automatically optimized (350KB - 800KB)
+                Images will be automatically optimized (350KB - 800KB)
               </p>
             </div>
           </div>
