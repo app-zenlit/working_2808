@@ -34,8 +34,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   }>({ stage: '' });
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
   
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load current user data and check storage
@@ -350,90 +348,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     );
   }
 
-  // Camera Error Display
-  if (cameraError) {
-    return (
-      <div className="h-full bg-black flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <XMarkIcon className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">Camera Error</h2>
-          <p className="text-gray-300 mb-6">{cameraError}</p>
-          <div className="space-y-3">
-            <button
-              onClick={() => {
-                setCameraError(null);
-                startCamera();
-              }}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={() => setCameraError(null)}
-              className="w-full bg-gray-600 text-white py-3 rounded-lg font-medium hover:bg-gray-700 active:scale-95 transition-all"
-            >
-              Go Back
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Camera Preview Component
-  if (showCamera) {
-    return (
-      <div className="h-full bg-black flex flex-col">
-        {/* Camera Header */}
-        <div className="camera-header flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
-          <button
-            onClick={stopCamera}
-            className="text-white p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
-          >
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-          <h1 className="text-lg font-semibold text-white">Take Photo</h1>
-          <div className="w-10" /> {/* Spacer */}
-        </div>
-
-        {/* Camera Preview */}
-        <div className="flex-1 relative overflow-hidden bg-gray-900">
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-            style={{ transform: 'scaleX(1)' }} /* Ensure proper orientation */
-            onError={(e) => {
-              console.error('Video error:', e);
-              setCameraError('Failed to load camera preview');
-            }}
-          />
-
-          {!fullscreenSupported && (
-            <div className="orientation-hint">Rotate your device or tap Close Preview to exit.</div>
-          )}
-          
-          {/* Camera Controls */}
-          <div className="absolute bottom-8 left-0 right-0 flex justify-center">
-            <button
-              onClick={capturePhoto}
-              className="w-16 h-16 bg-white rounded-full border-4 border-gray-300 hover:border-gray-400 active:scale-95 transition-all shadow-lg flex items-center justify-center"
-            >
-              <div className="w-12 h-12 bg-white rounded-full" />
-            </button>
-          </div>
-        </div>
-
-        {/* Hidden canvas for photo capture */}
-        <canvas ref={canvasRef} className="hidden" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-full bg-black">
       {/* Image Compression Modal */}
@@ -442,17 +356,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         onClose={() => setIsCompressing(false)}
         progress={compressionProgress}
         originalSizeKB={selectedFile ? Math.round(selectedFile.size / 1024) : undefined}
-      />
-
-      {/* Camera Denied Banner */}
-      <PermissionDeniedBanner
-        isVisible={showCameraDeniedBanner}
-        permissionType="Camera"
-        onDismiss={() => setShowCameraDeniedBanner(false)}
-        onRetry={() => {
-          setShowCameraDeniedBanner(false)
-          startCamera()
-        }}
       />
 
       {/* Header */}
