@@ -42,11 +42,11 @@ export const FILE_LIMITS = {
     MAX_SIZE_MB: 10,
     FORMATS: ['image/jpeg', 'image/png', 'image/webp'],
     COMPRESSION: {
-      MIN_SIZE_KB: 350,
-      MAX_SIZE_KB: 800,
-      MAX_WIDTH: 1920,
-      MAX_HEIGHT: 1920,
-    },
+      minSizeKB: 350,
+      maxSizeKB: 800,
+      maxWidth: 1920,
+      maxHeight: 1920,
+    } as const,
   },
 } as const;
 
