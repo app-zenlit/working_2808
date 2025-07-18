@@ -48,7 +48,7 @@ export const PermissionDeniedBanner: React.FC<Props> = ({
             </div>
           </div>
           <p className="text-xs text-red-200 mt-2">
-            Please enable location permissions in your device's app settings or browser settings to use this feature.
+            Please enable location permissions in your device&apos;s app settings or browser settings to use this feature.
           </p>
         </motion.div>
       )}
