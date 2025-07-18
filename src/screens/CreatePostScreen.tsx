@@ -358,16 +358,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         originalSizeKB={selectedFile ? Math.round(selectedFile.size / 1024) : undefined}
       />
 
-      {/* Camera Denied Banner */}
-      <PermissionDeniedBanner
-        isVisible={showCameraDeniedBanner}
-        permissionType="Camera"
-        onDismiss={() => setShowCameraDeniedBanner(false)}
-        onRetry={() => {
-          setShowCameraDeniedBanner(false)
-          startCamera()
-        }}
-      />
 
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
