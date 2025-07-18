@@ -190,8 +190,10 @@ export const saveUserLocation = async (
     console.log('Saving user location to profile:', userId, location);
 
     // Round coordinates to 2 decimal places before saving
-    const latRounded = Number(location.latitude.toFixed(2));
-    const lonRounded = Number(location.longitude.toFixed(2));
+    const latVal = typeof location.latitude === 'string' ? parseFloat(location.latitude) : location.latitude;
+    const lonVal = typeof location.longitude === 'string' ? parseFloat(location.longitude) : location.longitude;
+    const latRounded = Number(latVal.toFixed(2));
+    const lonRounded = Number(lonVal.toFixed(2));
 
     const { error } = await supabase
       .from('profiles')
@@ -228,10 +230,14 @@ export const hasLocationChanged = (
   oldLocation: UserLocation,
   newLocation: UserLocation
 ): boolean => {
-  const oldLatRounded = Number(oldLocation.latitude.toFixed(2));
-  const oldLonRounded = Number(oldLocation.longitude.toFixed(2));
-  const newLatRounded = Number(newLocation.latitude.toFixed(2));
-  const newLonRounded = Number(newLocation.longitude.toFixed(2));
+  const oldLat = typeof oldLocation.latitude === 'string' ? parseFloat(oldLocation.latitude) : oldLocation.latitude;
+  const oldLon = typeof oldLocation.longitude === 'string' ? parseFloat(oldLocation.longitude) : oldLocation.longitude;
+  const newLat = typeof newLocation.latitude === 'string' ? parseFloat(newLocation.latitude) : newLocation.latitude;
+  const newLon = typeof newLocation.longitude === 'string' ? parseFloat(newLocation.longitude) : newLocation.longitude;
+  const oldLatRounded = Number(oldLat.toFixed(2));
+  const oldLonRounded = Number(oldLon.toFixed(2));
+  const newLatRounded = Number(newLat.toFixed(2));
+  const newLonRounded = Number(newLon.toFixed(2));
   
   return oldLatRounded !== newLatRounded || oldLonRounded !== newLonRounded;
 };
@@ -270,8 +276,16 @@ export const getNearbyUsers = async (
     console.log('📍 Limit:', limit);
 
     // Round coordinates to 2 decimal places for exact matching
-    const latRounded = Number(currentLocation.latitude.toFixed(2));
-    const lonRounded = Number(currentLocation.longitude.toFixed(2));
+    const latValue =
+      typeof currentLocation.latitude === 'string'
+        ? parseFloat(currentLocation.latitude)
+        : currentLocation.latitude;
+    const lonValue =
+      typeof currentLocation.longitude === 'string'
+        ? parseFloat(currentLocation.longitude)
+        : currentLocation.longitude;
+    const latRounded = Number(latValue.toFixed(2));
+    const lonRounded = Number(lonValue.toFixed(2));
 
     console.log('📍 Rounded coordinates for matching:', { latRounded, lonRounded });
 
@@ -289,8 +303,10 @@ export const getNearbyUsers = async (
     } else {
       console.log('🔍 DEBUG: Found', allUsersWithLocation?.length || 0, 'users with location data');
       allUsersWithLocation?.forEach((user: any, index: number) => {
-        const userLatRounded = Number(user.latitude.toFixed(2));
-        const userLonRounded = Number(user.longitude.toFixed(2));
+        const userLat = typeof user.latitude === 'string' ? parseFloat(user.latitude) : user.latitude;
+        const userLon = typeof user.longitude === 'string' ? parseFloat(user.longitude) : user.longitude;
+        const userLatRounded = Number(userLat.toFixed(2));
+        const userLonRounded = Number(userLon.toFixed(2));
         console.log(`🔍 DEBUG: User ${index + 1}: ${user.name} - Lat: ${user.latitude} (${userLatRounded}), Lon: ${user.longitude} (${userLonRounded})`);
         
         if (userLatRounded === latRounded && userLonRounded === lonRounded) {
@@ -317,8 +333,10 @@ export const getNearbyUsers = async (
       
       // Filter users with matching coordinates
       const matchingUsers = directMatchUsers?.filter((user: any) => {
-        const userLatRounded = Number(user.latitude.toFixed(2));
-        const userLonRounded = Number(user.longitude.toFixed(2));
+        const userLat = typeof user.latitude === 'string' ? parseFloat(user.latitude) : user.latitude;
+        const userLon = typeof user.longitude === 'string' ? parseFloat(user.longitude) : user.longitude;
+        const userLatRounded = Number(userLat.toFixed(2));
+        const userLonRounded = Number(userLon.toFixed(2));
         const matches = userLatRounded === latRounded && userLonRounded === lonRounded;
         
         console.log(`🔍 DEBUG: Checking ${user.name}: ${userLatRounded} === ${latRounded} && ${userLonRounded} === ${lonRounded} = ${matches}`);
