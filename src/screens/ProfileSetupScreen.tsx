@@ -234,65 +234,66 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-white mb-2">Tell us about yourself</h2>
           <p className="text-gray-400">Let&apos;s set up your profile</p>
-      </div>
+        </div>
 
-      <div>
-        <FormField label="Display Name" required>
-          <Input
-          type="text"
-          value={profileData.displayName}
-          onChange={(e) => handleInputChange('displayName', e.target.value)}
-          placeholder="How should people know you?"
-          maxLength={VALIDATION_RULES.DISPLAY_NAME.MAX_LENGTH}
-        />
+        <div>
+          <FormField label="Display Name" required>
+            <Input
+            type="text"
+            value={profileData.displayName}
+            onChange={(e) => handleInputChange('displayName', e.target.value)}
+            placeholder="How should people know you?"
+            maxLength={VALIDATION_RULES.DISPLAY_NAME.MAX_LENGTH}
+          />
+          </FormField>
+
+        <FormField label="Username" required>
+          <UsernameInput
+            value={profileData.username}
+            onChange={(value) => handleInputChange('username', value)}
+            onValidationChange={handleUsernameValidation}
+            placeholder="username123"
+            required
+          />
         </FormField>
 
-      <FormField label="Username" required>
-        <UsernameInput
-          value={profileData.username}
-          onChange={(value) => handleInputChange('username', value)}
-          onValidationChange={handleUsernameValidation}
-          placeholder="username123"
-          required
-        />
-      </FormField>
+        <FormField label="Date of Birth" required>
+          <Input
+            type="date"
+            value={profileData.dateOfBirth}
+            onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+            className="[color-scheme:dark]"
+            max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
+          />
+        </FormField>
 
-      <FormField label="Date of Birth" required>
-        <Input
-          type="date"
-          value={profileData.dateOfBirth}
-          onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-          className="[color-scheme:dark]"
-          max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
-        />
-      </FormField>
-
-      <FormField label="Gender" required>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => handleInputChange('gender', 'male')}
-            className={`p-3 rounded-lg border-2 transition-all ${
-              profileData.gender === 'male'
-                ? 'border-blue-500 bg-blue-600/20 text-blue-400'
-                : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
-            }`}
-          >
-            Male
-          </button>
-          <button
-            type="button"
-            onClick={() => handleInputChange('gender', 'female')}
-            className={`p-3 rounded-lg border-2 transition-all ${
-              profileData.gender === 'female'
-                ? 'border-blue-500 bg-blue-600/20 text-blue-400'
-                : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
-            }`}
-          >
-            Female
-          </button>
-        </div>
-      </FormField>
+        <FormField label="Gender" required>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => handleInputChange('gender', 'male')}
+              className={`p-3 rounded-lg border-2 transition-all ${
+                profileData.gender === 'male'
+                  ? 'border-blue-500 bg-blue-600/20 text-blue-400'
+                  : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+              }`}
+            >
+              Male
+            </button>
+            <button
+              type="button"
+              onClick={() => handleInputChange('gender', 'female')}
+              className={`p-3 rounded-lg border-2 transition-all ${
+                profileData.gender === 'female'
+                  ? 'border-blue-500 bg-blue-600/20 text-blue-400'
+                  : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+              }`}
+            >
+              Female
+            </button>
+          </div>
+        </FormField>
+      </div>
     </motion.div>
   );
 
@@ -375,28 +376,29 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
         />
         </FormField>
 
-      <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-300 mb-2">Profile Preview</h3>
-        <div className="flex items-start gap-3">
-          {profileData.profilePhoto ? (
-            <img
-              src={profileData.profilePhoto}
-              alt="Profile"
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
-              <span className="text-gray-400 text-xs">No Photo</span>
-            </div>
-          )}
-          <div className="flex-1">
-            <h4 className="font-semibold text-white">{profileData.displayName || 'Your Name'}</h4>
-            {profileData.username && (
-              <p className="text-gray-400 text-sm">@{profileData.username}</p>
+        <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-blue-300 mb-2">Profile Preview</h3>
+          <div className="flex items-start gap-3">
+            {profileData.profilePhoto ? (
+              <img
+                src={profileData.profilePhoto}
+                alt="Profile"
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
+                <span className="text-gray-400 text-xs">No Photo</span>
+              </div>
             )}
-            <p className="text-gray-300 text-sm mt-1">
-              {profileData.bio || 'Your bio will appear here...'}
-            </p>
+            <div className="flex-1">
+              <h4 className="font-semibold text-white">{profileData.displayName || 'Your Name'}</h4>
+              {profileData.username && (
+                <p className="text-gray-400 text-sm">@{profileData.username}</p>
+              )}
+              <p className="text-gray-300 text-sm mt-1">
+                {profileData.bio || 'Your bio will appear here...'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
