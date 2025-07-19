@@ -47,7 +47,7 @@ export const SocialLinks: React.FC<Props> = ({ links, className = '' }) => {
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      {platforms.map(({ url, Icon, title, activeColor, inactiveColor }) => {
+      {platforms.map(({ url, Icon, title, activeColor }) => {
         const isActive = isValidUrl(url);
         
         // Only render if the link is active/valid
