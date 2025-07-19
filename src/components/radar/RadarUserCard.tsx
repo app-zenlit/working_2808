@@ -57,11 +57,7 @@ export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile 
                   )}
                 </div>
                 
-                {/* Proximity indicator */}
-                <div className="flex items-center gap-1 text-sm flex-shrink-0 ml-3 text-green-400">
-                  <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse" />
-                  <span className="font-medium">Nearby</span>
-                </div>
+
               </div>
               
               {/* Bio section with smooth expansion */}
