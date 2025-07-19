@@ -627,7 +627,7 @@ export const RadarScreen: React.FC<Props> = ({
                       </div>
                       <p className="text-gray-400 mb-2">No users found</p>
                       <p className="text-gray-500 text-sm mb-4">
-                        No users match "{searchQuery}". Try a different search term.
+                        No users match &quot;{searchQuery}&quot;. Try a different search term.
                       </p>
                       <button
                         onClick={clearSearch}
