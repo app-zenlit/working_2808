@@ -77,9 +77,9 @@ export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile 
                 {shouldTruncate && (
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-blue-400 hover:text-blue-300 text-xs mt-1 transition-colors"
+                    className="mt-1 text-gray-500 hover:text-gray-400 transition-colors text-xs"
                   >
-                    {isExpanded ? 'Show less' : 'Show more'}
+                    {isExpanded ? 'show less' : '+ read more'}
                   </button>
                 )}
               </div>
