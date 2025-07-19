@@ -21,22 +21,19 @@ export const SocialLinks: React.FC<Props> = ({ links, className = '' }) => {
       url: links.Instagram, 
       Icon: IconBrandInstagram, 
       title: 'Instagram',
-      activeColor: 'text-pink-500 hover:text-pink-400', // Instagram brand color
-      inactiveColor: 'text-gray-500'
+      activeColor: 'text-pink-500 hover:text-pink-400'
     },
     { 
       url: links.LinkedIn, 
       Icon: IconBrandLinkedin, 
       title: 'LinkedIn',
-      activeColor: 'text-blue-600 hover:text-blue-500', // LinkedIn brand color
-      inactiveColor: 'text-gray-500'
+      activeColor: 'text-blue-500 hover:text-blue-400'
     },
     { 
       url: links.Twitter, 
       Icon: IconBrandX, 
       title: 'X (formerly Twitter)',
-      activeColor: 'text-sky-400 hover:text-sky-300', // Twitter/X brand color
-      inactiveColor: 'text-gray-500'
+      activeColor: 'text-gray-300 hover:text-white'
     }
   ];
 
@@ -49,31 +46,31 @@ export const SocialLinks: React.FC<Props> = ({ links, className = '' }) => {
   };
 
   return (
-    <div className={`flex items-center gap-6 ${className}`}>
+    <div className={`flex items-center gap-3 ${className}`}>
       {platforms.map(({ url, Icon, title, activeColor, inactiveColor }) => {
         const isActive = isValidUrl(url);
+        
+        // Only render if the link is active/valid
+        if (!isActive) return null;
         
         return (
           <button
             key={title}
             onClick={() => handleIconClick(url, title)}
             className={`
+              w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center
               transition-colors duration-200 
-              ${isActive ? activeColor : inactiveColor}
-              ${isActive ? 'cursor-pointer active:scale-95' : 'cursor-default'}
-              ${isActive ? 'hover:scale-110' : ''}
+              ${activeColor}
+              cursor-pointer active:scale-95
+              hover:bg-gray-700
               transform transition-transform
             `}
-            title={isActive ? `Visit ${title} profile` : `${title} profile not linked`}
-            disabled={!isActive}
+            title={`Visit ${title} profile`}
             type="button"
           >
             <Icon 
-              size={24} 
-              className={`
-                ${isActive ? 'drop-shadow-sm' : 'opacity-50'}
-                transition-opacity duration-200
-              `}
+              size={18} 
+              className="drop-shadow-sm transition-opacity duration-200"
             />
           </button>
         );
