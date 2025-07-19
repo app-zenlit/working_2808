@@ -3,7 +3,7 @@ import { RadarUserCard } from '../components/radar/RadarUserCard';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
 import { User, UserLocation, LocationPermissionStatus, Post } from '../types';
-import { MapPinIcon, ExclamationTriangleIcon, ChevronLeftIcon, PlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ExclamationTriangleIcon, ChevronLeftIcon, PlusIcon, ChatBubbleLeftIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabase';
 import { transformProfileToUser } from '../../lib/utils';
 import { getUserPosts } from '../lib/posts';
@@ -34,6 +34,7 @@ export const RadarScreen: React.FC<Props> = ({
   onNavigateToMessages
 }) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [currentLocation, setCurrentLocation] = useState<UserLocation | null>(null);
   const [locationPermission, setLocationPermission] = useState<LocationPermissionStatus>({
@@ -60,6 +61,23 @@ export const RadarScreen: React.FC<Props> = ({
 
   // Refs for cleanup
   const mountedRef = useRef(true);
+
+  // Filter users based on search query
+  const filteredUsers = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return users;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return users.filter(user => {
+      const nameMatch = user.name.toLowerCase().includes(query);
+      const usernameMatch = user.username?.toLowerCase().includes(query);
+      const usernameWithoutAt = query.startsWith('@') ? query.slice(1) : query;
+      const usernameExactMatch = user.username?.toLowerCase().includes(usernameWithoutAt);
+      
+      return nameMatch || usernameMatch || usernameExactMatch;
+    });
+  }, [users, searchQuery]);
 
   // Refresh function for pull-to-refresh
   const handleRefresh = useCallback(async () => {
@@ -408,6 +426,10 @@ export const RadarScreen: React.FC<Props> = ({
     }
   };
 
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-full bg-black flex items-center justify-center">
@@ -522,6 +544,54 @@ export const RadarScreen: React.FC<Props> = ({
                 </button>
               </div>
             </div>
+
+            {/* Search Input - Only show when location is enabled and we have users */}
+            {isLocationEnabled && users.length > 0 && (
+              <div className="mt-4">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-10 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Search by name or @username..."
+                    aria-label="Search accounts by name or username"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={clearSearch}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-gray-700 rounded-r-lg transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
+                    </button>
+                  )}
+                </div>
+                
+                {/* Search Results Count */}
+                {searchQuery && (
+                  <div className="mt-2 flex items-center justify-between">
+                    <p className="text-sm text-gray-400">
+                      {filteredUsers.length === 0 
+                        ? 'No users found' 
+                        : `${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''} found`
+                      }
+                    </p>
+                    {filteredUsers.length > 0 && (
+                      <button
+                        onClick={clearSearch}
+                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        Show all ({users.length})
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -540,14 +610,43 @@ export const RadarScreen: React.FC<Props> = ({
           {isLocationEnabled ? (
             currentLocation ? (
               users.length > 0 ? (
-                users.map((user) => (
+                searchQuery ? (
+                  filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                      <RadarUserCard
+                        key={user.id}
+                        user={user}
+                        onMessage={handleMessage}
+                        onViewProfile={() => handleViewProfile(user)}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <MagnifyingGlassIcon className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-400 mb-2">No users found</p>
+                      <p className="text-gray-500 text-sm mb-4">
+                        No users match "{searchQuery}". Try a different search term.
+                      </p>
+                      <button
+                        onClick={clearSearch}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition-all text-sm"
+                      >
+                        Clear search
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  filteredUsers.map((user) => (
                   <RadarUserCard
                     key={user.id}
                     user={user}
                     onMessage={handleMessage}
                     onViewProfile={() => handleViewProfile(user)}
                   />
-                ))
+                  ))
+                )
               ) : (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
