@@ -52,9 +52,7 @@ export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile 
               <div className="flex items-start justify-between mb-1">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-lg text-white truncate">{user.name}</h3>
-                  {user.username && (
-                    <p className="text-sm text-gray-400">@{user.username}</p>
-                  )}
+
                 </div>
                 
 
