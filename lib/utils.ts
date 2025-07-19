@@ -13,7 +13,7 @@ export function transformProfileToUser(profile: any): User {
     id: profile.id,
     name: profile.name,
     username: profile.username, // Include username
-    dpUrl: profile.profile_photo_url || '/images/default-avatar.png',
+    dpUrl: profile.profile_photo_url || '',
     bio: profile.bio,
     gender: profile.gender,
     age: profile.date_of_birth ? 
@@ -26,7 +26,7 @@ export function transformProfileToUser(profile: any): User {
     },
     latitude: profile.latitude,
     longitude: profile.longitude,
-    coverPhotoUrl: profile.cover_photo_url || undefined,
+    coverPhotoUrl: profile.cover_photo_url || '',
     instagramUrl: profile.instagram_url,
     linkedInUrl: profile.linked_in_url,
     twitterUrl: profile.twitter_url,
