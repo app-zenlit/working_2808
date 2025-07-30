@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon, CheckCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { PasswordResetScreen } from './PasswordResetScreen';
-import { sendSignupOTP, verifySignupOTP, setUserPassword, signInWithPassword } from '../lib/auth';
+import { sendSignupOTP, verifySignupOTP, setUserPassword, signInWithPassword, checkResetRequired, updateResetRequired } from '../lib/auth';
 import { GradientLogo } from '../components/common/GradientLogo';
 
 interface Props {
@@ -90,11 +90,21 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
 
     try {
       console.log('Attempting login for:', formData.email);
+      // Check if this account requires a password reset before allowing login
+      const needsReset = await checkResetRequired(formData.email);
+      if (needsReset) {
+        setIsLoading(false);
+        setLoginAttempts(MAX_LOGIN_ATTEMPTS);
+        setError('Too many failed login attempts. Please reset your password to continue.');
+        return;
+      }
+
       const result = await signInWithPassword(formData.email, formData.password);
-      
+
       if (result.success) {
         console.log('Login successful');
         setLoginAttempts(0);
+        await updateResetRequired(formData.email, false);
         await new Promise(resolve => setTimeout(resolve, 500));
         onLogin();
       } else {
@@ -102,6 +112,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
         const attempts = loginAttempts + 1;
         setLoginAttempts(attempts);
         if (attempts >= MAX_LOGIN_ATTEMPTS) {
+          await updateResetRequired(formData.email, true);
           setError("You've entered the wrong password 3 times. Please reset your password to continue.");
         } else {
           setError(result.error || 'Login failed');
@@ -291,8 +302,9 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     setCurrentView('passwordReset');
   };
 
-  const handlePasswordResetSuccess = () => {
+  const handlePasswordResetSuccess = (email: string) => {
     setLoginAttempts(0);
+    updateResetRequired(email, false);
   };
 
   const handleBackFromPasswordReset = () => {

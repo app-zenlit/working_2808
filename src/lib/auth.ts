@@ -331,10 +331,58 @@ export const signInWithPassword = async (email: string, password: string): Promi
     return { success: true, data }
   } catch (error) {
     console.error('Password login catch error:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to sign in' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to sign in'
     }
+  }
+}
+
+// Utility: check if account requires password reset due to failed logins
+export const checkResetRequired = async (email: string): Promise<boolean> => {
+  if (!isSupabaseAvailable()) {
+    return false
+  }
+
+  try {
+    const { data, error } = await supabase!
+      .from('profiles')
+      .select('reset_required')
+      .eq('email', email.trim().toLowerCase())
+      .maybeSingle()
+
+    if (error) {
+      console.error('Failed to fetch reset_required flag:', error.message)
+      return false
+    }
+
+    return data?.reset_required === true
+  } catch (err) {
+    console.error('Check reset_required catch error:', err)
+    return false
+  }
+}
+
+// Utility: update the reset_required flag for a user
+export const updateResetRequired = async (
+  email: string,
+  value: boolean
+): Promise<void> => {
+  if (!isSupabaseAvailable()) {
+    return
+  }
+
+  try {
+    const { error } = await supabase!
+      .from('profiles')
+      .update({ reset_required: value })
+      .eq('email', email.trim().toLowerCase())
+
+    if (error) {
+      console.error('Failed to update reset_required flag:', error.message)
+    }
+  } catch (err) {
+    console.error('Update reset_required catch error:', err)
   }
 }
 

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeftIcon, CheckCircleIcon, EnvelopeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { sendPasswordResetOTP, verifyPasswordResetOTP, setNewPassword } from '../lib/auth';
+import { sendPasswordResetOTP, verifyPasswordResetOTP, setNewPassword, updateResetRequired } from '../lib/auth';
 import { GradientLogo } from '../components/common/GradientLogo';
 
 interface Props {
   onBack: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (email: string) => void;
 }
 
 export const PasswordResetScreen: React.FC<Props> = ({ onBack, onSuccess }) => {
@@ -139,9 +139,10 @@ export const PasswordResetScreen: React.FC<Props> = ({ onBack, onSuccess }) => {
       
       if (result.success) {
         console.log('New password set successfully - user has been signed out');
+        await updateResetRequired(formData.email, false);
         setStep('success');
         if (onSuccess) {
-          onSuccess();
+          onSuccess(formData.email);
         }
       } else {
         console.error('New password set failed:', result.error);
