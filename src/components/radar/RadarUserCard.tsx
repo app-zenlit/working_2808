@@ -95,8 +95,7 @@ export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile 
                 links={{
                   Instagram: user.instagramUrl || '',
                   LinkedIn: user.linkedInUrl || '',
-                  Twitter: user.twitterUrl || '',
-                  Google: '' // Add Google as empty for now
+                  Twitter: user.twitterUrl || ''
                 }} 
               />
             </div>
