@@ -89,37 +89,15 @@ export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile 
           {/* Bottom section: Social Links and Action Buttons */}
           <div className="flex items-center justify-between">
             {/* Social Links - Left side - Only show if URLs are valid */}
-            <div className="flex gap-3">
-              {isValidUrl(user.instagramUrl) && (
-                <a
-                  href={user.instagramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center text-pink-500 hover:text-pink-400 hover:bg-gray-700 transition-all active:scale-95"
-                >
-                  <IconBrandInstagram size={18} />
-                </a>
-              )}
-              {isValidUrl(user.linkedInUrl) && (
-                <a
-                  href={user.linkedInUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center text-blue-500 hover:text-blue-400 hover:bg-gray-700 transition-all active:scale-95"
-                >
-                  <IconBrandLinkedin size={18} />
-                </a>
-              )}
-              {isValidUrl(user.twitterUrl) && (
-                <a
-                  href={user.twitterUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center text-gray-300 hover:text-white hover:bg-gray-700 transition-all active:scale-95"
-                >
-                  <IconBrandX size={18} />
-                </a>
-              )}
+            <div className="flex gap-2">
+              <SocialLinks 
+                links={{
+                  Instagram: user.instagramUrl || '',
+                  LinkedIn: user.linkedInUrl || '',
+                  Twitter: user.twitterUrl || '',
+                  Google: '' // Add Google as empty for now
+                }} 
+              />
             </div>
 
             {/* Action Buttons - Right side */}

@@ -7,9 +7,10 @@ interface Props {
   user: User;
   posts?: any[]; // Accept real posts from props
   onPostClick?: () => void;
+  onPlatformClick?: (platform: string) => void;
 }
 
-export const UserProfile: React.FC<Props> = ({ user, posts = [], onPostClick }) => {
+export const UserProfile: React.FC<Props> = ({ user, posts = [], onPostClick, onPlatformClick }) => {
   // Only use real posts passed as props - no more mock data generation
 
   return (
@@ -43,7 +44,14 @@ export const UserProfile: React.FC<Props> = ({ user, posts = [], onPostClick }) 
           
           {/* Social Links */}
           <div className="mt-6">
-            <SocialLinks links={user.links} className="justify-center" />
+            <SocialLinks 
+              links={{
+                ...user.links,
+                Google: '' // Add Google as empty for now
+              }} 
+              className="justify-center" 
+              onPlatformClick={onPlatformClick}
+            />
           </div>
         </div>
 
