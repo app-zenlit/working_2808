@@ -9,7 +9,7 @@ import { UserProfileScreen } from './screens/UserProfileScreen';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { CreatePostScreen } from './screens/CreatePostScreen';
 import { MessagesScreen } from './screens/MessagesScreen';
-import { UserGroupIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, HomeIcon, UserIcon, PlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { User } from './types';
 import { supabase, onAuthStateChange } from './lib/supabase';
 import { checkSession, handleRefreshTokenError } from './lib/auth';
@@ -32,6 +32,7 @@ export default function App() {
   const [isNavigationVisible, setIsNavigationVisible] = useState(true);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editPlatform, setEditPlatform] = useState<string | null>(null);
 
   // PWA hooks
   const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
@@ -287,12 +288,14 @@ export default function App() {
     setActiveTab('profile');
   };
 
-  const handleEditProfile = () => {
+  const handleEditProfile = (platform?: string) => {
+    setEditPlatform(platform || null);
     setIsEditingProfile(true);
   };
 
   const handleProfileSave = (updatedUser: User) => {
     setIsEditingProfile(false);
+    setEditPlatform(null);
     if (selectedUser && selectedUser.id === updatedUser.id) {
       setSelectedUser(updatedUser);
     }
@@ -446,14 +449,19 @@ export default function App() {
                   {isEditingProfile ? (
                     <EditProfileScreen
                       user={profileUser}
-                      onBack={() => setIsEditingProfile(false)}
+                      onBack={() => {
+                        setIsEditingProfile(false);
+                        setEditPlatform(null);
+                      }}
                       onSave={handleProfileSave}
+                      initialPlatform={editPlatform}
                     />
                   ) : (
                     <UserProfileScreen
                       user={profileUser}
                       onBack={selectedUser ? () => setSelectedUser(null) : undefined}
                       onEditProfile={handleEditProfile}
+                      isCurrentUser={!selectedUser}
                       onLogout={handleLogout}
                     />
                   )}
@@ -464,29 +472,49 @@ export default function App() {
 
           {/* Bottom Navigation - Conditionally visible */}
           {isNavigationVisible && (
-            <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav">
-              <div className="flex justify-around items-center py-3 px-4 h-12">
+            <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav pb-2">
+              <div className="flex justify-around items-center py-3 px-4 h-14 space-x-4">
                 <button
                   onClick={() => handleTabClick('radar')}
-                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                  className={`nav-button-mobile flex items-center justify-center p-1 rounded-lg transition-colors ${
                     activeTab === 'radar' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
                   <UserGroupIcon className="h-6 w-6" />
                 </button>
-                
+
                 <button
                   onClick={() => handleTabClick('feed')}
-                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                  className={`nav-button-mobile flex items-center justify-center p-1 rounded-lg transition-colors ${
                     activeTab === 'feed' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <HomeIcon className="h-6 w-6" />
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
                 </button>
-                
+
                 <button
-                  onClick={() => setActiveTab('profile')}
-                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                  onClick={() => handleTabClick('create')}
+                  className={`nav-button-mobile flex items-center justify-center p-1 rounded-lg transition-colors ${
+                    activeTab === 'create' ? 'text-blue-500' : 'text-gray-400'
+                  }`}
+                >
+                  <PlusIcon className="h-6 w-6" />
+                </button>
+
+                <button
+                  onClick={() => handleTabClick('messages')}
+                  className={`nav-button-mobile flex items-center justify-center p-1 rounded-lg transition-colors ${
+                    activeTab === 'messages' ? 'text-blue-500' : 'text-gray-400'
+                  }`}
+                >
+                  <ChatBubbleLeftIcon className="h-6 w-6" />
+                </button>
+
+                <button
+                  onClick={() => handleTabClick('profile')}
+                  className={`nav-button-mobile flex items-center justify-center p-1 rounded-lg transition-colors ${
                     activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >

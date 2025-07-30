@@ -36,11 +36,17 @@ export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile 
               className="flex-shrink-0 active:scale-95 transition-transform"
             >
               <div className="relative">
-                <img
-                  src={user.dpUrl}
-                  alt={user.name}
-                  className="w-14 h-14 rounded-full object-cover ring-2 ring-blue-500"
-                />
+                {user.dpUrl ? (
+                  <img
+                    src={user.dpUrl}
+                    alt={user.name}
+                    className="w-14 h-14 rounded-full object-cover ring-2 ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500">
+                    <span className="text-gray-400 text-xs">No Photo</span>
+                  </div>
+                )}
                 {/* Online indicator for users in same location bucket */}
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900 flex items-center justify-center">
                   <div className="w-2 h-2 bg-white rounded-full" />

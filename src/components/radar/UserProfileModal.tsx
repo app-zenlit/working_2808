@@ -28,11 +28,17 @@ export const UserProfileModal: React.FC<Props> = ({ user, onClose, onViewProfile
           <XMarkIcon className="w-5 h-5" />
         </button>
 
-        <img
-          src={user.dpUrl}
-          alt={user.name}
-          className="w-80 h-80 object-cover rounded-lg shadow-2xl"
-        />
+        {user.dpUrl ? (
+          <img
+            src={user.dpUrl}
+            alt={user.name}
+            className="w-80 h-80 object-cover rounded-lg shadow-2xl"
+          />
+        ) : (
+          <div className="w-80 h-80 bg-gray-800 rounded-lg shadow-2xl flex items-center justify-center">
+            <span className="text-gray-400 text-lg">No Photo Available</span>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

@@ -50,9 +50,9 @@ export async function createPost(postData: CreatePostData): Promise<Post | null>
       id: newPost.id,
       userId: newPost.user_id,
       userName: profile?.name || 'Unknown User',
-      userDpUrl: profile?.profile_photo_url || `https://i.pravatar.cc/300?img=${user.id}`,
+      userDpUrl: profile?.profile_photo_url || null,
       title: newPost.title,
-      mediaUrl: newPost.media_url,
+      mediaUrl: newPost.media_url || null,
       caption: newPost.caption,
       timestamp: newPost.created_at
     };
@@ -87,9 +87,9 @@ export async function getUserPosts(userId: string): Promise<Post[]> {
       id: post.id,
       userId: post.user_id,
       userName: post.profiles?.name || 'Unknown User',
-      userDpUrl: post.profiles?.profile_photo_url || `https://i.pravatar.cc/300?img=${post.user_id}`,
+      userDpUrl: post.profiles?.profile_photo_url || null,
       title: post.title,
-      mediaUrl: post.media_url,
+      mediaUrl: post.media_url || null,
       caption: post.caption,
       timestamp: post.created_at
     }));
@@ -124,9 +124,9 @@ export async function getAllPosts(limit: number = 50): Promise<Post[]> {
       id: post.id,
       userId: post.user_id,
       userName: post.profiles?.name || 'Unknown User',
-      userDpUrl: post.profiles?.profile_photo_url || `https://i.pravatar.cc/300?img=${post.user_id}`,
+      userDpUrl: post.profiles?.profile_photo_url || null,
       title: post.title,
-      mediaUrl: post.media_url,
+      mediaUrl: post.media_url || null,
       caption: post.caption,
       timestamp: post.created_at
     }));

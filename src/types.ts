@@ -4,7 +4,7 @@ export interface User {
   id: string;
   name: string;
   username?: string; // Added username field
-  dpUrl: string;
+  dpUrl: string | null;
   bio: string;
   gender: 'male' | 'female';
   age: number;
@@ -18,7 +18,7 @@ export interface User {
   latitude?: number;
   longitude?: number;
   // Cover photo field
-  coverPhotoUrl?: string;
+  coverPhotoUrl?: string | null;
   // Social media URL fields (removed verified fields)
   instagramUrl?: string;
   linkedInUrl?: string;
@@ -29,9 +29,9 @@ export interface Post {
   id: string;
   userId: string;
   userName: string;
-  userDpUrl: string;
+  userDpUrl: string | null;
   title: string;
-  mediaUrl: string;
+  mediaUrl: string | null;
   caption: string;
   timestamp: string;
 }
