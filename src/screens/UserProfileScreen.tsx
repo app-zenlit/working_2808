@@ -9,11 +9,18 @@ import { useRouter } from 'next/navigation';
 interface Props {
   user: User;
   onBack?: () => void;
-  onEditProfile?: () => void;
+  onEditProfile?: (platform?: string) => void;
   onLogout?: () => void;
+  isCurrentUser?: boolean;
 }
 
-export const UserProfileScreen: React.FC<Props> = ({ user, onBack, onEditProfile, onLogout }) => {
+export const UserProfileScreen: React.FC<Props> = ({
+  user,
+  onBack,
+  onEditProfile,
+  onLogout,
+  isCurrentUser = false,
+}) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showGallery, setShowGallery] = useState(false);
@@ -108,7 +115,13 @@ export const UserProfileScreen: React.FC<Props> = ({ user, onBack, onEditProfile
           </div>
         </div>
       ) : (
-        <UserProfile user={user} posts={posts} onPostClick={() => setShowGallery(true)} />
+        <UserProfile
+          user={user}
+          posts={posts}
+          onPostClick={() => setShowGallery(true)}
+          isCurrentUser={isCurrentUser}
+          onAddSocialLink={(platform) => onEditProfile?.(platform)}
+        />
       )}
     </div>
   );

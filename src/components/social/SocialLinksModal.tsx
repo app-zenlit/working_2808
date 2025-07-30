@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon, CheckIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { User, SocialProvider } from '../../types';
@@ -15,13 +15,16 @@ interface Props {
   onClose: () => void;
   user: User;
   onUserUpdate: (updatedUser: User) => void;
+  /** When provided, the modal will focus the corresponding input on open */
+  initialPlatform?: string | null;
 }
 
 export const SocialLinksModal: React.FC<Props> = ({
   isOpen,
   onClose,
   user,
-  onUserUpdate
+  onUserUpdate,
+  initialPlatform,
 }) => {
   const [formData, setFormData] = useState({
     instagramUrl: user.instagramUrl || '',
@@ -31,6 +34,12 @@ export const SocialLinksModal: React.FC<Props> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [validating, setValidating] = useState<Record<string, boolean>>({});
+
+  const inputRefs: Record<string, React.RefObject<HTMLInputElement>> = {
+    instagram: useRef<HTMLInputElement>(null),
+    linkedin: useRef<HTMLInputElement>(null),
+    twitter: useRef<HTMLInputElement>(null),
+  };
 
   const socialProviders: (SocialProvider & { 
     key: keyof typeof formData;
@@ -78,6 +87,15 @@ export const SocialLinksModal: React.FC<Props> = ({
       setValidating({});
     }
   }, [isOpen, user]);
+
+  // Focus the input for the requested platform when opening
+  useEffect(() => {
+    if (isOpen && initialPlatform && inputRefs[initialPlatform]) {
+      setTimeout(() => {
+        inputRefs[initialPlatform]?.current?.focus();
+      }, 100);
+    }
+  }, [isOpen, initialPlatform]);
 
   const handleInputChange = (key: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -250,6 +268,7 @@ export const SocialLinksModal: React.FC<Props> = ({
                         hasError ? 'border-red-500' : 'border-gray-600'
                       }`}
                       placeholder={provider.placeholder}
+                      ref={inputRefs[provider.id]}
                     />
                     
                     {/* Validation Indicator */}

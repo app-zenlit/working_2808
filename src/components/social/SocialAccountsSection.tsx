@@ -16,10 +16,13 @@ interface Props {
 // NEW: Add ref interface for external access
 export interface SocialAccountsSectionRef {
   openModal: () => void;
+  /** Open the modal and focus the provided platform's input */
+  openPlatformModal: (platformId: string) => void;
 }
 
 export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>(({ user, onUserUpdate }, ref) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalPlatform, setModalPlatform] = useState<string | null>(null);
 
   console.log(`🔍 [SocialAccountsSection] Component rendered with user:`, {
     id: user.id,
@@ -55,22 +58,30 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
 
   const connectedCount = socialProviders.filter(p => p.isConnected).length;
 
-  // NEW: Expose method to open modal
+  // Expose methods to open modal from parent components
   useImperativeHandle(ref, () => ({
     openModal: () => {
       console.log(`🔍 [SocialAccountsSection] Opening modal via ref`);
+      setModalPlatform(null);
       setIsModalOpen(true);
-    }
+    },
+    openPlatformModal: (platformId: string) => {
+      console.log(`🔍 [SocialAccountsSection] Opening modal for ${platformId}`);
+      setModalPlatform(platformId);
+      setIsModalOpen(true);
+    },
   }));
 
   const handleOpenModal = () => {
     console.log(`🔍 [SocialAccountsSection] Opening modal via button click`);
+    setModalPlatform(null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     console.log(`🔍 [SocialAccountsSection] Closing modal`);
     setIsModalOpen(false);
+    setModalPlatform(null);
   };
 
   const handleUserUpdate = (updatedUser: User) => {
@@ -150,6 +161,7 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
         onClose={handleCloseModal}
         user={user}
         onUserUpdate={handleUserUpdate}
+        initialPlatform={modalPlatform}
       />
     </div>
   );

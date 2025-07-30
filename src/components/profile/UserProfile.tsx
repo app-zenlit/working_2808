@@ -7,9 +7,19 @@ interface Props {
   user: User;
   posts?: any[]; // Accept real posts from props
   onPostClick?: () => void;
+  /** Indicates the profile belongs to the current logged in user */
+  isCurrentUser?: boolean;
+  /** Triggered when the user taps an inactive social icon */
+  onAddSocialLink?: (platform: string) => void;
 }
 
-export const UserProfile: React.FC<Props> = ({ user, posts = [], onPostClick }) => {
+export const UserProfile: React.FC<Props> = ({
+  user,
+  posts = [],
+  onPostClick,
+  isCurrentUser = false,
+  onAddSocialLink,
+}) => {
   // Only use real posts passed as props - no more mock data generation
 
   return (
@@ -43,7 +53,12 @@ export const UserProfile: React.FC<Props> = ({ user, posts = [], onPostClick }) 
           
           {/* Social Links */}
           <div className="mt-6">
-            <SocialLinks links={user.links} className="justify-center" />
+            <SocialLinks
+              links={user.links}
+              className="justify-center"
+              showAll={isCurrentUser}
+              onAddLink={isCurrentUser ? onAddSocialLink : undefined}
+            />
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User } from '../types';
 import { ChevronLeftIcon, PhotoIcon, CheckIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { SocialAccountsSection } from '../components/social/SocialAccountsSection';
+import type { SocialAccountsSectionRef } from '../components/social/SocialAccountsSection';
 import { uploadProfileImage, uploadBannerImage, deleteImage, extractFilePathFromUrl } from '../lib/storage';
 import { supabase } from '../lib/supabaseClient';
 import { transformProfileToUser } from '../../lib/utils';
@@ -33,7 +34,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
 
   const profileFileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
-  const socialAccountsSectionRef = useRef<any>(null);
+  const socialAccountsSectionRef = useRef<SocialAccountsSectionRef>(null);
 
   console.log(`🔍 [EditProfileScreen] Component initialized with user:`, {
     id: user.id,

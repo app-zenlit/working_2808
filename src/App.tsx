@@ -32,6 +32,7 @@ export default function App() {
   const [isNavigationVisible, setIsNavigationVisible] = useState(true);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editPlatform, setEditPlatform] = useState<string | null>(null);
 
   // PWA hooks
   const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
@@ -287,12 +288,14 @@ export default function App() {
     setActiveTab('profile');
   };
 
-  const handleEditProfile = () => {
+  const handleEditProfile = (platform?: string) => {
+    setEditPlatform(platform || null);
     setIsEditingProfile(true);
   };
 
   const handleProfileSave = (updatedUser: User) => {
     setIsEditingProfile(false);
+    setEditPlatform(null);
     if (selectedUser && selectedUser.id === updatedUser.id) {
       setSelectedUser(updatedUser);
     }
@@ -446,14 +449,19 @@ export default function App() {
                   {isEditingProfile ? (
                     <EditProfileScreen
                       user={profileUser}
-                      onBack={() => setIsEditingProfile(false)}
+                      onBack={() => {
+                        setIsEditingProfile(false);
+                        setEditPlatform(null);
+                      }}
                       onSave={handleProfileSave}
+                      initialPlatform={editPlatform}
                     />
                   ) : (
                     <UserProfileScreen
                       user={profileUser}
                       onBack={selectedUser ? () => setSelectedUser(null) : undefined}
                       onEditProfile={handleEditProfile}
+                      isCurrentUser={!selectedUser}
                       onLogout={handleLogout}
                     />
                   )}
