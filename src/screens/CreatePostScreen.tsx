@@ -478,9 +478,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
                 </button>
               </div>
               <p className="text-gray-400 text-sm">Add photos to your post</p>
-              <p className="text-gray-500 text-xs mt-1">
-                Images will be automatically optimized (350KB - 800KB)
-              </p>
             </div>
           </div>
         )}
