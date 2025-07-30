@@ -81,7 +81,7 @@ export const PostsGalleryScreen: React.FC<Props> = ({
           </button>
           <div className="flex items-center">
             <img
-              src={user.dpUrl}
+              src={user.dpUrl ?? '/images/default-avatar.png'}
               alt={user.name}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500 mr-3"
             />
