@@ -13,13 +13,15 @@ interface Props {
   onUserUpdate: (updatedUser: User) => void;
 }
 
-// NEW: Add ref interface for external access
+// Add ref interface for external access
 export interface SocialAccountsSectionRef {
   openModal: () => void;
+  openPlatformModal: (platformId: string) => void;
 }
 
 export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>(({ user, onUserUpdate }, ref) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [platformToFocus, setPlatformToFocus] = useState<string | null>(null);
 
   console.log(`🔍 [SocialAccountsSection] Component rendered with user:`, {
     id: user.id,
@@ -55,10 +57,15 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
 
   const connectedCount = socialProviders.filter(p => p.isConnected).length;
 
-  // NEW: Expose method to open modal
+  // Expose methods to open modal
   useImperativeHandle(ref, () => ({
     openModal: () => {
       console.log(`🔍 [SocialAccountsSection] Opening modal via ref`);
+      setIsModalOpen(true);
+    },
+    openPlatformModal: (platformId: string) => {
+      console.log(`🔍 [SocialAccountsSection] Opening modal for platform: ${platformId}`);
+      setPlatformToFocus(platformId);
       setIsModalOpen(true);
     }
   }));
@@ -71,6 +78,7 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
   const handleCloseModal = () => {
     console.log(`🔍 [SocialAccountsSection] Closing modal`);
     setIsModalOpen(false);
+    setPlatformToFocus(null);
   };
 
   const handleUserUpdate = (updatedUser: User) => {
@@ -83,6 +91,9 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
     onUserUpdate(updatedUser);
   };
 
+  const handleFocusHandled = () => {
+    setPlatformToFocus(null);
+  };
   return (
     <div className="space-y-6">
       {/* Header with Add Links Button */}
@@ -150,6 +161,8 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
         onClose={handleCloseModal}
         user={user}
         onUserUpdate={handleUserUpdate}
+        platformToFocus={platformToFocus}
+        onFocusHandled={handleFocusHandled}
       />
     </div>
   );
