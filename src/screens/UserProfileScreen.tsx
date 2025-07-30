@@ -10,11 +10,10 @@ interface Props {
   user: User;
   onBack?: () => void;
   onEditProfile?: () => void;
-  onEditProfileWithPlatform?: (platform: string) => void;
   onLogout?: () => void;
 }
 
-export const UserProfileScreen: React.FC<Props> = ({ user, onBack, onEditProfile, onEditProfileWithPlatform, onLogout }) => {
+export const UserProfileScreen: React.FC<Props> = ({ user, onBack, onEditProfile, onLogout }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showGallery, setShowGallery] = useState(false);
@@ -34,14 +33,6 @@ export const UserProfileScreen: React.FC<Props> = ({ user, onBack, onEditProfile
   const handleFeedbackClick = () => {
     setShowMenu(false);
     router.push('/feedback');
-  };
-
-  const handlePlatformClick = (platform: string) => {
-    if (onEditProfileWithPlatform) {
-      onEditProfileWithPlatform(platform);
-    } else if (onEditProfile) {
-      onEditProfile();
-    }
   };
 
   if (showGallery) {
@@ -117,12 +108,7 @@ export const UserProfileScreen: React.FC<Props> = ({ user, onBack, onEditProfile
           </div>
         </div>
       ) : (
-        <UserProfile 
-          user={user} 
-          posts={posts} 
-          onPostClick={() => setShowGallery(true)}
-          onPlatformClick={handlePlatformClick}
-        />
+        <UserProfile user={user} posts={posts} onPostClick={() => setShowGallery(true)} />
       )}
     </div>
   );

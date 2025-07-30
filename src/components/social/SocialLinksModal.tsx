@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XMarkIcon, CheckIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { User, SocialProvider } from '../../types';
@@ -15,17 +15,13 @@ interface Props {
   onClose: () => void;
   user: User;
   onUserUpdate: (updatedUser: User) => void;
-  platformToFocus?: string | null;
-  onFocusHandled?: () => void;
 }
 
 export const SocialLinksModal: React.FC<Props> = ({
   isOpen,
   onClose,
   user,
-  onUserUpdate,
-  platformToFocus,
-  onFocusHandled
+  onUserUpdate
 }) => {
   const [formData, setFormData] = useState({
     instagramUrl: user.instagramUrl || '',
@@ -36,15 +32,10 @@ export const SocialLinksModal: React.FC<Props> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [validating, setValidating] = useState<Record<string, boolean>>({});
 
-  // Create refs for each input field
-  const instagramInputRef = useRef<HTMLInputElement>(null);
-  const linkedInInputRef = useRef<HTMLInputElement>(null);
-  const twitterInputRef = useRef<HTMLInputElement>(null);
   const socialProviders: (SocialProvider & { 
     key: keyof typeof formData;
     placeholder: string;
     getCurrentUrl: () => string;
-    inputRef: React.RefObject<HTMLInputElement>;
   })[] = [
     {
       id: 'instagram',
@@ -53,8 +44,7 @@ export const SocialLinksModal: React.FC<Props> = ({
       icon: IconBrandInstagram,
       key: 'instagramUrl',
       placeholder: 'https://instagram.com/yourusername',
-      getCurrentUrl: () => formData.instagramUrl,
-      inputRef: instagramInputRef
+      getCurrentUrl: () => formData.instagramUrl
     },
     {
       id: 'linkedin',
@@ -63,8 +53,7 @@ export const SocialLinksModal: React.FC<Props> = ({
       icon: IconBrandLinkedin,
       key: 'linkedInUrl',
       placeholder: 'https://linkedin.com/in/yourprofile',
-      getCurrentUrl: () => formData.linkedInUrl,
-      inputRef: linkedInInputRef
+      getCurrentUrl: () => formData.linkedInUrl
     },
     {
       id: 'twitter',
@@ -73,8 +62,7 @@ export const SocialLinksModal: React.FC<Props> = ({
       icon: IconBrandX,
       key: 'twitterUrl',
       placeholder: 'https://twitter.com/yourusername',
-      getCurrentUrl: () => formData.twitterUrl,
-      inputRef: twitterInputRef
+      getCurrentUrl: () => formData.twitterUrl
     }
   ];
 
@@ -91,25 +79,6 @@ export const SocialLinksModal: React.FC<Props> = ({
     }
   }, [isOpen, user]);
 
-  // Handle platform focus when modal opens
-  useEffect(() => {
-    if (isOpen && platformToFocus) {
-      // Small delay to ensure modal is fully rendered
-      const timer = setTimeout(() => {
-        const provider = socialProviders.find(p => p.id === platformToFocus);
-        if (provider && provider.inputRef.current) {
-          provider.inputRef.current.focus();
-          console.log(`🔍 [SocialLinksModal] Focused on ${platformToFocus} input`);
-        }
-        // Notify parent that focus has been handled
-        if (onFocusHandled) {
-          onFocusHandled();
-        }
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, platformToFocus, onFocusHandled]);
   const handleInputChange = (key: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
     
@@ -269,7 +238,6 @@ export const SocialLinksModal: React.FC<Props> = ({
                   {/* URL Input */}
                   <div className="relative">
                     <input
-                      ref={provider.inputRef}
                       type="url"
                       value={currentUrl}
                       onChange={(e) => handleInputChange(provider.key, e.target.value)}
