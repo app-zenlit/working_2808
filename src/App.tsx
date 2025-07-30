@@ -9,7 +9,7 @@ import { UserProfileScreen } from './screens/UserProfileScreen';
 import { EditProfileScreen } from './screens/EditProfileScreen';
 import { CreatePostScreen } from './screens/CreatePostScreen';
 import { MessagesScreen } from './screens/MessagesScreen';
-import { UserGroupIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, HomeIcon, UserIcon, PlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { User } from './types';
 import { supabase, onAuthStateChange } from './lib/supabase';
 import { checkSession, handleRefreshTokenError } from './lib/auth';
@@ -485,7 +485,25 @@ export default function App() {
                 </button>
                 
                 <button
-                  onClick={() => setActiveTab('profile')}
+                  onClick={() => handleTabClick('create')}
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                    activeTab === 'create' ? 'text-blue-500' : 'text-gray-400'
+                  }`}
+                >
+                  <PlusIcon className="h-6 w-6" />
+                </button>
+                
+                <button
+                  onClick={() => handleTabClick('messages')}
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                    activeTab === 'messages' ? 'text-blue-500' : 'text-gray-400'
+                  }`}
+                >
+                  <ChatBubbleLeftIcon className="h-6 w-6" />
+                </button>
+                
+                <button
+                  onClick={() => handleTabClick('profile')}
                   className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
                     activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
                   }`}

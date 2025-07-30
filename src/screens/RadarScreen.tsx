@@ -3,7 +3,7 @@ import { RadarUserCard } from '../components/radar/RadarUserCard';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
 import { User, UserLocation, LocationPermissionStatus, Post } from '../types';
-import { MapPinIcon, ExclamationTriangleIcon, ChevronLeftIcon, PlusIcon, ChatBubbleLeftIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ExclamationTriangleIcon, ChevronLeftIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabase';
 import { transformProfileToUser } from '../../lib/utils';
 import { getUserPosts } from '../lib/posts';
@@ -526,22 +526,6 @@ export const RadarScreen: React.FC<Props> = ({
                     </span>
                   </div>
                 )}
-              </div>
-              
-              {/* Top Right Icons */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleCreateClick}
-                  className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
-                >
-                  <PlusIcon className="w-6 h-6 text-white" />
-                </button>
-                <button
-                  onClick={handleMessagesClick}
-                  className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
-                >
-                  <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
-                </button>
               </div>
             </div>
 
