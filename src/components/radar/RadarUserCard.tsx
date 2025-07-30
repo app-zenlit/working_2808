@@ -3,13 +3,11 @@ import { User } from '../../types';
 import { IconBrandInstagram, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react';
 import { ChatBubbleLeftIcon, UserIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { UserProfileModal } from './UserProfileModal';
-import { SocialLinks } from '../common/SocialLinks';
 
 interface Props {
   user: User;
   onMessage: (user: User) => void;
   onViewProfile: () => void;
-  onPlatformClick?: (platform: string) => void;
 }
 
 export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile }) => {
@@ -96,9 +94,9 @@ export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile 
                 links={{
                   Instagram: user.instagramUrl || '',
                   LinkedIn: user.linkedInUrl || '',
-                  Twitter: user.twitterUrl || ''
-                }}
-                onPlatformClick={onPlatformClick}
+                  Twitter: user.twitterUrl || '',
+                  Google: '' // Add Google as empty for now
+                }} 
               />
             </div>
 

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "CONCURRENTLY_PROCESS_TREE=false concurrently \"npm --prefix supabase run start\" \"next dev\"",
+    "dev": "concurrently \"npm --prefix supabase run start\" \"next dev\"",
     "dev:web": "next dev",
     "dev:supabase": "npm --prefix supabase run start",
     "build": "next build",

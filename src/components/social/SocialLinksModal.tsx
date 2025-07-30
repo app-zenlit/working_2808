@@ -15,15 +15,13 @@ interface Props {
   onClose: () => void;
   user: User;
   onUserUpdate: (updatedUser: User) => void;
-  initialPlatform?: string;
 }
 
 export const SocialLinksModal: React.FC<Props> = ({
   isOpen,
   onClose,
   user,
-  onUserUpdate,
-  initialPlatform
+  onUserUpdate
 }) => {
   const [formData, setFormData] = useState({
     instagramUrl: user.instagramUrl || '',
@@ -78,19 +76,8 @@ export const SocialLinksModal: React.FC<Props> = ({
       });
       setErrors({});
       setValidating({});
-      
-      // Auto-focus on specific platform if provided
-      if (initialPlatform) {
-        setTimeout(() => {
-          const input = document.querySelector(`input[data-platform="${initialPlatform}"]`) as HTMLInputElement;
-          if (input) {
-            input.focus();
-            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 100);
-      }
     }
-  }, [isOpen, user, initialPlatform]);
+  }, [isOpen, user]);
 
   const handleInputChange = (key: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));

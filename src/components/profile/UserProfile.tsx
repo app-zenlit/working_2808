@@ -45,7 +45,10 @@ export const UserProfile: React.FC<Props> = ({ user, posts = [], onPostClick, on
           {/* Social Links */}
           <div className="mt-6">
             <SocialLinks 
-              links={user.links}
+              links={{
+                ...user.links,
+                Google: '' // Add Google as empty for now
+              }} 
               className="justify-center" 
               onPlatformClick={onPlatformClick}
             />
