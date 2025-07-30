@@ -373,10 +373,13 @@ export const updateResetRequired = async (
   }
 
   try {
-    const { error } = await supabase!
-      .from('profiles')
-      .update({ reset_required: value })
-      .eq('email', email.trim().toLowerCase())
+    const { error } = await supabase!.functions.invoke('set-reset-required', {
+      body: {
+        email: email.trim().toLowerCase(),
+        value
+      }
+    });
+
 
     if (error) {
       console.error('Failed to update reset_required flag:', error.message)
