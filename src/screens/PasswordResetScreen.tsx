@@ -5,9 +5,10 @@ import { GradientLogo } from '../components/common/GradientLogo';
 
 interface Props {
   onBack: () => void;
+  onSuccess?: () => void;
 }
 
-export const PasswordResetScreen: React.FC<Props> = ({ onBack }) => {
+export const PasswordResetScreen: React.FC<Props> = ({ onBack, onSuccess }) => {
   const [step, setStep] = useState<'email' | 'otp' | 'newPassword' | 'success'>('email');
   const [formData, setFormData] = useState({
     email: '',
@@ -139,6 +140,9 @@ export const PasswordResetScreen: React.FC<Props> = ({ onBack }) => {
       if (result.success) {
         console.log('New password set successfully - user has been signed out');
         setStep('success');
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         console.error('New password set failed:', result.error);
         setError(result.error || 'Failed to set new password');
