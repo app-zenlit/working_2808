@@ -36,7 +36,7 @@ export const RadarScreen: React.FC<Props> = ({
 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showSearchBar, setShowSearchBar] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentLocation, setCurrentLocation] = useState<UserLocation | null>(null);
   const [locationPermission, setLocationPermission] = useState<LocationPermissionStatus>({
@@ -430,17 +430,17 @@ export const RadarScreen: React.FC<Props> = ({
 
   const clearSearch = () => {
     setSearchQuery('');
-    setShowSearchModal(false);
+    setShowSearchBar(false);
   };
 
-  const openSearchModal = () => {
-    setShowSearchModal(true);
+  const toggleSearchBar = () => {
+    setShowSearchBar(!showSearchBar);
+    if (!showSearchBar) {
+      // Clear search when opening
+      setSearchQuery('');
+    }
   };
 
-  const closeSearchModal = () => {
-    setShowSearchModal(false);
-    setSearchQuery('');
-  };
 
   if (isLoading) {
     return (
@@ -543,7 +543,7 @@ export const RadarScreen: React.FC<Props> = ({
               {/* Search Icon - Only show when location is enabled and we have users */}
               {isLocationEnabled && users.length > 0 && (
                 <button
-                  onClick={openSearchModal}
+                  onClick={toggleSearchBar}
                   className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
                   aria-label="Search users"
                 >
@@ -551,6 +551,46 @@ export const RadarScreen: React.FC<Props> = ({
                 </button>
               )}
             </div>
+            
+            {/* Inline Search Bar */}
+            {showSearchBar && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4"
+              >
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-10 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Search by name or @username..."
+                    autoFocus
+                  />
+                  <button
+                    onClick={clearSearch}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
+                  </button>
+                </div>
+                
+                {/* Search Results Count */}
+                {searchQuery && (
+                  <p className="text-sm text-gray-400 mt-2">
+                    {filteredUsers.length === 0 
+                      ? 'No users found' 
+                      : `${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''} found`
+                    }
+                  </p>
+                )}
+              </motion.div>
+            )}
           </div>
         </div>
 
@@ -655,139 +695,6 @@ export const RadarScreen: React.FC<Props> = ({
           )}
         </div>
       </div>
-
-      {/* Search Modal */}
-      <AnimatePresence>
-        {showSearchModal && (
-          <motion.div
-            className="fixed inset-0 bg-black/80 flex items-start justify-center z-50 p-4 pt-20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeSearchModal}
-          >
-            <motion.div
-              className="bg-gray-900 rounded-2xl w-full max-w-md border border-gray-700"
-              initial={{ scale: 0.95, opacity: 0, y: -20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: -20 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Search Modal Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-700">
-                <h2 className="text-lg font-bold text-white">Search People</h2>
-                <button
-                  onClick={closeSearchModal}
-                  className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
-                >
-                  <XMarkIcon className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
-
-              {/* Search Input */}
-              <div className="p-4">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-10 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Search by name or @username..."
-                    aria-label="Search accounts by name or username"
-                    autoFocus
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={clearSearch}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-gray-700 rounded-r-lg transition-colors"
-                      aria-label="Clear search"
-                    >
-                      <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
-                    </button>
-                  )}
-                </div>
-                
-                {/* Search Results Count */}
-                {searchQuery && (
-                  <div className="mt-3 flex items-center justify-between">
-                    <p className="text-sm text-gray-400">
-                      {filteredUsers.length === 0 
-                        ? 'No users found' 
-                        : `${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''} found`
-                      }
-                    </p>
-                    {filteredUsers.length > 0 && (
-                      <button
-                        onClick={clearSearch}
-                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                      >
-                        Show all ({users.length})
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-              {/* Search Results */}
-              {searchQuery && (
-                <div className="max-h-96 overflow-y-auto border-t border-gray-700">
-                  {filteredUsers.length > 0 ? (
-                    <div className="p-2">
-                      {filteredUsers.slice(0, 10).map((user) => (
-                        <button
-                          key={user.id}
-                          onClick={() => {
-                            closeSearchModal();
-                            handleViewProfile(user);
-                          }}
-                          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 active:bg-gray-700 transition-colors text-left"
-                        >
-                          {user.dpUrl ? (
-                            <img
-                              src={user.dpUrl}
-                              alt={user.name}
-                              className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500">
-                              <span className="text-gray-400 text-xs">?</span>
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-white truncate">{user.name}</h3>
-                            {user.username && (
-                              <p className="text-sm text-gray-400 truncate">@{user.username}</p>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                      {filteredUsers.length > 10 && (
-                        <div className="p-3 text-center">
-                          <p className="text-sm text-gray-400">
-                            Showing first 10 of {filteredUsers.length} results
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center">
-                      <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <MagnifyingGlassIcon className="w-6 h-6 text-gray-400" />
-                      </div>
-                      <p className="text-gray-400 mb-1">No users found</p>
-                      <p className="text-gray-500 text-sm">
-                        Try searching with a different name or username
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
