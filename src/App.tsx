@@ -32,6 +32,7 @@ export default function App() {
   const [isNavigationVisible, setIsNavigationVisible] = useState(true);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [selectedPlatformForEdit, setSelectedPlatformForEdit] = useState<string | null>(null);
 
   // PWA hooks
   const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
@@ -291,8 +292,15 @@ export default function App() {
     setIsEditingProfile(true);
   };
 
+  const handleEditProfileWithPlatform = (platform: string) => {
+    setIsEditingProfile(true);
+    // Store the platform to auto-open in EditProfileScreen
+    setSelectedPlatformForEdit(platform);
+  };
+
   const handleProfileSave = (updatedUser: User) => {
     setIsEditingProfile(false);
+    setSelectedPlatformForEdit(null);
     if (selectedUser && selectedUser.id === updatedUser.id) {
       setSelectedUser(updatedUser);
     }
@@ -448,12 +456,14 @@ export default function App() {
                       user={profileUser}
                       onBack={() => setIsEditingProfile(false)}
                       onSave={handleProfileSave}
+                      initialPlatform={selectedPlatformForEdit}
                     />
                   ) : (
                     <UserProfileScreen
                       user={profileUser}
                       onBack={selectedUser ? () => setSelectedUser(null) : undefined}
                       onEditProfile={handleEditProfile}
+                      onEditProfileWithPlatform={handleEditProfileWithPlatform}
                       onLogout={handleLogout}
                     />
                   )}
