@@ -123,11 +123,17 @@ export const ChatWindow = ({
                 : 'hover:bg-gray-800/50 active:scale-95'
             }`}
           >
-            <img 
-              src={user.dpUrl} 
-              alt={user.name} 
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500 mr-3"
-            />
+            {user.dpUrl ? (
+              <img 
+                src={user.dpUrl} 
+                alt={user.name} 
+                className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500 mr-3"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500 mr-3">
+                <span className="text-gray-400 text-xs">?</span>
+              </div>
+            )}
             <div className="text-left">
               <h3 className="font-semibold text-white">{user.name}</h3>
             </div>

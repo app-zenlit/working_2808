@@ -400,11 +400,17 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
         {/* User Info */}
         <div className="flex items-center space-x-3">
-          <img
-            src={currentUser.profile_photo_url || '/images/default-avatar.png'}
-            alt="Your profile"
-            className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500"
-          />
+          {currentUser.profile_photo_url ? (
+            <img
+              src={currentUser.profile_photo_url}
+              alt="Your profile"
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500">
+              <span className="text-gray-400 text-xs">You</span>
+            </div>
+          )}
           <div>
             <h3 className="font-semibold text-white">{currentUser.name}</h3>
           </div>

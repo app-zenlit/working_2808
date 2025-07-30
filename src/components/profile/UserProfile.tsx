@@ -16,7 +16,7 @@ export const UserProfile: React.FC<Props> = ({ user, posts = [], onPostClick }) 
     <div className="min-h-screen bg-black">
       {/* Cover Image - Fixed to show actual cover photo */}
       <div className="relative h-48 bg-gradient-to-b from-blue-900 to-black">
-        {user.coverPhotoUrl ? (
+        {user.coverPhotoUrl && user.coverPhotoUrl.trim() !== '' ? (
           <img
             src={user.coverPhotoUrl}
             alt="Cover"

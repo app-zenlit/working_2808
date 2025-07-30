@@ -102,11 +102,17 @@ export const ChatList = ({
             >
               <div className="flex items-center gap-3 w-full">
                 <div className="relative flex-shrink-0">
-                  <img
-                    src={user.dpUrl}
-                    alt={user.name}
-                    className="w-11 h-11 rounded-full object-cover ring-2 ring-blue-500"
-                  />
+                  {user.dpUrl ? (
+                    <img
+                      src={user.dpUrl}
+                      alt={user.name}
+                      className="w-11 h-11 rounded-full object-cover ring-2 ring-blue-500"
+                    />
+                  ) : (
+                    <div className="w-11 h-11 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500">
+                      <span className="text-gray-400 text-xs">?</span>
+                    </div>
+                  )}
                   {unreadByUser[user.id] && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
                   )}
