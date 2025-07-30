@@ -3,6 +3,7 @@ import { User } from '../../types';
 import { IconBrandInstagram, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react';
 import { ChatBubbleLeftIcon, UserIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { UserProfileModal } from './UserProfileModal';
+import { SocialLinks } from '../common/SocialLinks';
 
 interface Props {
   user: User;
