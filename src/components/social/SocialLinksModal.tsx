@@ -90,7 +90,7 @@ export const SocialLinksModal: React.FC<Props> = ({
         }, 100);
       }
     }
-  }, [isOpen, user.instagramUrl, user.linkedInUrl, user.twitterUrl, initialPlatform]);
+  }, [isOpen, user, initialPlatform]);
 
   const handleInputChange = (key: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -259,7 +259,6 @@ export const SocialLinksModal: React.FC<Props> = ({
                           validateUrl(provider.key, currentUrl);
                         }
                       }}
-                      data-platform={provider.id}
                       className={`w-full px-3 py-2 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pr-10 ${
                         hasError ? 'border-red-500' : 'border-gray-600'
                       }`}
