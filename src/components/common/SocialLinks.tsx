@@ -6,7 +6,6 @@ interface Props {
     Twitter: string;
     Instagram: string;
     LinkedIn: string;
-    Google?: string;
   };
   className?: string;
   onPlatformClick?: (platform: string) => void;
@@ -40,13 +39,6 @@ export const SocialLinks: React.FC<Props> = ({ links, className = '', onPlatform
       title: 'X (formerly Twitter)',
       activeColor: 'text-gray-300 hover:text-white'
     },
-    { 
-      id: 'google',
-      url: links.Google || '',
-      Icon: IconBrandGoogle, 
-      title: 'Google',
-      activeColor: 'text-red-500 hover:text-red-400'
-    }
   ];
 
   const handleIconClick = (url: string | undefined, title: string, platformId: string) => {

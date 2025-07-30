@@ -9,6 +9,7 @@ interface Props {
   user: User;
   onMessage: (user: User) => void;
   onViewProfile: () => void;
+  onPlatformClick?: (platform: string) => void;
 }
 
 export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile }) => {
@@ -95,9 +96,9 @@ export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile 
                 links={{
                   Instagram: user.instagramUrl || '',
                   LinkedIn: user.linkedInUrl || '',
-                  Twitter: user.twitterUrl || '',
-                  Google: '' // Add Google as empty for now
-                }} 
+                  Twitter: user.twitterUrl || ''
+                }}
+                onPlatformClick={onPlatformClick}
               />
             </div>
 

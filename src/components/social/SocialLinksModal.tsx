@@ -15,13 +15,15 @@ interface Props {
   onClose: () => void;
   user: User;
   onUserUpdate: (updatedUser: User) => void;
+  initialPlatform?: string;
 }
 
 export const SocialLinksModal: React.FC<Props> = ({
   isOpen,
   onClose,
   user,
-  onUserUpdate
+  onUserUpdate,
+  initialPlatform
 }) => {
   const [formData, setFormData] = useState({
     instagramUrl: user.instagramUrl || '',
@@ -76,8 +78,18 @@ export const SocialLinksModal: React.FC<Props> = ({
       });
       setErrors({});
       setValidating({});
+      
+      // Auto-focus on specific platform if provided
+      if (initialPlatform) {
+        setTimeout(() => {
+          const input = document.querySelector(`input[data-platform="${initialPlatform}"]`) as HTMLInputElement;
+          if (input) {
+            input.focus();
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      }
     }
-  }, [isOpen, user]);
 
   const handleInputChange = (key: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -246,6 +258,7 @@ export const SocialLinksModal: React.FC<Props> = ({
                           validateUrl(provider.key, currentUrl);
                         }
                       }}
+                      data-platform={provider.id}
                       className={`w-full px-3 py-2 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pr-10 ${
                         hasError ? 'border-red-500' : 'border-gray-600'
                       }`}

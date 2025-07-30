@@ -60,6 +60,11 @@ export const SocialAccountsSection = forwardRef<SocialAccountsSectionRef, Props>
     openModal: () => {
       console.log(`🔍 [SocialAccountsSection] Opening modal via ref`);
       setIsModalOpen(true);
+    },
+    openPlatformModal: (platform: string) => {
+      console.log(`🔍 [SocialAccountsSection] Opening modal for specific platform: ${platform}`);
+      setIsModalOpen(true);
+      // The modal will handle focusing on the specific platform
     }
   }));
 

@@ -643,6 +643,11 @@ export const RadarScreen: React.FC<Props> = ({
                     user={user}
                     onMessage={handleMessage}
                     onViewProfile={() => handleViewProfile(user)}
+                    onPlatformClick={(platform) => {
+                      // Navigate to edit profile with specific platform
+                      // This would need to be handled by the parent App component
+                      console.log('Navigate to edit profile for platform:', platform);
+                    }}
                   />
                   ))
                 )
