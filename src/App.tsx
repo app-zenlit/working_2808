@@ -464,51 +464,58 @@ export default function App() {
 
           {/* Bottom Navigation - Conditionally visible */}
           {isNavigationVisible && (
-            <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav">
-              <div className="flex justify-around items-center py-3 px-4 h-12">
+            <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav pb-2">
+              <div className="flex justify-around items-center py-4 px-4 h-16">
                 <button
                   onClick={() => handleTabClick('radar')}
-                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-1 rounded-lg transition-colors ${
                     activeTab === 'radar' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <UserGroupIcon className="h-6 w-6" />
+                  <UserGroupIcon className="h-5 w-5 mb-1" />
+                  <span className="text-xs font-medium">Radar</span>
                 </button>
                 
                 <button
                   onClick={() => handleTabClick('feed')}
-                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-1 rounded-lg transition-colors ${
                     activeTab === 'feed' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <HomeIcon className="h-6 w-6" />
+                  <svg className="h-5 w-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  <span className="text-xs font-medium">Feed</span>
                 </button>
                 
                 <button
                   onClick={() => handleTabClick('create')}
-                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-1 rounded-lg transition-colors ${
                     activeTab === 'create' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <PlusIcon className="h-6 w-6" />
+                  <PlusIcon className="h-5 w-5 mb-1" />
+                  <span className="text-xs font-medium">Create</span>
                 </button>
                 
                 <button
                   onClick={() => handleTabClick('messages')}
-                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-1 rounded-lg transition-colors ${
                     activeTab === 'messages' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <ChatBubbleLeftIcon className="h-6 w-6" />
+                  <ChatBubbleLeftIcon className="h-5 w-5 mb-1" />
+                  <span className="text-xs font-medium">Messages</span>
                 </button>
                 
                 <button
                   onClick={() => handleTabClick('profile')}
-                  className={`nav-button-mobile flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                  className={`nav-button-mobile flex flex-col items-center justify-center p-1 rounded-lg transition-colors ${
                     activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <UserIcon className="w-6 h-6" />
+                  <UserIcon className="w-5 h-5 mb-1" />
+                  <span className="text-xs font-medium">Profile</span>
                 </button>
               </div>
             </nav>
