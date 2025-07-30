@@ -26,6 +26,29 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otpCountdown, setOtpCountdown] = useState(0);
+  const MAX_LOGIN_ATTEMPTS = 3;
+  const LOGIN_ATTEMPTS_KEY = 'login_attempts';
+  const [loginAttempts, setLoginAttempts] = useState(0);
+
+  // Load persisted login attempts
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(LOGIN_ATTEMPTS_KEY);
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed)) {
+          setLoginAttempts(parsed);
+        }
+      }
+    }
+  }, []);
+
+  // Persist login attempts
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOGIN_ATTEMPTS_KEY, loginAttempts.toString());
+    }
+  }, [loginAttempts]);
 
   // Countdown timer effect for OTP resend
   useEffect(() => {
@@ -53,6 +76,11 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     e.preventDefault();
     setError(null);
 
+    if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+      setError("You've entered the wrong password 3 times. Please reset your password to continue.");
+      return;
+    }
+
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
@@ -66,11 +94,18 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       
       if (result.success) {
         console.log('Login successful');
+        setLoginAttempts(0);
         await new Promise(resolve => setTimeout(resolve, 500));
         onLogin();
       } else {
         console.error('Login failed:', result.error);
-        setError(result.error || 'Login failed');
+        const attempts = loginAttempts + 1;
+        setLoginAttempts(attempts);
+        if (attempts >= MAX_LOGIN_ATTEMPTS) {
+          setError("You've entered the wrong password 3 times. Please reset your password to continue.");
+        } else {
+          setError(result.error || 'Login failed');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -256,6 +291,10 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     setCurrentView('passwordReset');
   };
 
+  const handlePasswordResetSuccess = () => {
+    setLoginAttempts(0);
+  };
+
   const handleBackFromPasswordReset = () => {
     setCurrentView('login');
   };
@@ -275,7 +314,12 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
 
   // Show password reset screen
   if (currentView === 'passwordReset') {
-    return <PasswordResetScreen onBack={handleBackFromPasswordReset} />;
+    return (
+      <PasswordResetScreen
+        onBack={handleBackFromPasswordReset}
+        onSuccess={handlePasswordResetSuccess}
+      />
+    );
   }
 
   return (
@@ -331,6 +375,15 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
             {error && (
               <div className="mb-4 bg-red-900/30 border border-red-700 rounded-lg p-3">
                 <p className="text-red-400 text-sm">{error}</p>
+                {loginAttempts >= MAX_LOGIN_ATTEMPTS && (
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="mt-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Reset Password
+                  </button>
+                )}
               </div>
             )}
 
@@ -390,7 +443,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
 
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || loginAttempts >= MAX_LOGIN_ATTEMPTS}
                   className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
