@@ -90,6 +90,7 @@ export const SocialLinksModal: React.FC<Props> = ({
         }, 100);
       }
     }
+  }, [isOpen, user.instagramUrl, user.linkedInUrl, user.twitterUrl, initialPlatform]);
 
   const handleInputChange = (key: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
