@@ -25,7 +25,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
     twitterUrl: user.twitterUrl,
   });
   const [profileFile, setProfileFile] = useState<File | null>(null);
-  const [profileUrl, setProfileUrl] = useState<string>(user.dpUrl);
+  const [profileUrl, setProfileUrl] = useState<string>(user.dpUrl || '');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverUrl, setCoverUrl] = useState<string>(user.coverPhotoUrl || '');
   const [loading, setLoading] = useState<boolean>(false);

@@ -146,9 +146,9 @@ export const ChatWindow = ({
         {chatMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <img 
-                src={user.dpUrl} 
-                alt={user.name} 
+              <img
+                src={user.dpUrl ?? '/images/default-avatar.png'}
+                alt={user.name}
                 className="w-16 h-16 rounded-full mx-auto mb-4"
               />
               <p className="text-gray-400">Start a conversation with {user.name}</p>
