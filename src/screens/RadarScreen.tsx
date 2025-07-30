@@ -3,7 +3,7 @@ import { RadarUserCard } from '../components/radar/RadarUserCard';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
 import { User, UserLocation, LocationPermissionStatus, Post } from '../types';
-import { MapPinIcon, ExclamationTriangleIcon, ChevronLeftIcon, PlusIcon, ChatBubbleLeftIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ExclamationTriangleIcon, ChevronLeftIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabase';
 import { transformProfileToUser } from '../../lib/utils';
 import { getUserPosts } from '../lib/posts';
@@ -17,6 +17,7 @@ import { locationToggleManager } from '../lib/locationToggle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
 import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
   userGender: 'male' | 'female';
@@ -35,6 +36,7 @@ export const RadarScreen: React.FC<Props> = ({
 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [showSearchBar, setShowSearchBar] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentLocation, setCurrentLocation] = useState<UserLocation | null>(null);
   const [locationPermission, setLocationPermission] = useState<LocationPermissionStatus>({
@@ -428,7 +430,17 @@ export const RadarScreen: React.FC<Props> = ({
 
   const clearSearch = () => {
     setSearchQuery('');
+    setShowSearchBar(false);
   };
+
+  const toggleSearchBar = () => {
+    setShowSearchBar(!showSearchBar);
+    if (!showSearchBar) {
+      // Clear search when opening
+      setSearchQuery('');
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -528,26 +540,26 @@ export const RadarScreen: React.FC<Props> = ({
                 )}
               </div>
               
-              {/* Top Right Icons */}
-              <div className="flex items-center gap-3">
+              {/* Search Icon - Only show when location is enabled and we have users */}
+              {isLocationEnabled && users.length > 0 && (
                 <button
-                  onClick={handleCreateClick}
-                  className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
+                  onClick={toggleSearchBar}
+                  className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+                  aria-label="Search users"
                 >
-                  <PlusIcon className="w-6 h-6 text-white" />
+                  <MagnifyingGlassIcon className="w-6 h-6 text-white" />
                 </button>
-                <button
-                  onClick={handleMessagesClick}
-                  className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
-                >
-                  <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
-                </button>
-              </div>
+              )}
             </div>
-
-            {/* Search Input - Only show when location is enabled and we have users */}
-            {isLocationEnabled && users.length > 0 && (
-              <div className="mt-4">
+            
+            {/* Inline Search Bar */}
+            {showSearchBar && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4"
+              >
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
@@ -558,39 +570,26 @@ export const RadarScreen: React.FC<Props> = ({
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-10 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Search by name or @username..."
-                    aria-label="Search accounts by name or username"
+                    autoFocus
                   />
-                  {searchQuery && (
-                    <button
-                      onClick={clearSearch}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-gray-700 rounded-r-lg transition-colors"
-                      aria-label="Clear search"
-                    >
-                      <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
-                    </button>
-                  )}
+                  <button
+                    onClick={clearSearch}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
+                  </button>
                 </div>
                 
                 {/* Search Results Count */}
                 {searchQuery && (
-                  <div className="mt-2 flex items-center justify-between">
-                    <p className="text-sm text-gray-400">
-                      {filteredUsers.length === 0 
-                        ? 'No users found' 
-                        : `${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''} found`
-                      }
-                    </p>
-                    {filteredUsers.length > 0 && (
-                      <button
-                        onClick={clearSearch}
-                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                      >
-                        Show all ({users.length})
-                      </button>
-                    )}
-                  </div>
+                  <p className="text-sm text-gray-400 mt-2">
+                    {filteredUsers.length === 0 
+                      ? 'No users found' 
+                      : `${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''} found`
+                    }
+                  </p>
                 )}
-              </div>
+              </motion.div>
             )}
           </div>
         </div>

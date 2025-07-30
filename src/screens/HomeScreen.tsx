@@ -3,7 +3,7 @@ import { PostsFeed } from '../components/post/PostsFeed';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';
 import { User, Post } from '../types';
-import { ChevronLeftIcon, PlusIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabase';
 import { getAllPosts, getUserPosts } from '../lib/posts';
 import { getNearbyUsers } from '../lib/location';
@@ -289,22 +289,6 @@ export const HomeScreen: React.FC<Props> = ({
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center">
               <GradientLogo size="md" />
-            </div>
-            
-            {/* Top Right Icons */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleCreateClick}
-                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
-              >
-                <PlusIcon className="w-6 h-6 text-white" />
-              </button>
-              <button
-                onClick={handleMessagesClick}
-                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 active:scale-95 transition-all"
-              >
-                <ChatBubbleLeftIcon className="w-6 h-6 text-white" />
-              </button>
             </div>
           </div>
         </div>

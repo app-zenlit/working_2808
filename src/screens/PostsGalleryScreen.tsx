@@ -81,7 +81,7 @@ export const PostsGalleryScreen: React.FC<Props> = ({
           </button>
           <div className="flex items-center">
             <img
-              src={user.dpUrl}
+              src={user.dpUrl ?? '/images/default-avatar.png'}
               alt={user.name}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500 mr-3"
             />
@@ -109,11 +109,17 @@ export const PostsGalleryScreen: React.FC<Props> = ({
                     onClick={() => onUserClick?.(post.userId)}
                     className="flex items-center space-x-3 hover:bg-gray-800 active:bg-gray-700 transition-colors rounded-lg p-2 -m-2"
                   >
-                    <img
-                      src={post.userDpUrl}
-                      alt={post.userName}
-                      className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500"
-                    />
+                    {post.userDpUrl ? (
+                      <img
+                        src={post.userDpUrl}
+                        alt={post.userName}
+                        className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500">
+                        <span className="text-gray-400 text-xs">?</span>
+                      </div>
+                    )}
                     <div className="text-left">
                       <h3 className="font-semibold text-white">{post.userName}</h3>
                       <p className="text-xs text-gray-400">
@@ -140,11 +146,17 @@ export const PostsGalleryScreen: React.FC<Props> = ({
                 </div>
 
                 {/* Post Image */}
-                <img
-                  src={post.mediaUrl}
-                  alt={post.title}
-                  className="w-full aspect-square object-cover"
-                />
+                {post.mediaUrl ? (
+                  <img
+                    src={post.mediaUrl}
+                    alt={post.title}
+                    className="w-full aspect-square object-cover"
+                  />
+                ) : (
+                  <div className="w-full aspect-square bg-gray-800 flex items-center justify-center">
+                    <span className="text-gray-400">No image</span>
+                  </div>
+                )}
 
                 {/* Post Content */}
                 <div className="p-4">
