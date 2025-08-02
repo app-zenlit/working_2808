@@ -521,6 +521,8 @@ export default function App() {
                   <UserIcon className="w-6 h-6" />
                 </button>
               </div>
+              {/* Additional padding below navigation with same background color */}
+              <div className="bg-gray-900 h-2"></div>
             </nav>
           )}
         </div>
