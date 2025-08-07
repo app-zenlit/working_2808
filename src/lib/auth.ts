@@ -11,7 +11,7 @@ const getEnvironmentContext = () => {
   return isStandalone ? 'pwa' : 'browser'
 }
 
-const logTelemetry = async (event: string, details: Record<string, any> = {}) => {
+export const logTelemetry = async (event: string, details: Record<string, any> = {}) => {
   try {
     await fetch(telemetryEndpoint, {
       method: 'POST',
