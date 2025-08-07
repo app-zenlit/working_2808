@@ -173,6 +173,21 @@ export const verifySignupOTP = async (email: string, token: string): Promise<Aut
     // Ensure session is properly stored
     if (data.session) {
       await supabase!.auth.setSession(data.session)
+      try {
+        const key = 'supabase.auth.token'
+        const stored = localStorage.getItem(key)
+        if (!stored) {
+          localStorage.setItem(key, JSON.stringify(data.session))
+        }
+        // Verify we can read and parse the session after write
+        JSON.parse(localStorage.getItem(key) || '')
+      } catch (err) {
+        console.warn('Session persistence to localStorage failed, using in-memory token', err)
+        if (typeof window !== 'undefined') {
+          ;(window as any).__supabaseSession = data.session
+          alert('We could not save your session. Please finish signup in your browser.')
+        }
+      }
     }
 
     console.log('OTP verified successfully, user created:', data.user.id)
