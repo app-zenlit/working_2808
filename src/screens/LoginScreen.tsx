@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon, CheckCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { PasswordResetScreen } from './PasswordResetScreen';
-import { sendSignupOTP, verifySignupOTP, setUserPassword, signInWithPassword } from '../lib/auth';
+import { sendSignupOTP, verifySignupOTP, setUserPassword, signInWithPassword, logTelemetry } from '../lib/auth';
 import { GradientLogo } from '../components/common/GradientLogo';
 
 interface Props {
@@ -26,6 +26,8 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otpCountdown, setOtpCountdown] = useState(0);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [showFallback, setShowFallback] = useState(false);
 
   // Countdown timer effect for OTP resend
   useEffect(() => {
@@ -48,6 +50,18 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     if (error) setError(null);
   };
 
+  const recordLoginFailure = (message: string) => {
+    setError(message);
+    setLoginAttempts(prev => {
+      const attempts = prev + 1;
+      if (attempts >= 3) {
+        setShowFallback(true);
+        logTelemetry('login_fallback_reached', { attempts });
+      }
+      return attempts;
+    });
+  };
+
   // LOGIN FLOW: Existing users with email/password
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,18 +77,20 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     try {
       console.log('Attempting login for:', formData.email);
       const result = await signInWithPassword(formData.email, formData.password);
-      
+
       if (result.success) {
         console.log('Login successful');
+        setLoginAttempts(0);
+        setShowFallback(false);
         await new Promise(resolve => setTimeout(resolve, 500));
         onLogin();
       } else {
         console.error('Login failed:', result.error);
-        setError(result.error || 'Login failed');
+        recordLoginFailure(result.error || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError('Network error. Please try again.');
+      recordLoginFailure('Network error. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -271,6 +287,22 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       }
     }
     setError(null);
+  };
+
+  const handleRetryInBrowser = () => {
+    logTelemetry('login_fallback_retry_browser');
+    window.open(window.location.href, '_blank');
+  };
+
+  const handleContactSupport = () => {
+    logTelemetry('login_fallback_contact_support');
+    window.location.href = 'mailto:support@zenlit.com';
+  };
+
+  const handleCancelFallback = () => {
+    logTelemetry('login_fallback_cancel');
+    setShowFallback(false);
+    setLoginAttempts(0);
   };
 
   // Show password reset screen
@@ -636,6 +668,35 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
           )}
         </div>
       </motion.div>
+      {showFallback && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 text-center max-w-sm w-full">
+            <p className="text-gray-300 mb-4">
+              We’re having trouble verifying your connection. For your safety, please retry in the browser.
+            </p>
+            <div className="space-y-2">
+              <button
+                onClick={handleRetryInBrowser}
+                className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Retry in browser
+              </button>
+              <button
+                onClick={handleContactSupport}
+                className="w-full bg-gray-700 text-white py-2 rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Contact support
+              </button>
+              <button
+                onClick={handleCancelFallback}
+                className="w-full bg-gray-700 text-white py-2 rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
