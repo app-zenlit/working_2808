@@ -1,5 +1,47 @@
 import { supabase, ensureSession } from './supabase'
 
+const telemetryEndpoint = '/api/telemetry'
+
+const getEnvironmentContext = () => {
+  if (typeof window === 'undefined') return 'unknown'
+  const isStandalone =
+    window.matchMedia?.('(display-mode: standalone)')?.matches ||
+    // @ts-ignore - iOS standalone property
+    window.navigator?.standalone
+  return isStandalone ? 'pwa' : 'browser'
+}
+
+const logTelemetry = async (event: string, details: Record<string, any> = {}) => {
+  try {
+    await fetch(telemetryEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, context: getEnvironmentContext(), ...details })
+    })
+  } catch (e) {
+    console.warn('Telemetry log failed', e)
+  }
+}
+
+const checkConnectivity = async (): Promise<boolean> => {
+  if (typeof navigator !== 'undefined' && 'onLine' in navigator && !navigator.onLine) {
+    return false
+  }
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!url) return true
+
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 3000)
+    await fetch(`${url}/auth/v1/health`, { method: 'GET', signal: controller.signal })
+    clearTimeout(timeout)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export interface AuthResponse {
   success: boolean
   error?: string
@@ -17,6 +59,11 @@ const isSupabaseAvailable = () => {
 
 // STEP 1: Send OTP for email verification during signup
 export const sendSignupOTP = async (email: string): Promise<AuthResponse> => {
+  if (!(await checkConnectivity())) {
+    logTelemetry('auth_send_otp_offline', { email })
+    return { success: false, error: 'Connection lost—please reconnect and try again' }
+  }
+
   if (!isSupabaseAvailable()) {
     return { success: false, error: 'Service temporarily unavailable' }
   }
@@ -36,6 +83,7 @@ export const sendSignupOTP = async (email: string): Promise<AuthResponse> => {
 
     if (error) {
       console.error('OTP send error:', error.message)
+      logTelemetry('auth_send_otp_failure', { email, message: error.message })
       
       // Handle specific Supabase errors
       if (error.message.includes('User already registered')) {
@@ -66,15 +114,24 @@ export const sendSignupOTP = async (email: string): Promise<AuthResponse> => {
     return { success: true, data }
   } catch (error) {
     console.error('OTP send catch error:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to send verification code' 
+    logTelemetry('auth_send_otp_exception', {
+      email,
+      error: error instanceof Error ? error.message : String(error)
+    })
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to send verification code'
     }
   }
 }
 
 // STEP 2: Verify OTP and get authenticated session
 export const verifySignupOTP = async (email: string, token: string): Promise<AuthResponse> => {
+  if (!(await checkConnectivity())) {
+    logTelemetry('auth_verify_otp_offline', { email })
+    return { success: false, error: 'Connection lost—please reconnect and try again' }
+  }
+
   if (!isSupabaseAvailable()) {
     return { success: false, error: 'Service temporarily unavailable' }
   }
@@ -90,6 +147,7 @@ export const verifySignupOTP = async (email: string, token: string): Promise<Aut
 
     if (error) {
       console.error('OTP verify error:', error.message)
+      logTelemetry('auth_verify_otp_failure', { email, message: error.message })
       
       if (error.message.includes('expired')) {
         return { 
@@ -122,9 +180,13 @@ export const verifySignupOTP = async (email: string, token: string): Promise<Aut
     return { success: true, data }
   } catch (error) {
     console.error('OTP verify catch error:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to verify code' 
+    logTelemetry('auth_verify_otp_exception', {
+      email,
+      error: error instanceof Error ? error.message : String(error)
+    })
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to verify code'
     }
   }
 }
