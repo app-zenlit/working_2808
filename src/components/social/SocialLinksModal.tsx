@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { XMarkIcon, CheckIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { User, SocialProvider } from '../../types';
 import { 
@@ -7,8 +7,7 @@ import {
   IconBrandLinkedin, 
   IconBrandX
 } from '@tabler/icons-react';
-import { supabase } from '../../lib/supabase';
-import { transformProfileToUser, validateProfileUrl } from '../../../lib/utils';
+import { validateProfileUrl } from '../../../lib/utils';
 
 interface Props {
   isOpen: boolean;
@@ -31,7 +30,6 @@ export const SocialLinksModal: React.FC<Props> = ({
     linkedInUrl: user.linkedInUrl || '',
     twitterUrl: user.twitterUrl || ''
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [validating, setValidating] = useState<Record<string, boolean>>({});
 
@@ -106,78 +104,64 @@ export const SocialLinksModal: React.FC<Props> = ({
     }
   };
 
-  const validateUrl = async (key: keyof typeof formData, url: string) => {
-    if (!url.trim()) return true;
+  const validateAndUpdateUser = async (key: keyof typeof formData, url: string) => {
+    const trimmedUrl = url.trim();
+    
+    // If URL is empty, immediately update parent with empty value (remove link)
+    if (!trimmedUrl) {
+      const updatedUser = {
+        ...user,
+        [`${key}`]: '',
+        links: {
+          ...user.links,
+          [key === 'instagramUrl' ? 'Instagram' : key === 'linkedInUrl' ? 'LinkedIn' : 'Twitter']: ''
+        }
+      };
+      onUserUpdate(updatedUser);
+      return;
+    }
 
     setValidating(prev => ({ ...prev, [key]: true }));
     
     try {
-      const isValid = await validateProfileUrl(url.trim());
-      if (!isValid) {
+      const isValid = await validateProfileUrl(trimmedUrl);
+      
+      if (isValid) {
+        // URL is valid, update parent state immediately
+        const updatedUser = {
+          ...user,
+          [`${key}`]: trimmedUrl,
+          links: {
+            ...user.links,
+            [key === 'instagramUrl' ? 'Instagram' : key === 'linkedInUrl' ? 'LinkedIn' : 'Twitter']: trimmedUrl
+          }
+        };
+        onUserUpdate(updatedUser);
+        
+        // Clear any existing error
+        setErrors(prev => ({ ...prev, [key]: '' }));
+      } else {
+        // URL is invalid, show error and don't update parent
         setErrors(prev => ({ ...prev, [key]: 'Invalid or unreachable URL' }));
-        return false;
       }
-      return true;
     } catch (error) {
       setErrors(prev => ({ ...prev, [key]: 'Unable to validate URL' }));
-      return false;
     } finally {
       setValidating(prev => ({ ...prev, [key]: false }));
     }
   };
 
-  const handleSave = async () => {
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      // Validate all URLs
-      const validationPromises = Object.entries(formData).map(async ([key, url]) => {
-        if (url.trim()) {
-          const isValid = await validateUrl(key as keyof typeof formData, url);
-          return { key, isValid };
-        }
-        return { key, isValid: true };
-      });
-
-      const validationResults = await Promise.all(validationPromises);
-      const hasErrors = validationResults.some(result => !result.isValid);
-
-      if (hasErrors) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Update profile in database
-      const updateData = {
-        instagram_url: formData.instagramUrl.trim() || null,
-        linked_in_url: formData.linkedInUrl.trim() || null,
-        twitter_url: formData.twitterUrl.trim() || null,
-        updated_at: new Date().toISOString(),
-      };
-
-      const { data: updated, error } = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', user.id)
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      // Transform and update user
-      const transformedUser = transformProfileToUser(updated);
-      onUserUpdate(transformedUser);
-      onClose();
-
-    } catch (error) {
-      console.error('Save social links error:', error);
-      setErrors({ general: 'Failed to save social links. Please try again.' });
-    } finally {
-      setIsLoading(false);
+  const handleInputBlur = (key: keyof typeof formData) => {
+    const url = formData[key];
+    if (url !== (user[key] || '')) {
+      // URL has changed, validate and update
+      validateAndUpdateUser(key, url);
     }
+  };
+
+  const handleRemoveLink = (key: keyof typeof formData) => {
+    setFormData(prev => ({ ...prev, [key]: '' }));
+    validateAndUpdateUser(key, '');
   };
 
   const getConnectedCount = () => {
@@ -218,15 +202,8 @@ export const SocialLinksModal: React.FC<Props> = ({
         {/* Content */}
         <div className="p-6 space-y-4">
           <p className="text-sm text-gray-400 mb-6">
-            Add links to your social media profiles to help others connect with you and build trust.
+            Add links to your social media profiles. Changes are saved automatically when you finish editing.
           </p>
-
-          {/* General Error */}
-          {errors.general && (
-            <div className="bg-red-900/30 border border-red-700 rounded-lg p-3 mb-4">
-              <p className="text-red-400 text-sm">{errors.general}</p>
-            </div>
-          )}
 
           {/* Social Platform Inputs */}
           <div className="space-y-4">
@@ -248,7 +225,7 @@ export const SocialLinksModal: React.FC<Props> = ({
                         {isConnected ? 'Connected' : 'Not connected'}
                       </p>
                     </div>
-                    {isConnected && (
+                    {isConnected && !hasError && (
                       <div className="w-2 h-2 bg-green-500 rounded-full" />
                     )}
                   </div>
@@ -259,11 +236,7 @@ export const SocialLinksModal: React.FC<Props> = ({
                       type="url"
                       value={currentUrl}
                       onChange={(e) => handleInputChange(provider.key, e.target.value)}
-                      onBlur={() => {
-                        if (currentUrl.trim()) {
-                          validateUrl(provider.key, currentUrl);
-                        }
-                      }}
+                      onBlur={() => handleInputBlur(provider.key)}
                       className={`w-full px-3 py-2 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pr-10 ${
                         hasError ? 'border-red-500' : 'border-gray-600'
                       }`}
@@ -277,6 +250,8 @@ export const SocialLinksModal: React.FC<Props> = ({
                         <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                       ) : isConnected && !hasError ? (
                         <CheckIcon className="w-4 h-4 text-green-500" />
+                      ) : hasError ? (
+                        <ExclamationTriangleIcon className="w-4 h-4 text-red-500" />
                       ) : null}
                     </div>
                   </div>
@@ -289,7 +264,7 @@ export const SocialLinksModal: React.FC<Props> = ({
                   {/* Remove Link Button */}
                   {isConnected && (
                     <button
-                      onClick={() => handleInputChange(provider.key, '')}
+                      onClick={() => handleRemoveLink(provider.key)}
                       className="text-red-400 hover:text-red-300 text-xs transition-colors"
                     >
                       Remove {provider.name} link
@@ -300,32 +275,12 @@ export const SocialLinksModal: React.FC<Props> = ({
             })}
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-gray-700">
-            <button
-              onClick={onClose}
-              disabled={isLoading}
-              className="flex-1 bg-gray-700 text-white py-3 rounded-lg font-medium hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isLoading || Object.values(validating).some(Boolean)}
-              className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <CheckIcon className="w-4 h-4" />
-                  Save Changes
-                </>
-              )}
-            </button>
+          {/* Info Message */}
+          <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-3 mt-6">
+            <h3 className="text-sm font-medium text-blue-300 mb-1">How it works</h3>
+            <p className="text-xs text-blue-200">
+              Enter your social media URLs and they'll be validated automatically. Changes are saved to your profile when you click "Save" in the main edit screen.
+            </p>
           </div>
         </div>
       </motion.div>
