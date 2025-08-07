@@ -43,7 +43,8 @@ export default function App() {
     
     // Register service worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
+      navigator.serviceWorker
+        .register('/sw.js', { scope: '/' })
         .then((registration) => {
           console.log('Service Worker registered successfully:', registration);
         })
