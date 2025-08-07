@@ -55,9 +55,9 @@ export async function validateProfileUrl(url: string): Promise<boolean> {
 
   if (reachable) return true
 
-  const linkedin = /^https?:\/\/(www\.)?linkedin\.com\/in\/[A-Za-z0-9\-_]+\/?$/
-  const instagram = /^https?:\/\/(www\.)?instagram\.com\/[A-Za-z0-9\._]+\/?$/
-  const twitter = /^https?:\/\/(www\.)?twitter\.com\/[A-Za-z0-9_]+\/?$/
+  const linkedin = /^https?:\/\/(www\.)?linkedin\.com\/.*$/
+  const instagram = /^https?:\/\/(www\.)?instagram\.com\/.*$/
+  const twitter = /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/.*$/
 
   return linkedin.test(url) || instagram.test(url) || twitter.test(url)
 }
