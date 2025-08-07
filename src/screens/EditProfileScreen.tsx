@@ -457,7 +457,19 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
 
         <SocialAccountsSection 
           ref={socialAccountsSectionRef}
-          user={{ ...user, ...formData }} 
+          user={{
+            ...user,
+            name: formData.name,
+            bio: formData.bio,
+            instagramUrl: formData.instagramUrl,
+            linkedInUrl: formData.linkedInUrl,
+            twitterUrl: formData.twitterUrl,
+            links: {
+              Twitter: formData.twitterUrl || '#',
+              Instagram: formData.instagramUrl || '#',
+              LinkedIn: formData.linkedInUrl || '#',
+            }
+          }}
           onUserUpdate={handleUserUpdate} 
         />
       </div>
