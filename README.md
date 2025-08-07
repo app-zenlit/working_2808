@@ -165,6 +165,9 @@ Make sure to set these in your deployment platform:
 ### Progressive Web App
 The project is configured as a PWA using `next-pwa`. When built for production, the app can be installed on mobile devices and works offline.
 
+#### Session persistence fallback
+During signup the app tries to save the authentication session to `localStorage` so it survives a reload. If the browser blocks storage, the session is kept only in memory and you'll be prompted to finish signup in a regular browser window.
+
 ## 🔮 Future Enhancements
 
 - **Real-time Messaging** - WebSocket integration
