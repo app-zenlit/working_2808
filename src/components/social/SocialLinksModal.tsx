@@ -279,7 +279,7 @@ export const SocialLinksModal: React.FC<Props> = ({
           <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-3 mt-6">
             <h3 className="text-sm font-medium text-blue-300 mb-1">How it works</h3>
             <p className="text-xs text-blue-200">
-              Enter your social media URLs and they'll be validated automatically. Changes are saved to your profile when you click "Save" in the main edit screen.
+              Enter your social media URLs and they&apos;ll be validated automatically. Changes are saved to your profile when you click &quot;Save&quot; in the main edit screen.
             </p>
           </div>
         </div>

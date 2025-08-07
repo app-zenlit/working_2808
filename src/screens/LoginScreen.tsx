@@ -773,7 +773,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
           <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 text-center max-w-sm w-full">
             <p className="text-gray-300 mb-4">
-              We're having trouble verifying your connection. For your safety, please retry in the browser.
+              We&apos;re having trouble verifying your connection. For your safety, please retry in the browser.
             </p>
             <div className="space-y-2">
               <button
