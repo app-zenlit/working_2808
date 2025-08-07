@@ -28,6 +28,10 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [showFallback, setShowFallback] = useState(false);
+  const [rateLimitCountdown, setRateLimitCountdown] = useState(0);
+
+  // Rate limit storage key
+  const RATE_LIMIT_STORAGE_KEY = 'zenlit_rate_limit_end_time';
 
   // Countdown timer effect for OTP resend
   useEffect(() => {
@@ -39,6 +43,50 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     }
     return () => clearTimeout(timer);
   }, [otpCountdown]);
+
+  // Rate limit countdown effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (rateLimitCountdown > 0) {
+      timer = setTimeout(() => {
+        setRateLimitCountdown(prev => {
+          const newValue = prev - 1;
+          if (newValue <= 0) {
+            // Clear rate limit when countdown reaches zero
+            try {
+              sessionStorage.removeItem(RATE_LIMIT_STORAGE_KEY);
+            } catch (error) {
+              console.warn('Failed to clear rate limit from sessionStorage:', error);
+            }
+          }
+          return newValue;
+        });
+      }, 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [rateLimitCountdown]);
+
+  // Load rate limit state on component mount
+  useEffect(() => {
+    try {
+      const rateLimitEndTime = sessionStorage.getItem(RATE_LIMIT_STORAGE_KEY);
+      if (rateLimitEndTime) {
+        const endTime = parseInt(rateLimitEndTime, 10);
+        const currentTime = Date.now();
+        const remainingTime = Math.max(0, Math.ceil((endTime - currentTime) / 1000));
+        
+        if (remainingTime > 0) {
+          console.log('Rate limit active, remaining time:', remainingTime, 'seconds');
+          setRateLimitCountdown(remainingTime);
+        } else {
+          // Rate limit has expired, clear it
+          sessionStorage.removeItem(RATE_LIMIT_STORAGE_KEY);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load rate limit state from sessionStorage:', error);
+    }
+  }, []);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -60,6 +108,40 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       }
       return attempts;
     });
+  };
+
+  // Handle rate limit errors
+  const handleRateLimitError = (errorMessage: string) => {
+    console.log('Rate limit detected, starting cooldown');
+    
+    // Extract cooldown duration from error message or use default
+    let cooldownSeconds = 300; // Default 5 minutes
+    
+    // Try to extract time from error message
+    const timeMatch = errorMessage.match(/(\d+)\s*(minute|second|hour)/i);
+    if (timeMatch) {
+      const value = parseInt(timeMatch[1], 10);
+      const unit = timeMatch[2].toLowerCase();
+      
+      if (unit.startsWith('minute')) {
+        cooldownSeconds = value * 60;
+      } else if (unit.startsWith('hour')) {
+        cooldownSeconds = value * 3600;
+      } else if (unit.startsWith('second')) {
+        cooldownSeconds = value;
+      }
+    }
+    
+    // Store end time in sessionStorage
+    const endTime = Date.now() + (cooldownSeconds * 1000);
+    try {
+      sessionStorage.setItem(RATE_LIMIT_STORAGE_KEY, endTime.toString());
+    } catch (error) {
+      console.warn('Failed to store rate limit in sessionStorage:', error);
+    }
+    
+    setRateLimitCountdown(cooldownSeconds);
+    setError(`Too many requests. Please wait ${Math.ceil(cooldownSeconds / 60)} minutes before trying again.`);
   };
 
   // LOGIN FLOW: Existing users with email/password
@@ -124,6 +206,13 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
         setOtpCountdown(60); // Start 60 second countdown
       } else {
         console.error('OTP send failed:', result.error);
+        
+        // Handle rate limit errors specifically
+        if (result.error && result.error.includes('rate limit')) {
+          handleRateLimitError(result.error);
+          return;
+        }
+        
         // Check if the error indicates an existing account
         if (result.error && result.error.includes('already exists')) {
           // Switch to login view and pre-fill email
@@ -218,7 +307,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
 
   // Resend OTP
   const handleResendOTP = async () => {
-    if (otpCountdown > 0) return;
+    if (otpCountdown > 0 || rateLimitCountdown > 0) return;
 
     setError(null);
     setIsLoading(true);
@@ -231,7 +320,12 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
         // Clear the OTP field
         setFormData(prev => ({ ...prev, otp: '' }));
       } else {
-        setError(result.error || 'Failed to resend code');
+        // Handle rate limit errors specifically
+        if (result.error && result.error.includes('rate limit')) {
+          handleRateLimitError(result.error);
+        } else {
+          setError(result.error || 'Failed to resend code');
+        }
       }
     } catch (error) {
       setError('Network error. Please try again.');
@@ -459,7 +553,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
 
                     <button
                       type="submit"
-                      disabled={isLoading}
+                      disabled={isLoading || rateLimitCountdown > 0}
                       className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {isLoading ? (
@@ -467,6 +561,8 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           Sending Code...
                         </>
+                      ) : rateLimitCountdown > 0 ? (
+                        `Wait ${Math.ceil(rateLimitCountdown / 60)} min ${rateLimitCountdown % 60}s`
                       ) : (
                         'Send Verification Code'
                       )}
@@ -517,10 +613,15 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                         Didn&apos;t receive the code?{' '}
                         <button
                           onClick={handleResendOTP}
-                          disabled={otpCountdown > 0 || isLoading}
+                          disabled={otpCountdown > 0 || isLoading || rateLimitCountdown > 0}
                           className="text-blue-400 hover:text-blue-300 transition-colors disabled:text-gray-500 disabled:cursor-not-allowed"
                         >
-                          {otpCountdown > 0 ? `Resend in ${otpCountdown}s` : 'Resend Code'}
+                          {rateLimitCountdown > 0 
+                            ? `Wait ${Math.ceil(rateLimitCountdown / 60)}m ${rateLimitCountdown % 60}s`
+                            : otpCountdown > 0 
+                            ? `Resend in ${otpCountdown}s` 
+                            : 'Resend Code'
+                          }
                         </button>
                       </p>
                     </div>
@@ -672,7 +773,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
           <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 text-center max-w-sm w-full">
             <p className="text-gray-300 mb-4">
-              We’re having trouble verifying your connection. For your safety, please retry in the browser.
+              We're having trouble verifying your connection. For your safety, please retry in the browser.
             </p>
             <div className="space-y-2">
               <button
