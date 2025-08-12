@@ -22,10 +22,31 @@ export const ChatWindow = ({
   onViewProfile,
 }: ChatWindowProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [chatMessages, setChatMessages] = useState<Message[]>(messages);
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const isHydrated = useRef(false);
 
   useEffect(() => {
-    setChatMessages(messages);
+    if (!isHydrated.current) {
+      setChatMessages(messages);
+      isHydrated.current = true;
+      return;
+    }
+
+    setChatMessages((prevMessages) => {
+      const mergedMessages = [...prevMessages];
+      messages.forEach((msg) => {
+        const index = mergedMessages.findIndex((m) => m.id === msg.id);
+        if (index !== -1) {
+          mergedMessages[index] = { ...mergedMessages[index], ...msg };
+        } else {
+          mergedMessages.push(msg);
+        }
+      });
+      mergedMessages.sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+      return mergedMessages;
+    });
   }, [messages]);
 
   const scrollToBottom = () => {
