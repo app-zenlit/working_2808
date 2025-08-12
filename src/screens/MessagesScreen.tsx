@@ -242,7 +242,7 @@ export const MessagesScreen: React.FC<Props> = ({
     if (!selectedUser) return;
     if (!isValidUuid(currentUserId)) return;
 
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp_${Date.now()}`;
     const tempMessage: Message = {
       id: tempId,
       senderId: currentUserId,
@@ -262,6 +262,7 @@ export const MessagesScreen: React.FC<Props> = ({
       );
     } else {
       setAllMessages(prev => prev.filter(m => m.id !== tempId));
+      alert('Failed to send message');
     }
   };
 
