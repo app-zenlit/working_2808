@@ -242,10 +242,26 @@ export const MessagesScreen: React.FC<Props> = ({
     if (!selectedUser) return;
     if (!isValidUuid(currentUserId)) return;
 
-    const newMessage = await sendMessage(currentUserId, selectedUser.id, content);
-    if (newMessage) {
-      setAllMessages(prev => [...prev, newMessage]);
-      setUnreadByUser((prev) => ({ ...prev, [selectedUser.id]: false }));
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage: Message = {
+      id: tempId,
+      senderId: currentUserId,
+      receiverId: selectedUser.id,
+      content,
+      timestamp: new Date().toISOString(),
+      read: true,
+    };
+
+    setAllMessages(prev => [...prev, tempMessage]);
+    setUnreadByUser(prev => ({ ...prev, [selectedUser.id]: false }));
+
+    const saved = await sendMessage(currentUserId, selectedUser.id, content);
+    if (saved) {
+      setAllMessages(prev =>
+        prev.map(m => (m.id === tempId ? saved : m))
+      );
+    } else {
+      setAllMessages(prev => prev.filter(m => m.id !== tempId));
     }
   };
 
