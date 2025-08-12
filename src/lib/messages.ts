@@ -15,7 +15,7 @@ export async function sendMessage(
     const { data, error } = await supabase
       .from('messages')
       .insert({ sender_id: senderId, receiver_id: receiverId, content })
-      .select()
+      .select('id, sender_id, receiver_id, content, created_at, read')
       .single();
 
     if (error || !data) {
@@ -49,9 +49,12 @@ export async function getConversation(
   try {
     const { data, error } = await supabase
       .from('messages')
-      .select('*')
+      .select('id, sender_id, receiver_id, content, created_at, read')
       .or(
-        `and(sender_id.eq.${userId1},receiver_id.eq.${userId2}),and(sender_id.eq.${userId2},receiver_id.eq.${userId1})`
+        [
+          `and(sender_id.eq.${userId1},receiver_id.eq.${userId2})`,
+          `and(sender_id.eq.${userId2},receiver_id.eq.${userId1})`,
+        ].join(',')
       )
       .order('created_at', { ascending: true });
 
@@ -83,7 +86,7 @@ export async function getConversationsForUser(
   try {
     const { data, error } = await supabase
       .from('messages')
-      .select('*')
+      .select('id, sender_id, receiver_id, content, created_at, read')
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
       .order('created_at', { ascending: true });
 
