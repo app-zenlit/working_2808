@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Message, User } from '../../types';
 import { supabase } from '../../lib/supabase';
-import { markMessagesAsRead } from '../../lib/messages';
+import { markMessagesAsRead, sendMessage, getConversation } from '../../lib/messages';
 import { isValidUuid } from '../../utils/uuid';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
@@ -9,23 +9,21 @@ import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 interface ChatWindowProps {
   user: User;
-  messages: Message[];
-  onSendMessage: (content: string) => void;
   currentUserId: string;
+  messages?: Message[];
+  onSendMessage?: (content: string) => void;
   onBack?: () => void;
   onViewProfile?: (user: User) => void;
 }
 
 export const ChatWindow = ({
   user,
-  messages,
-  onSendMessage,
   currentUserId,
   onBack,
-  onViewProfile
+  onViewProfile,
 }: ChatWindowProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [chatMessages, setChatMessages] = useState<Message[]>(messages);
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -35,18 +33,37 @@ export const ChatWindow = ({
     scrollToBottom();
   }, [chatMessages]);
 
+  // Load conversation and subscribe to realtime updates
   useEffect(() => {
-    setChatMessages(messages);
-    scrollToBottom();
-  }, [messages]);
+    if (!isValidUuid(currentUserId) || !isValidUuid(user.id)) {
+      console.warn('ChatWindow: invalid UUIDs provided');
+      return;
+    }
 
-  // Subscribe to realtime messages for this conversation
-  useEffect(() => {
+    let isActive = true;
+
+    const loadConversation = async () => {
+      const conversation = await getConversation(currentUserId, user.id);
+      if (isActive) {
+        setChatMessages(conversation);
+        scrollToBottom();
+        void markMessagesAsRead(currentUserId, user.id);
+      }
+    };
+
+    loadConversation();
+
     const channel = supabase.channel(`chat-${currentUserId}-${user.id}`);
 
+    // Incoming messages
     channel.on(
       'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'messages' },
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=eq.${user.id},receiver_id=eq.${currentUserId}`,
+      },
       (payload) => {
         const data = payload.new as any;
         const newMessage: Message = {
@@ -58,36 +75,77 @@ export const ChatWindow = ({
           read: data.read,
         };
 
-        if (
-          (newMessage.senderId === user.id && newMessage.receiverId === currentUserId) ||
-          (newMessage.senderId === currentUserId && newMessage.receiverId === user.id)
-        ) {
-          setChatMessages((prev) => {
-            if (prev.some((m) => m.id === newMessage.id)) return prev;
-            return [...prev, newMessage];
-          });
+        setChatMessages((prev) => {
+          if (prev.some((m) => m.id === newMessage.id)) return prev;
+          return [...prev, newMessage];
+        });
 
-          // Mark message as read if it's from the other user
-          if (newMessage.senderId === user.id && isValidUuid(currentUserId)) {
-            markMessagesAsRead(currentUserId, user.id);
-          }
-        }
+        void markMessagesAsRead(currentUserId, user.id);
+      }
+    );
+
+    // Outgoing messages
+    channel.on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=eq.${currentUserId},receiver_id=eq.${user.id}`,
+      },
+      (payload) => {
+        const data = payload.new as any;
+        const newMessage: Message = {
+          id: data.id,
+          senderId: data.sender_id,
+          receiverId: data.receiver_id,
+          content: data.content,
+          timestamp: data.created_at,
+          read: data.read,
+        };
+
+        setChatMessages((prev) => {
+          if (prev.some((m) => m.id === newMessage.id)) return prev;
+          return [...prev, newMessage];
+        });
       }
     );
 
     channel.subscribe();
 
     return () => {
+      isActive = false;
       supabase.removeChannel(channel);
     };
   }, [currentUserId, user.id]);
 
-  // Mark existing unread messages as read on mount
-  useEffect(() => {
-    if (isValidUuid(currentUserId)) {
-      markMessagesAsRead(currentUserId, user.id);
+  const handleSend = async (content: string) => {
+    if (!isValidUuid(currentUserId) || !isValidUuid(user.id)) {
+      console.warn('ChatWindow: cannot send message with invalid UUIDs');
+      return;
     }
-  }, [currentUserId, user.id]);
+
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage: Message = {
+      id: tempId,
+      senderId: currentUserId,
+      receiverId: user.id,
+      content,
+      timestamp: new Date().toISOString(),
+      read: true,
+    };
+
+    setChatMessages((prev) => [...prev, tempMessage]);
+
+    const saved = await sendMessage(currentUserId, user.id, content);
+    if (saved) {
+      setChatMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? saved : m))
+      );
+    } else {
+      setChatMessages((prev) => prev.filter((m) => m.id !== tempId));
+    }
+  };
 
   const isAnonymous = user.name === 'Anonymous';
 
@@ -170,7 +228,7 @@ export const ChatWindow = ({
 
       {/* Message Input */}
       <div className="border-t border-gray-800 p-4">
-        <MessageInput onSendMessage={onSendMessage} />
+        <MessageInput onSendMessage={handleSend} />
       </div>
     </div>
   );
