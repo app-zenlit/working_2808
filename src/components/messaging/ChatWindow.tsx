@@ -1,64 +1,117 @@
 import { useState, useEffect, useRef } from 'react';
 import { Message, User } from '../../types';
+import { supabase } from '../../lib/supabase';
+import { markMessagesAsRead } from '../../lib/messages';
+import { isValidUuid } from '../../utils/uuid';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 interface ChatWindowProps {
-  user: User;
+  user: User; // partner
+  messages: Message[]; // initial list, ascending by created_at
+  onSendMessage: (content: string) => Promise<Message | null>;
   currentUserId: string;
-  messages: Message[];
-  onSendMessage: (content: string) => void;
   onBack?: () => void;
   onViewProfile?: (user: User) => void;
 }
 
 export const ChatWindow = ({
   user,
-  currentUserId,
   messages,
   onSendMessage,
+  currentUserId,
   onBack,
   onViewProfile,
 }: ChatWindowProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hydratedRef = useRef(false);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
-  const isHydrated = useRef(false);
 
-  useEffect(() => {
-    if (!isHydrated.current) {
-      setChatMessages(messages);
-      isHydrated.current = true;
-      return;
-    }
-
-    setChatMessages((prevMessages) => {
-      const mergedMessages = [...prevMessages];
-      messages.forEach((msg) => {
-        const index = mergedMessages.findIndex((m) => m.id === msg.id);
-        if (index !== -1) {
-          mergedMessages[index] = { ...mergedMessages[index], ...msg };
-        } else {
-          mergedMessages.push(msg);
-        }
-      });
-      mergedMessages.sort(
-        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      );
-      return mergedMessages;
-    });
-  }, [messages]);
-
-  const scrollToBottom = () => {
+  const scrollToBottom = () =>
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+
+  // Hydrate once from props
+  useEffect(() => {
+    if (!hydratedRef.current && messages?.length) {
+      setChatMessages(messages);
+      hydratedRef.current = true;
+      scrollToBottom();
+    }
+  }, [messages]);
 
   useEffect(() => {
     scrollToBottom();
   }, [chatMessages]);
 
-  const handleSend = (content: string) => {
-    onSendMessage(content);
+  // Realtime: listen only for partner -> me inserts
+  useEffect(() => {
+    if (!isValidUuid(currentUserId) || !isValidUuid(user.id)) return;
+
+    const channel = supabase.channel(`chat-${currentUserId}-${user.id}`);
+
+    channel.on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=eq.${user.id}&receiver_id=eq.${currentUserId}`,
+      },
+      (payload) => {
+        const d: any = payload.new;
+        const msg: Message = {
+          id: d.id,
+          senderId: d.sender_id,
+          receiverId: d.receiver_id,
+          content: d.content,
+          timestamp: d.created_at,
+          read: d.read,
+        };
+        setChatMessages((prev) => {
+          if (prev.some((m) => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
+        markMessagesAsRead(currentUserId, user.id).catch(() => {});
+      }
+    );
+
+    channel.subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId, user.id]);
+
+  // Mark existing unread as read when thread is open
+  useEffect(() => {
+    if (isValidUuid(currentUserId) && isValidUuid(user.id)) {
+      markMessagesAsRead(currentUserId, user.id).catch(() => {});
+    }
+  }, [currentUserId, user.id]);
+
+  // Optimistic send + reconciliation
+  const handleSend = async (text: string) => {
+    const tempId = `temp_${Date.now()}`;
+    const optimistic: Message = {
+      id: tempId,
+      senderId: currentUserId,
+      receiverId: user.id,
+      content: text,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+    setChatMessages((prev) => [...prev, optimistic]);
+
+    const saved = await onSendMessage(text);
+    if (!saved) {
+      setChatMessages((prev) => prev.filter((m) => m.id !== tempId));
+      return;
+    }
+    setChatMessages((prev) => {
+      const withoutTemp = prev.filter((m) => m.id !== tempId);
+      if (withoutTemp.some((m) => m.id === saved.id)) return withoutTemp;
+      return [...withoutTemp, saved];
+    });
   };
 
   const isAnonymous = user.name === 'Anonymous';
@@ -70,7 +123,7 @@ export const ChatWindow = ({
 
   return (
     <div className="h-full flex flex-col bg-black">
-      {/* Pinned Chat Header with Back Button */}
+      {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
         <div className="flex items-center px-4 py-3">
           {onBack && (
@@ -111,7 +164,7 @@ export const ChatWindow = ({
         </div>
       </div>
 
-      {/* Messages Container */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {chatMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -126,11 +179,11 @@ export const ChatWindow = ({
           </div>
         ) : (
           <>
-            {chatMessages.map((message) => (
+            {chatMessages.map((m) => (
               <MessageBubble
-                key={message.id}
-                message={message}
-                isCurrentUser={message.senderId === currentUserId}
+                key={m.id}
+                message={m}
+                isCurrentUser={m.senderId === currentUserId}
               />
             ))}
             <div ref={messagesEndRef} />
@@ -138,10 +191,10 @@ export const ChatWindow = ({
         )}
       </div>
 
-      {/* Message Input */}
       <div className="border-t border-gray-800 p-4">
         <MessageInput onSendMessage={handleSend} />
       </div>
     </div>
   );
 };
+

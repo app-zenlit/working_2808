@@ -74,7 +74,7 @@ export const MessagesScreen: React.FC<Props> = ({
         setHasUnread(stillUnread);
         return updated;
       });
-      if (isValidUuid(currentUserId)) {
+      if (isValidUuid(currentUserId) && isValidUuid(selectedUser.id)) {
         markMessagesAsRead(currentUserId, selectedUser.id);
       }
     }
@@ -82,7 +82,7 @@ export const MessagesScreen: React.FC<Props> = ({
 
   // Listen for new messages in real time
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!isValidUuid(currentUserId)) return;
 
     const channel = supabase.channel(`inbox-${currentUserId}`);
 
@@ -108,7 +108,7 @@ export const MessagesScreen: React.FC<Props> = ({
         if (selectedUser?.id !== incoming.senderId) {
           setHasUnread(true);
           setUnreadByUser((prev) => ({ ...prev, [incoming.senderId]: true }));
-        } else if (isValidUuid(currentUserId)) {
+        } else if (isValidUuid(currentUserId) && isValidUuid(incoming.senderId)) {
           markMessagesAsRead(currentUserId, incoming.senderId);
         }
       }
@@ -238,32 +238,16 @@ export const MessagesScreen: React.FC<Props> = ({
     );
   };
 
-  const handleSendMessage = async (content: string) => {
-    if (!selectedUser) return;
-    if (!isValidUuid(currentUserId)) return;
-
-    const tempId = `temp_${Date.now()}`;
-    const tempMessage: Message = {
-      id: tempId,
-      senderId: currentUserId,
-      receiverId: selectedUser.id,
-      content,
-      timestamp: new Date().toISOString(),
-      read: true,
-    };
-
-    setAllMessages(prev => [...prev, tempMessage]);
-    setUnreadByUser(prev => ({ ...prev, [selectedUser.id]: false }));
+  const handleSendMessage = async (content: string): Promise<Message | null> => {
+    if (!selectedUser) return null;
+    if (!isValidUuid(currentUserId) || !isValidUuid(selectedUser.id)) return null;
 
     const saved = await sendMessage(currentUserId, selectedUser.id, content);
     if (saved) {
-      setAllMessages(prev =>
-        prev.map(m => (m.id === tempId ? saved : m))
-      );
-    } else {
-      setAllMessages(prev => prev.filter(m => m.id !== tempId));
-      alert('Failed to send message');
+      setAllMessages(prev => [...prev, saved]);
+      setUnreadByUser(prev => ({ ...prev, [selectedUser.id]: false }));
     }
+    return saved;
   };
 
   const handleSelectUser = (user: User) => {
@@ -274,7 +258,7 @@ export const MessagesScreen: React.FC<Props> = ({
       setHasUnread(stillUnread);
       return updated;
     });
-    if (isValidUuid(currentUserId)) {
+    if (isValidUuid(currentUserId) && isValidUuid(user.id)) {
       markMessagesAsRead(currentUserId, user.id);
     }
     if (onClearSelectedUser) {

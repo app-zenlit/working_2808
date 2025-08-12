@@ -1,5 +1,5 @@
 import { Message } from '../../types';
-import { format, parseISO, isValid } from 'date-fns';
+import { parseISO, isValid, format } from 'date-fns';
 
 interface MessageBubbleProps {
   message: Message;
@@ -7,8 +7,11 @@ interface MessageBubbleProps {
 }
 
 export const MessageBubble = ({ message, isCurrentUser }: MessageBubbleProps) => {
-  const parsed = parseISO(message.timestamp);
-  const timeString = isValid(parsed) ? format(parsed, 'HH:mm') : '--:--';
+  const dt =
+    typeof message.timestamp === 'string'
+      ? parseISO(message.timestamp)
+      : new Date(message.timestamp);
+  const timeString = isValid(dt) ? format(dt, 'HH:mm') : '--:--';
 
   return (
     <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`}>

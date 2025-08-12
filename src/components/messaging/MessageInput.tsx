@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 
 interface MessageInputProps {
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => void | Promise<void>;
 }
 
 export const MessageInput = ({ onSendMessage }: MessageInputProps) => {
