@@ -47,7 +47,9 @@ export const ChatWindow = ({
       if (isActive) {
         setChatMessages(conversation);
         scrollToBottom();
-        void markMessagesAsRead(currentUserId, user.id);
+        if (isValidUuid(currentUserId) && isValidUuid(user.id)) {
+          void markMessagesAsRead(currentUserId, user.id);
+        }
       }
     };
 
@@ -62,7 +64,7 @@ export const ChatWindow = ({
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `sender_id=eq.${user.id},receiver_id=eq.${currentUserId}`,
+        filter: `sender_id=eq.${user.id}&receiver_id=eq.${currentUserId}`,
       },
       (payload) => {
         const data = payload.new as any;
@@ -80,7 +82,9 @@ export const ChatWindow = ({
           return [...prev, newMessage];
         });
 
-        void markMessagesAsRead(currentUserId, user.id);
+        if (isValidUuid(currentUserId) && isValidUuid(user.id)) {
+          void markMessagesAsRead(currentUserId, user.id);
+        }
       }
     );
 
@@ -91,7 +95,7 @@ export const ChatWindow = ({
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `sender_id=eq.${currentUserId},receiver_id=eq.${user.id}`,
+        filter: `sender_id=eq.${currentUserId}&receiver_id=eq.${user.id}`,
       },
       (payload) => {
         const data = payload.new as any;
@@ -108,6 +112,25 @@ export const ChatWindow = ({
           if (prev.some((m) => m.id === newMessage.id)) return prev;
           return [...prev, newMessage];
         });
+      }
+    );
+
+    // Message read updates
+    channel.on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=eq.${user.id}&receiver_id=eq.${currentUserId}`,
+      },
+      (payload) => {
+        const data = payload.new as any;
+        setChatMessages((prev) =>
+          prev.map((m) =>
+            m.id === data.id ? { ...m, read: data.read } : m
+          )
+        );
       }
     );
 
