@@ -1,5 +1,5 @@
 import { Message } from '../../types';
-import { format } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 
 interface MessageBubbleProps {
   message: Message;
@@ -7,20 +7,25 @@ interface MessageBubbleProps {
 }
 
 export const MessageBubble = ({ message, isCurrentUser }: MessageBubbleProps) => {
+  const parsed = parseISO(message.timestamp);
+  const timeString = isValid(parsed) ? format(parsed, 'HH:mm') : '--:--';
+
   return (
     <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`}>
-      <div 
+      <div
         className={`max-w-[80%] px-4 py-3 rounded-2xl ${
-          isCurrentUser 
-            ? 'bg-blue-600 text-white rounded-br-md' 
+          isCurrentUser
+            ? 'bg-blue-600 text-white rounded-br-md'
             : 'bg-gray-800 text-white rounded-bl-md'
         }`}
       >
         <p className="text-sm leading-relaxed">{message.content}</p>
-        <p className={`text-xs mt-1 ${
-          isCurrentUser ? 'text-blue-100' : 'text-gray-400'
-        }`}>
-          {format(new Date(message.timestamp), 'HH:mm')}
+        <p
+          className={`text-xs mt-1 ${
+            isCurrentUser ? 'text-blue-100' : 'text-gray-400'
+          }`}
+        >
+          {timeString}
         </p>
       </div>
     </div>
