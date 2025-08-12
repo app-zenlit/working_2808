@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Message, User } from '../../types';
-import { supabase } from '../../lib/supabase';
-import { markMessagesAsRead, sendMessage, getConversation } from '../../lib/messages';
-import { isValidUuid } from '../../utils/uuid';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
@@ -10,8 +7,8 @@ import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 interface ChatWindowProps {
   user: User;
   currentUserId: string;
-  messages?: Message[];
-  onSendMessage?: (content: string) => void;
+  messages: Message[];
+  onSendMessage: (content: string) => void;
   onBack?: () => void;
   onViewProfile?: (user: User) => void;
 }
@@ -19,11 +16,17 @@ interface ChatWindowProps {
 export const ChatWindow = ({
   user,
   currentUserId,
+  messages,
+  onSendMessage,
   onBack,
   onViewProfile,
 }: ChatWindowProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [chatMessages, setChatMessages] = useState<Message[]>(messages);
+
+  useEffect(() => {
+    setChatMessages(messages);
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -33,150 +36,15 @@ export const ChatWindow = ({
     scrollToBottom();
   }, [chatMessages]);
 
-  // Load conversation and subscribe to realtime updates
-  useEffect(() => {
-    if (!isValidUuid(currentUserId) || !isValidUuid(user.id)) {
-      console.warn('ChatWindow: invalid UUIDs provided');
-      return;
-    }
-
-    let isActive = true;
-
-    const loadConversation = async () => {
-      const conversation = await getConversation(currentUserId, user.id);
-      if (isActive) {
-        setChatMessages(conversation);
-        scrollToBottom();
-        if (isValidUuid(currentUserId) && isValidUuid(user.id)) {
-          void markMessagesAsRead(currentUserId, user.id);
-        }
-      }
-    };
-
-    loadConversation();
-
-    const channel = supabase.channel(`chat-${currentUserId}-${user.id}`);
-
-    // Incoming messages
-    channel.on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `sender_id=eq.${user.id}&receiver_id=eq.${currentUserId}`,
-      },
-      (payload) => {
-        const data = payload.new as any;
-        const newMessage: Message = {
-          id: data.id,
-          senderId: data.sender_id,
-          receiverId: data.receiver_id,
-          content: data.content,
-          timestamp: data.created_at,
-          read: data.read,
-        };
-
-        setChatMessages((prev) => {
-          if (prev.some((m) => m.id === newMessage.id)) return prev;
-          return [...prev, newMessage];
-        });
-
-        if (isValidUuid(currentUserId) && isValidUuid(user.id)) {
-          void markMessagesAsRead(currentUserId, user.id);
-        }
-      }
-    );
-
-    // Outgoing messages
-    channel.on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `sender_id=eq.${currentUserId}&receiver_id=eq.${user.id}`,
-      },
-      (payload) => {
-        const data = payload.new as any;
-        const newMessage: Message = {
-          id: data.id,
-          senderId: data.sender_id,
-          receiverId: data.receiver_id,
-          content: data.content,
-          timestamp: data.created_at,
-          read: data.read,
-        };
-
-        setChatMessages((prev) => {
-          if (prev.some((m) => m.id === newMessage.id)) return prev;
-          return [...prev, newMessage];
-        });
-      }
-    );
-
-    // Message read updates
-    channel.on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'messages',
-        filter: `sender_id=eq.${user.id}&receiver_id=eq.${currentUserId}`,
-      },
-      (payload) => {
-        const data = payload.new as any;
-        setChatMessages((prev) =>
-          prev.map((m) =>
-            m.id === data.id ? { ...m, read: data.read } : m
-          )
-        );
-      }
-    );
-
-    channel.subscribe();
-
-    return () => {
-      isActive = false;
-      supabase.removeChannel(channel);
-    };
-  }, [currentUserId, user.id]);
-
-  const handleSend = async (content: string) => {
-    if (!isValidUuid(currentUserId) || !isValidUuid(user.id)) {
-      console.warn('ChatWindow: cannot send message with invalid UUIDs');
-      return;
-    }
-
-    const tempId = `temp-${Date.now()}`;
-    const tempMessage: Message = {
-      id: tempId,
-      senderId: currentUserId,
-      receiverId: user.id,
-      content,
-      timestamp: new Date().toISOString(),
-      read: true,
-    };
-
-    setChatMessages((prev) => [...prev, tempMessage]);
-
-    const saved = await sendMessage(currentUserId, user.id, content);
-    if (saved) {
-      setChatMessages((prev) =>
-        prev.map((m) => (m.id === tempId ? saved : m))
-      );
-    } else {
-      setChatMessages((prev) => prev.filter((m) => m.id !== tempId));
-    }
+  const handleSend = (content: string) => {
+    onSendMessage(content);
   };
 
   const isAnonymous = user.name === 'Anonymous';
 
   const handleProfileClick = () => {
     if (isAnonymous) return;
-    if (onViewProfile) {
-      onViewProfile(user);
-    }
+    onViewProfile?.(user);
   };
 
   return (
@@ -192,7 +60,7 @@ export const ChatWindow = ({
               <ChevronLeftIcon className="w-5 h-5 text-white" />
             </button>
           )}
-          
+
           {/* Clickable profile area */}
           <button
             onClick={handleProfileClick}
@@ -205,9 +73,9 @@ export const ChatWindow = ({
             }`}
           >
             {user.dpUrl ? (
-              <img 
-                src={user.dpUrl} 
-                alt={user.name} 
+              <img
+                src={user.dpUrl}
+                alt={user.name}
                 className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500 mr-3"
               />
             ) : (
