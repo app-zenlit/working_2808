@@ -1,0 +1,252 @@
+/* Enhanced messaging styles with smooth animations and accessibility */
+
+/* Message bubble animations */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes messageSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+}
+
+/* Typing indicator animations */
+@keyframes typingDot {
+  0%, 60%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  30% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.typing-dot {
+  animation: typingDot 1s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Message status animations */
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.status-sending {
+  animation: statusPulse 1s infinite;
+}
+
+/* Connection status animations */
+@keyframes connectionPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.connection-indicator {
+  animation: connectionPulse 2s infinite ease-in-out;
+}
+
+/* Smooth scrolling for message containers */
+.messages-container {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.messages-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Message bubble hover effects */
+.message-bubble {
+  transition: all 0.2s ease;
+}
+
+.message-bubble:hover {
+  transform: scale(1.02);
+}
+
+.message-bubble:active {
+  transform: scale(0.98);
+}
+
+/* Input focus animations */
+.message-input {
+  transition: all 0.2s ease;
+}
+
+.message-input:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Accessibility improvements */
+.message-bubble:focus-visible,
+.chat-list-item:focus-visible,
+.message-input:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .message-bubble {
+    border: 1px solid currentColor;
+  }
+  
+  .status-indicator {
+    filter: contrast(1.5);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .message-bubble,
+  .typing-dot,
+  .status-sending,
+  .connection-indicator {
+    animation: none;
+  }
+  
+  .messages-container {
+    scroll-behavior: auto;
+  }
+  
+  .message-input:focus {
+    transform: none;
+  }
+}
+
+/* Dark theme optimizations */
+.message-sent {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.message-received {
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  color: white;
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+/* Status indicator colors */
+.status-sending { color: #9ca3af; }
+.status-delivered { color: #9ca3af; }
+.status-read { color: #3b82f6; }
+.status-failed { color: #ef4444; }
+
+/* Unread message indicator */
+.unread-indicator {
+  position: relative;
+}
+
+.unread-indicator::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  background: #3b82f6;
+  border-radius: 50%;
+}
+
+/* Chat list item animations */
+.chat-list-item {
+  transition: all 0.2s ease;
+}
+
+.chat-list-item:hover {
+  background: rgba(55, 65, 81, 0.5);
+  transform: translateX(2px);
+}
+
+.chat-list-item:active {
+  transform: translateX(0);
+  background: rgba(55, 65, 81, 0.8);
+}
+
+/* Profile modal animations */
+.profile-modal-backdrop {
+  backdrop-filter: blur(8px);
+}
+
+.profile-modal-content {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .message-bubble {
+    max-width: 85%;
+  }
+  
+  .chat-header {
+    padding: 12px 16px;
+  }
+  
+  .message-input-container {
+    padding: 12px 16px;
+  }
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
