@@ -239,19 +239,6 @@ export const setUserPassword = async (password: string): Promise<AuthResponse> =
       return { success: false, error: error.message }
     }
 
-    // CRITICAL: Clear the signup_flow flag after password is set
-    console.log('Password set successfully, clearing signup_flow flag...')
-    const { error: metadataError } = await supabase!.auth.updateUser({
-      data: { signup_flow: false }
-    })
-
-    if (metadataError) {
-      console.error('Failed to clear signup_flow flag:', metadataError)
-      // Don't fail the whole operation for this
-    } else {
-      console.log('Signup flow flag cleared - user can now proceed to profile setup')
-    }
-
     // Ensure session is maintained after password update
     if (data.user) {
       const { data: sessionData } = await supabase!.auth.getSession()
@@ -343,6 +330,19 @@ export const completeProfileSetup = async (profileData: {
       }
       
       return { success: false, error: 'Failed to save profile. Please try again.' }
+    }
+
+    // CRITICAL: Clear the signup_flow flag ONLY after basic profile is complete
+    console.log('Basic profile completed, clearing signup_flow flag...')
+    const { error: metadataError } = await supabase!.auth.updateUser({
+      data: { signup_flow: false }
+    })
+
+    if (metadataError) {
+      console.error('Failed to clear signup_flow flag:', metadataError)
+      // Don't fail the whole operation for this
+    } else {
+      console.log('Signup flow flag cleared - user can now proceed to main app')
     }
 
     console.log('Profile setup completed successfully')
