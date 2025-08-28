@@ -394,10 +394,6 @@ export const MessagesScreen: React.FC<Props> = ({
                     Beta
                   </span>
                 </div>
-                  <span className="text-[10px] font-bold bg-orange-500 text-white px-1.5 py-0.5 rounded-sm">
-                    Beta
-                  </span>
-                </div>
               </div>
               
               {/* Search Input */}
