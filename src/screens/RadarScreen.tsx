@@ -334,8 +334,19 @@ export const RadarScreen: React.FC<Props> = ({
             }
           }
 
-          // Also trigger a manual refresh to ensure we get the latest data
-          await handleRefresh();
+          // Force a fresh location update and load users
+          try {
+            const refreshResult = await locationToggleManager.refreshLocation();
+            if (refreshResult.success) {
+              const updatedState = locationToggleManager.getState();
+              if (updatedState.currentLocation && currentUser) {
+                setCurrentLocation(updatedState.currentLocation);
+                await loadNearbyUsers(currentUser.id, updatedState.currentLocation);
+              }
+            }
+          } catch (refreshError) {
+            console.error('Failed to refresh location after toggle on:', refreshError);
+          }
         } else {
           console.error('❌ Failed to turn ON location toggle:', result.error);
           setLocationError(result.error || 'Failed to enable location');
