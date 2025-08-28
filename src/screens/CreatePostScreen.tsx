@@ -178,7 +178,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
       // Create post using the posts service
       const newPost = await createPost({
         title: `Post by ${currentUser.name}`,
-        caption: caption.trim() || 'New post from Zenlit!',
+        caption: caption.trim(),
         mediaUrl: mediaUrl,
         mediaType: 'image'
       });
