@@ -10,13 +10,11 @@ interface Props {
 }
 
 export const ProfileCompletionBanner: React.FC<Props> = ({
-  isVisible,
+  isVisible = true,
   completedSteps,
   totalSteps,
   onOpenModal
 }) => {
-  if (!isVisible) return null;
-
   const completionPercentage = Math.round((completedSteps / totalSteps) * 100);
 
   return (

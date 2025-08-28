@@ -67,11 +67,11 @@ export const useProfileCompletion = (user: User | null) => {
 
     const isComplete = completedSteps.length === 4;
     
-    // Always show modal if profile is incomplete and we haven't shown it this session
-    const shouldShowModal = !isComplete && !hasShownModalThisSession;
+    // Show banner if profile is incomplete (regardless of modal state)
+    const shouldShowBanner = !isComplete;
     
-    // Show banner if profile is incomplete and modal has been shown this session
-    const shouldShowBanner = !isComplete && hasShownModalThisSession;
+    // Show modal if profile is incomplete and we haven't shown it this session
+    const shouldShowModal = !isComplete && !hasShownModalThisSession;
 
     console.log('Profile completion check:', {
       user: user.name,

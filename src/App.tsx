@@ -552,10 +552,10 @@ export default function App() {
           {/* Bottom Navigation - Conditionally visible */}
           <div className="flex-shrink-0">
             {/* Profile Completion Banner - Above Bottom Navigation */}
-            {profileCompletion?.showBanner && (
+            {profileCompletion && !profileCompletion.isComplete && (
               <div className="px-4 pb-2">
                 <ProfileCompletionBanner
-                  isVisible={profileCompletion.showBanner}
+                  isVisible={true}
                   completedSteps={profileCompletion.completedSteps.length}
                   totalSteps={profileCompletion.totalSteps}
                   onOpenModal={profileCompletion.openModal}
