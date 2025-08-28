@@ -83,11 +83,23 @@ export const RadarScreen: React.FC<Props> = ({
 
   // Refresh function for pull-to-refresh
   const handleRefresh = useCallback(async () => {
-    if (!currentUser || !isLocationEnabled || !currentLocation) return;
+    if (!currentUser || !isLocationEnabled) return;
     
     setIsRefreshing(true);
     try {
-      await loadNearbyUsers(currentUser.id, currentLocation);
+      // Use location toggle manager's refresh method to get fresh location and users
+      const refreshResult = await locationToggleManager.refreshLocation();
+      
+      if (refreshResult.success) {
+        // Get the updated location from the manager
+        const managerState = locationToggleManager.getState();
+        if (managerState.currentLocation) {
+          await loadNearbyUsers(currentUser.id, managerState.currentLocation);
+        }
+      } else {
+        console.error('Location refresh failed:', refreshResult.error);
+        setLocationError(refreshResult.error || 'Failed to refresh location');
+      }
     } catch (error) {
       console.error('Refresh error:', error);
     } finally {
@@ -323,7 +335,12 @@ export const RadarScreen: React.FC<Props> = ({
           }
           
           // Trigger refresh to get latest nearby users when toggle is turned on
-          await handleRefresh();
+          if (currentUser) {
+            const managerState = locationToggleManager.getState();
+            if (managerState.currentLocation) {
+              await loadNearbyUsers(currentUser.id, managerState.currentLocation);
+            }
+          }
         } else {
           console.error('❌ Failed to turn ON location toggle:', result.error);
           setLocationError(result.error || 'Failed to enable location');
