@@ -510,7 +510,12 @@ export default function App() {
                     activeTab === 'messages' ? 'text-blue-500' : 'text-gray-400'
                   }`}
                 >
-                  <ChatBubbleLeftIcon className="h-6 w-6" />
+                  <div className="relative">
+                    <ChatBubbleLeftIcon className="h-6 w-6" />
+                    <span className="absolute -top-1 -right-2 text-[8px] font-bold bg-orange-500 text-white px-1 rounded-sm">
+                      Beta
+                    </span>
+                  </div>
                 </button>
 
                 <button
