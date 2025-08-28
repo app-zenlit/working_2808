@@ -512,7 +512,7 @@ export default function App() {
                 >
                   <div className="relative">
                     <ChatBubbleLeftIcon className="h-6 w-6" />
-                    <span className="absolute -top-1 -right-2 text-[8px] font-bold bg-orange-500 text-white px-1 rounded-sm">
+                    <span className="absolute -bottom-1 -right-2 text-[8px] font-bold bg-blue-600 text-white px-1 rounded-sm">
                       Beta
                     </span>
                   </div>
