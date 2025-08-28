@@ -161,7 +161,7 @@ export default function App() {
       // CRITICAL: Check if user is still in signup flow
       if (user.user_metadata?.signup_flow === true) {
         console.log('User is still in signup flow - keeping LoginScreen mounted for password setup');
-        setCurrentScreen('login'); // Keep LoginScreen mounted
+        setCurrentScreen('login'); // Keep LoginScreen mounted for password/profile setup
         return; // Don't proceed to profile setup yet
       }
 
