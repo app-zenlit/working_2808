@@ -552,7 +552,7 @@ export default function App() {
           {/* Bottom Navigation - Conditionally visible */}
           <div className="flex-shrink-0">
             {/* Profile Completion Banner - Above Bottom Navigation */}
-            {profileCompletion && !profileCompletion.isComplete && (
+            {profileCompletion && !profileCompletion.isComplete && !isEditingProfile && !showProfileSetupFromModal && (
               <div className="fixed bottom-20 left-0 right-0 z-40 px-4">
                 <ProfileCompletionBanner
                   isVisible={true}
