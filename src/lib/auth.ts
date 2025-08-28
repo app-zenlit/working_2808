@@ -159,7 +159,7 @@ export const verifySignupOTP = async (email: string, token: string): Promise<Aut
       if (error.message.includes('invalid')) {
         return { 
           success: false, 
-          error: 'Invalid OTP, please re-enter' 
+          error: 'Invalid OTP, please re-enter'
         }
       }
       
@@ -494,7 +494,7 @@ export const verifyPasswordResetOTP = async (email: string, token: string): Prom
       if (error.message.includes('invalid')) {
         return { 
           success: false, 
-          error: 'Invalid OTP, please re-enter' 
+          error: 'Invalid OTP, please re-enter'
         }
       }
       
