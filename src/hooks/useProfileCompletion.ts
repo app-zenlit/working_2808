@@ -17,8 +17,16 @@ export const useProfileCompletion = (user: User | null) => {
     showModal: false,
     showBanner: false
   });
+  const [lastUserId, setLastUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Prevent unnecessary re-renders by checking if user actually changed
+    const currentUserId = user?.id || null;
+    if (currentUserId === lastUserId) {
+      return;
+    }
+    setLastUserId(currentUserId);
+
     if (!user) {
       setState(prev => ({
         ...prev,
@@ -86,7 +94,7 @@ export const useProfileCompletion = (user: User | null) => {
         setState(prev => ({ ...prev, showModal: true }));
       }, 2000); // Show after 2 seconds delay to let user see the app first
     }
-  }, [user]);
+  }, [user, lastUserId]);
 
   const openModal = () => {
     setState(prev => ({ ...prev, showModal: true }));

@@ -44,7 +44,7 @@ export default function App() {
 
   // Profile completion tracking
   const profileUser = currentUser ? transformProfileToUser(currentUser) : null;
-  const profileCompletion = useProfileCompletion(profileUser);
+  const profileCompletion = useProfileCompletion(profileUser && currentScreen === 'app' ? profileUser : null);
 
   // Ensure we're on the client side before doing anything
   useEffect(() => {
@@ -548,6 +548,16 @@ export default function App() {
           </main>
 
           {/* Bottom Navigation - Conditionally visible */}
+          {/* Profile Completion Banner - Above Navigation */}
+          {profileCompletion.showBanner && isNavigationVisible && (
+            <ProfileCompletionBanner
+              isVisible={profileCompletion.showBanner}
+              completedSteps={profileCompletion.completedSteps.length}
+              totalSteps={profileCompletion.totalSteps}
+              onOpenModal={profileCompletion.openModal}
+            />
+          )}
+
           {isNavigationVisible && (
             <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav pb-2">
               <div className="flex justify-around items-center py-3 px-4 h-14 space-x-4">
@@ -609,15 +619,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Profile Completion Banner - Above Navigation */}
-        {profileCompletion.showBanner && (
-          <ProfileCompletionBanner
-            isVisible={profileCompletion.showBanner}
-            completedSteps={profileCompletion.completedSteps.length}
-            totalSteps={profileCompletion.totalSteps}
-            onOpenModal={profileCompletion.openModal}
-          />
-        )}
       </div>
 
       {/* PWA Components */}
