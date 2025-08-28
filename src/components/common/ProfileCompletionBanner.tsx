@@ -37,14 +37,14 @@ export const ProfileCompletionBanner: React.FC<Props> = ({
           </div>
           <div className="text-left flex-1 min-w-0">
             <p className="text-white font-medium text-sm truncate">
-              Add Social Links - {completedSteps} of {totalSteps} steps done
+              Add Social Links - {completedSteps} of {totalSteps} steps complete
             </p>
           </div>
         </div>
         
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Mini Progress Bar */}
-          <div className="w-12 bg-white/20 rounded-full h-2 shadow-inner">
+          <div className="w-10 bg-white/20 rounded-full h-2 shadow-inner">
             <div
               className="bg-white h-2 rounded-full transition-all duration-300 shadow-sm"
               style={{ width: `${completionPercentage}%` }}
