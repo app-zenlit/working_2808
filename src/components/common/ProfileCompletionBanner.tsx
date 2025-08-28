@@ -21,11 +21,11 @@ export const ProfileCompletionBanner: React.FC<Props> = ({
 
   return (
     <motion.div
-      initial={{ y: -50, opacity: 0 }}
+      initial={{ y: 50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      exit={{ y: -50, opacity: 0 }}
+      exit={{ y: 50, opacity: 0 }}
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-      className="mx-4 mb-2 bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm border border-blue-500/30 rounded-xl shadow-lg"
+      className="bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm border border-blue-500/30 rounded-xl shadow-lg"
     >
       <button
         onClick={onOpenModal}
