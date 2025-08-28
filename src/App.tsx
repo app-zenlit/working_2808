@@ -608,16 +608,14 @@ export default function App() {
                 <button
                   onClick={() => handleTabClick('profile')}
                   className={`nav-button-mobile flex items-center justify-center p-1 rounded-lg transition-colors ${
-          {profileCompletion.showBanner && (
-            <div className="flex-shrink-0">
-              <ProfileCompletionBanner
-                isVisible={profileCompletion.showBanner}
-                completedSteps={profileCompletion.completedSteps.length}
-                totalSteps={profileCompletion.totalSteps}
-                onOpenModal={profileCompletion.openModal}
-              />
-            </div>
-          )}
+                    activeTab === 'profile' ? 'text-blue-500' : 'text-gray-400'
+                  }`}
+                >
+                  <UserIcon className="h-6 w-6" />
+                </button>
+              </div>
+            </nav>
+          </div>
         </div>
 
       </div>
