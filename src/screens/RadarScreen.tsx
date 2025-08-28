@@ -17,6 +17,7 @@ import { locationToggleManager } from '../lib/locationToggle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
 import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
+import { ProfileCompletionBanner } from '../components/common/ProfileCompletionBanner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
