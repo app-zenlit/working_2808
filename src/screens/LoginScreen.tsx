@@ -356,11 +356,9 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       
       if (result.success) {
         console.log('Basic profile setup completed successfully');
-        setSignupStep('complete');
-        // NOW we can login after basic profile is complete
-        setTimeout(() => {
-          onLogin();
-        }, 2000);
+        // Immediately login after basic profile is complete - no success screen
+        console.log('Basic profile completed, logging in immediately');
+        onLogin();
       } else {
         console.error('Basic profile setup failed:', result.error);
         setError(result.error || 'Failed to complete profile setup');
@@ -897,19 +895,6 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                   </form>
                 )}
 
-                {/* STEP 4: Complete */}
-                {signupStep === 'complete' && (
-                  <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CheckCircleIcon className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white">Account Created!</h3>
-                    <p className="text-gray-400">
-                      Your profile has been set up successfully. Welcome to Zenlit!
-                    </p>
-                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-                  </div>
-                )}
               </>
             )}
 

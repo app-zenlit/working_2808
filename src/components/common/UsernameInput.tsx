@@ -62,15 +62,17 @@ export const UsernameInput: React.FC<Props> = ({
 
   // Debounce username checking
   useEffect(() => {
+    // Only check if there's a value and it's different from what we last checked
+    if (!value.trim()) {
+      setCheckResult(null);
+      setFormatError(null);
+      onValidationChange?.(false, value);
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
-      if (value.trim()) {
-        checkUsername(value.trim());
-      } else {
-        setCheckResult(null);
-        setFormatError(null);
-        onValidationChange?.(false, value);
-      }
-    }, 500);
+      checkUsername(value.trim());
+    }, 800); // Increased debounce time to reduce API calls
 
     return () => clearTimeout(timeoutId);
   }, [value, checkUsername, onValidationChange]);
