@@ -67,11 +67,11 @@ export const useProfileCompletion = (user: User | null) => {
 
     const isComplete = completedSteps.length === 4;
     
-    // Show banner if profile is incomplete (regardless of modal state)
-    const shouldShowBanner = !isComplete;
-    
     // Show modal if profile is incomplete and we haven't shown it this session
     const shouldShowModal = !isComplete && !hasShownModalThisSession;
+    
+    // Show banner only if profile is incomplete AND modal is not showing AND modal has been dismissed
+    const shouldShowBanner = !isComplete && !shouldShowModal && hasShownModalThisSession;
 
     console.log('Profile completion check:', {
       user: user.name,
@@ -86,25 +86,21 @@ export const useProfileCompletion = (user: User | null) => {
       completedSteps,
       totalSteps: 4,
       isComplete,
-      showModal: shouldShowModal,
+      showModal: shouldShowModal, // Show immediately if conditions are met
       showBanner: shouldShowBanner
     });
-
-    // Auto-show modal after a delay if profile is incomplete
-    if (shouldShowModal) {
-      setTimeout(() => {
-        setState(prev => ({ ...prev, showModal: true }));
-      }, 2000); // Show after 2 seconds delay to let user see the app first
-    }
   }, [user, lastUserId]);
 
   // Force show modal (for radar screen toggle or manual trigger)
   const forceShowModal = () => {
     if (!state.isComplete) {
+      setHasShownModalThisSession(false); // Reset session flag to allow modal to show
       setState(prev => ({ ...prev, showModal: true }));
     }
   };
+  
   const openModal = () => {
+    setHasShownModalThisSession(false); // Reset session flag to allow modal to show
     setState(prev => ({ ...prev, showModal: true }));
   };
 
