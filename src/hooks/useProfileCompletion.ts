@@ -32,25 +32,25 @@ export const useProfileCompletion = (user: User | null) => {
 
     const completedSteps: string[] = [];
 
-    // Check basic info completion
-    if (user.name && user.username && user.age && user.gender) {
+    // Check basic info completion - more lenient criteria
+    if (user.name && user.name.trim() !== '' && user.name !== 'New User') {
       completedSteps.push('basic');
     }
 
     // Check photo completion
-    if (user.dpUrl && user.dpUrl.trim() !== '') {
+    if (user.dpUrl && user.dpUrl.trim() !== '' && !user.dpUrl.includes('default-avatar')) {
       completedSteps.push('photo');
     }
 
-    // Check bio completion
+    // Check bio completion - must be more than default
     if (user.bio && user.bio.trim() !== '' && user.bio !== 'New to Zenlit! 👋') {
       completedSteps.push('bio');
     }
 
     // Check social links completion (at least one social link)
-    if ((user.instagramUrl && user.instagramUrl.trim() !== '') ||
-        (user.linkedInUrl && user.linkedInUrl.trim() !== '') ||
-        (user.twitterUrl && user.twitterUrl.trim() !== '')) {
+    if ((user.instagramUrl && user.instagramUrl.trim() !== '' && user.instagramUrl !== '#') ||
+        (user.linkedInUrl && user.linkedInUrl.trim() !== '' && user.linkedInUrl !== '#') ||
+        (user.twitterUrl && user.twitterUrl.trim() !== '' && user.twitterUrl !== '#')) {
       completedSteps.push('social');
     }
 
@@ -62,6 +62,15 @@ export const useProfileCompletion = (user: User | null) => {
     
     // Show banner if profile is incomplete and modal has been shown/dismissed
     const shouldShowBanner = !isComplete && hasShownModal;
+
+    console.log('Profile completion check:', {
+      user: user.name,
+      completedSteps,
+      isComplete,
+      shouldShowModal,
+      shouldShowBanner,
+      hasShownModal
+    });
 
     setState({
       completedSteps,
@@ -75,7 +84,7 @@ export const useProfileCompletion = (user: User | null) => {
     if (shouldShowModal) {
       setTimeout(() => {
         setState(prev => ({ ...prev, showModal: true }));
-      }, 1000); // Show after 1 second delay
+      }, 2000); // Show after 2 seconds delay to let user see the app first
     }
   }, [user]);
 

@@ -179,12 +179,29 @@ export default function App() {
           if (profileError.code === 'PGRST116') {
             // No profile found (not an error)
             console.log('No profile found, redirecting to profile setup');
-            setCurrentScreen('profileSetup');
+            // Create a basic profile and go to app instead of blocking with profile setup
+            setCurrentUser({
+              id: user.id,
+              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
+              email: user.email,
+              bio: 'New to Zenlit! 👋',
+              profile_completed: false
+            });
+            setIsLoggedIn(true);
+            setCurrentScreen('app');
             return;
           } else {
             console.error('Profile fetch error:', profileError);
-            // For other database errors, still allow profile setup
-            setCurrentScreen('profileSetup');
+            // For other database errors, go to app with basic profile
+            setCurrentUser({
+              id: user.id,
+              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
+              email: user.email,
+              bio: 'New to Zenlit! 👋',
+              profile_completed: false
+            });
+            setIsLoggedIn(true);
+            setCurrentScreen('app');
             return;
           }
         }
@@ -208,29 +225,34 @@ export default function App() {
         setCurrentUser(profile);
         setIsLoggedIn(true);
 
-        // Check if profile has essential fields filled out
-        const isProfileComplete = profile.name && 
-                                 profile.bio && 
-                                 profile.date_of_birth && 
-                                 profile.gender &&
-                                 profile.username;
-
-        if (isProfileComplete) {
-          setCurrentScreen('app');
-        } else {
-          // Go to app and show completion modal instead of blocking with profile setup
-          setCurrentScreen('app');
-        }
+        // Always go to app - profile completion will be handled by modal/banner
+        setCurrentScreen('app');
       } catch (networkError) {
         console.error('Network error fetching profile:', networkError);
-        // If we can't fetch the profile due to network issues,
-        // redirect to profile setup where they can try again
-        setCurrentScreen('profileSetup');
+        // If we can't fetch the profile due to network issues, go to app with basic profile
+        setCurrentUser({
+          id: user.id,
+          name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
+          email: user.email,
+          bio: 'New to Zenlit! 👋',
+          profile_completed: false
+        });
+        setIsLoggedIn(true);
+        setCurrentScreen('app');
         return;
       }
     } catch (error) {
       console.error('Error handling authenticated user:', error);
-      setCurrentScreen('profileSetup');
+      // Even on error, go to app with basic profile
+      setCurrentUser({
+        id: user.id,
+        name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
+        email: user.email,
+        bio: 'New to Zenlit! 👋',
+        profile_completed: false
+      });
+      setIsLoggedIn(true);
+      setCurrentScreen('app');
     }
   };
 
