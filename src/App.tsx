@@ -548,18 +548,19 @@ export default function App() {
           </main>
 
           {/* Bottom Navigation - Conditionally visible */}
-          {/* Profile Completion Banner - Above Navigation */}
-          {profileCompletion.showBanner && isNavigationVisible && (
-            <ProfileCompletionBanner
-              isVisible={profileCompletion.showBanner}
-              completedSteps={profileCompletion.completedSteps.length}
-              totalSteps={profileCompletion.totalSteps}
-              onOpenModal={profileCompletion.openModal}
-            />
-          )}
+          <div className="flex-shrink-0">
+            {/* Profile Completion Banner - Above Navigation */}
+            {profileCompletion.showBanner && (
+              <ProfileCompletionBanner
+                isVisible={profileCompletion.showBanner}
+                completedSteps={profileCompletion.completedSteps.length}
+                totalSteps={profileCompletion.totalSteps}
+                onOpenModal={profileCompletion.openModal}
+              />
+            )}
 
-          {isNavigationVisible && (
-            <nav className="bg-gray-900 border-t border-gray-800 flex-shrink-0 bottom-nav pb-2">
+            {/* Bottom Navigation */}
+            <nav className="bg-gray-900 border-t border-gray-800 bottom-nav pb-2">
               <div className="flex justify-around items-center py-3 px-4 h-14 space-x-4">
                 <button
                   onClick={() => handleTabClick('radar')}
@@ -616,7 +617,7 @@ export default function App() {
               {/* Additional padding below navigation with same background color */}
               <div className="bg-gray-900 h-2"></div>
             </nav>
-          )}
+          </div>
         </div>
 
       </div>
