@@ -25,6 +25,7 @@ interface Props {
   onMessageUser?: (user: User) => void;
   onNavigateToCreate?: () => void;
   onNavigateToMessages?: () => void;
+  onShowProfileCompletion?: () => void;
 }
 
 export const RadarScreen: React.FC<Props> = ({ 
@@ -32,7 +33,8 @@ export const RadarScreen: React.FC<Props> = ({
   currentUser,
   onMessageUser,
   onNavigateToCreate,
-  onNavigateToMessages
+  onNavigateToMessages,
+  onShowProfileCompletion
 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -325,6 +327,12 @@ export const RadarScreen: React.FC<Props> = ({
           setIsLocationEnabled(true);
           console.log('✅ Location toggle turned ON successfully');
 
+          // Show profile completion modal when location is enabled
+          if (onShowProfileCompletion) {
+            setTimeout(() => {
+              onShowProfileCompletion();
+            }, 1000); // Show after 1 second delay
+          }
           // Get fresh location and load nearby users after successful toggle
           const managerState = locationToggleManager.getState();
           if (managerState.currentLocation) {

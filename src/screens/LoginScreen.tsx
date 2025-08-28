@@ -299,7 +299,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       
       if (result.success) {
         console.log('Password set successfully - user can now login with email/password');
-        setSignupStep('basicProfile');
+        setSignupStep('basicProfile'); // Go to basic profile setup, NOT auto-login
       } else {
         console.error('Password set failed:', result.error);
         setError(result.error || 'Failed to set password');

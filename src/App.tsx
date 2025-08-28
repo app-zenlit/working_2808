@@ -487,6 +487,7 @@ export default function App() {
                     onMessageUser={handleMessageUser}
                     onNavigateToCreate={handleNavigateToCreate}
                     onNavigateToMessages={handleNavigateToMessages}
+                    onShowProfileCompletion={profileCompletion.forceShowModal}
                   />
                 </div>
               )}

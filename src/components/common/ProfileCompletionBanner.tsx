@@ -36,9 +36,9 @@ export const ProfileCompletionBanner: React.FC<Props> = ({
             <UserIcon className="w-4 h-4 text-white" />
           </div>
           <div className="text-left">
-            <p className="text-white font-medium text-sm">Complete Your Profile</p>
+            <p className="text-white font-medium text-sm">Add Social Links</p>
             <p className="text-blue-100 text-xs">
-              {completedSteps} of {totalSteps} steps done ({completionPercentage}%)
+              Help others connect with you - {completedSteps} of {totalSteps} steps done
             </p>
           </div>
         </div>

@@ -152,12 +152,12 @@ export const ProfileCompletionModal: React.FC<Props> = ({
 
           {/* Benefits */}
           <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-blue-300 mb-2">Why complete your profile?</h3>
+            <h3 className="text-sm font-medium text-blue-300 mb-2">Add social links so others can connect with you</h3>
             <ul className="text-xs text-blue-200 space-y-1">
-              <li>• Get more meaningful connections</li>
-              <li>• Build trust with verified social links</li>
-              <li>• Help others find and recognize you</li>
-              <li>• Unlock all app features</li>
+              <li>• Add Instagram, LinkedIn, or Twitter links</li>
+              <li>• Help people verify your identity</li>
+              <li>• Build trust in the community</li>
+              <li>• Make it easier for others to connect with you</li>
             </ul>
           </div>
 

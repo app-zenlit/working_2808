@@ -18,6 +18,7 @@ export const useProfileCompletion = (user: User | null) => {
     showBanner: false
   });
   const [lastUserId, setLastUserId] = useState<string | null>(null);
+  const [hasShownModalThisSession, setHasShownModalThisSession] = useState(false);
 
   useEffect(() => {
     // Prevent unnecessary re-renders by checking if user actually changed
@@ -35,6 +36,7 @@ export const useProfileCompletion = (user: User | null) => {
         showModal: false,
         showBanner: false
       }));
+      setHasShownModalThisSession(false);
       return;
     }
 
@@ -65,12 +67,11 @@ export const useProfileCompletion = (user: User | null) => {
 
     const isComplete = completedSteps.length === 4;
     
-    // Show modal on first app load if profile is incomplete
-    const hasShownModal = localStorage.getItem('zenlit_profile_modal_shown') === 'true';
-    const shouldShowModal = !isComplete && !hasShownModal;
+    // Always show modal if profile is incomplete and we haven't shown it this session
+    const shouldShowModal = !isComplete && !hasShownModalThisSession;
     
-    // Show banner if profile is incomplete and modal has been shown/dismissed
-    const shouldShowBanner = !isComplete && hasShownModal;
+    // Show banner if profile is incomplete and modal has been shown this session
+    const shouldShowBanner = !isComplete && hasShownModalThisSession;
 
     console.log('Profile completion check:', {
       user: user.name,
@@ -78,7 +79,7 @@ export const useProfileCompletion = (user: User | null) => {
       isComplete,
       shouldShowModal,
       shouldShowBanner,
-      hasShownModal
+      hasShownModalThisSession
     });
 
     setState({
@@ -89,7 +90,7 @@ export const useProfileCompletion = (user: User | null) => {
       showBanner: shouldShowBanner
     });
 
-    // Auto-show modal on first incomplete profile load
+    // Auto-show modal after a delay if profile is incomplete
     if (shouldShowModal) {
       setTimeout(() => {
         setState(prev => ({ ...prev, showModal: true }));
@@ -97,13 +98,19 @@ export const useProfileCompletion = (user: User | null) => {
     }
   }, [user, lastUserId]);
 
+  // Force show modal (for radar screen toggle or manual trigger)
+  const forceShowModal = () => {
+    if (!state.isComplete) {
+      setState(prev => ({ ...prev, showModal: true }));
+    }
+  };
   const openModal = () => {
     setState(prev => ({ ...prev, showModal: true }));
   };
 
   const closeModal = () => {
     setState(prev => ({ ...prev, showModal: false, showBanner: true }));
-    localStorage.setItem('zenlit_profile_modal_shown', 'true');
+    setHasShownModalThisSession(true);
   };
 
   const dismissBanner = () => {
@@ -113,6 +120,7 @@ export const useProfileCompletion = (user: User | null) => {
   return {
     ...state,
     openModal,
+    forceShowModal,
     closeModal,
     dismissBanner
   };
