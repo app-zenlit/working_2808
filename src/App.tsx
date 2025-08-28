@@ -553,7 +553,7 @@ export default function App() {
           <div className="flex-shrink-0">
             {/* Profile Completion Banner - Above Bottom Navigation */}
             {profileCompletion && !profileCompletion.isComplete && (
-              <div className="px-4 pb-2">
+              <div className="fixed bottom-20 left-0 right-0 z-40 px-4">
                 <ProfileCompletionBanner
                   isVisible={true}
                   completedSteps={profileCompletion.completedSteps.length}
@@ -564,7 +564,7 @@ export default function App() {
             )}
 
             {/* Bottom Navigation */}
-            <nav className="bg-gray-900 border-t border-gray-800 bottom-nav pb-2 safe-bottom">
+            <nav className="bg-gray-900 border-t border-gray-800 bottom-nav pb-2 safe-bottom fixed bottom-0 left-0 right-0 z-50">
               <div className="flex justify-around items-center py-3 px-4 h-14 space-x-4">
                 <button
                   onClick={() => handleTabClick('radar')}
