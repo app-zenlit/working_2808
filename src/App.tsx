@@ -33,6 +33,7 @@ export default function App() {
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editPlatform, setEditPlatform] = useState<string | null>(null);
+  const [previousActiveTab, setPreviousActiveTab] = useState<string>('radar');
 
   // PWA hooks
   const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
@@ -285,6 +286,8 @@ export default function App() {
   };
 
   const handleViewProfile = (user: User) => {
+    // Save current tab before switching to profile
+    setPreviousActiveTab(activeTab);
     setSelectedUser(user);
     setActiveTab('profile');
   };
@@ -336,6 +339,17 @@ export default function App() {
       window.dispatchEvent(event);
     } else {
       setActiveTab(tabName);
+    }
+  };
+
+  const handleBackFromUserProfile = () => {
+    if (selectedUser) {
+      // If viewing another user's profile, go back to previous tab
+      setSelectedUser(null);
+      setActiveTab(previousActiveTab);
+    } else {
+      // If viewing own profile, just go back to previous tab
+      setActiveTab(previousActiveTab);
     }
   };
 
@@ -460,7 +474,7 @@ export default function App() {
                   ) : (
                     <UserProfileScreen
                       user={profileUser}
-                      onBack={selectedUser ? () => setSelectedUser(null) : undefined}
+                      onBack={handleBackFromUserProfile}
                       onEditProfile={handleEditProfile}
                       isCurrentUser={!selectedUser}
                       onLogout={handleLogout}
