@@ -27,14 +27,14 @@ export const ProfileCompletionBanner: React.FC<Props> = ({
     >
       <button
         onClick={onOpenModal}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 active:bg-white/10 transition-colors rounded-xl"
+        className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5 active:bg-white/10 transition-colors rounded-xl"
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-            <UserIcon className="w-4 h-4 text-white" />
+          <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+            <UserIcon className="w-3 h-3 text-white" />
           </div>
           <div className="text-left flex-1 min-w-0">
-            <p className="text-white font-medium text-sm truncate">
+            <p className="text-white font-medium text-xs truncate">
               Add Social Links - {completedSteps} of {totalSteps} steps complete
             </p>
           </div>
@@ -42,13 +42,13 @@ export const ProfileCompletionBanner: React.FC<Props> = ({
         
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Mini Progress Bar */}
-          <div className="w-10 bg-white/20 rounded-full h-2 shadow-inner">
+          <div className="w-8 bg-white/20 rounded-full h-1.5 shadow-inner">
             <div
-              className="bg-white h-2 rounded-full transition-all duration-300 shadow-sm"
+              className="bg-white h-1.5 rounded-full transition-all duration-300 shadow-sm"
               style={{ width: `${completionPercentage}%` }}
             />
           </div>
-          <ChevronRightIcon className="w-4 h-4 text-white/80" />
+          <ChevronRightIcon className="w-3 h-3 text-white/80" />
         </div>
       </button>
     </motion.div>
