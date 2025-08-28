@@ -22,6 +22,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface Props {
   userGender: 'male' | 'female';
   currentUser: any;
+  profileCompletion?: {
+    showBanner: boolean;
+    completedSteps: { length: number };
+    totalSteps: number;
+    openModal: () => void;
+  };
   onMessageUser?: (user: User) => void;
   onNavigateToCreate?: () => void;
   onNavigateToMessages?: () => void;
@@ -31,6 +37,7 @@ interface Props {
 export const RadarScreen: React.FC<Props> = ({ 
   userGender, 
   currentUser,
+  profileCompletion,
   onMessageUser,
   onNavigateToCreate,
   onNavigateToMessages,
@@ -549,6 +556,18 @@ export const RadarScreen: React.FC<Props> = ({
 
       {/* Scrollable container with pull-to-refresh */}
       <div ref={containerRef} className="min-h-full overflow-y-auto">
+        {/* Profile Completion Banner - Above Radar Content */}
+        {profileCompletion?.showBanner && (
+          <div className="px-4 pt-4">
+            <ProfileCompletionBanner
+              isVisible={profileCompletion.showBanner}
+              completedSteps={profileCompletion.completedSteps.length}
+              totalSteps={profileCompletion.totalSteps}
+              onOpenModal={profileCompletion.openModal}
+            />
+          </div>
+        )}
+
         {/* Header */}
         <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
           <div className="px-4 py-4">
