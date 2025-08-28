@@ -25,33 +25,32 @@ export const ProfileCompletionBanner: React.FC<Props> = ({
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: -50, opacity: 0 }}
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-      className="mx-4 mb-4 bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm border border-blue-500/30 rounded-2xl shadow-lg"
+      className="mx-4 mb-2 bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm border border-blue-500/30 rounded-xl shadow-lg"
     >
       <button
         onClick={onOpenModal}
-        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 active:bg-white/10 transition-colors rounded-2xl"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 active:bg-white/10 transition-colors rounded-xl"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shadow-sm">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
             <UserIcon className="w-4 h-4 text-white" />
           </div>
-          <div className="text-left">
-            <p className="text-white font-semibold text-sm">Add Social Links</p>
-            <p className="text-blue-100 text-xs">
-              Help others connect with you - {completedSteps} of {totalSteps} steps done
+          <div className="text-left flex-1 min-w-0">
+            <p className="text-white font-medium text-sm truncate">
+              Add Social Links - {completedSteps} of {totalSteps} steps done
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Mini Progress Bar */}
-          <div className="w-16 bg-white/20 rounded-full h-2 shadow-inner">
+          <div className="w-12 bg-white/20 rounded-full h-2 shadow-inner">
             <div
               className="bg-white h-2 rounded-full transition-all duration-300 shadow-sm"
               style={{ width: `${completionPercentage}%` }}
             />
           </div>
-          <ChevronRightIcon className="w-5 h-5 text-white/80" />
+          <ChevronRightIcon className="w-4 h-4 text-white/80" />
         </div>
       </button>
     </motion.div>
