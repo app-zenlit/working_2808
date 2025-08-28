@@ -325,7 +325,7 @@ export const RadarScreen: React.FC<Props> = ({
           setIsLocationEnabled(true);
           console.log('✅ Location toggle turned ON successfully');
 
-          // Load nearby users after successful toggle
+          // Get fresh location and load nearby users after successful toggle
           const managerState = locationToggleManager.getState();
           if (managerState.currentLocation) {
             setCurrentLocation(managerState.currentLocation);
@@ -333,14 +333,9 @@ export const RadarScreen: React.FC<Props> = ({
               await loadNearbyUsers(currentUser.id, managerState.currentLocation);
             }
           }
-          
-          // Trigger refresh to get latest nearby users when toggle is turned on
-          if (currentUser) {
-            const managerState = locationToggleManager.getState();
-            if (managerState.currentLocation) {
-              await loadNearbyUsers(currentUser.id, managerState.currentLocation);
-            }
-          }
+
+          // Also trigger a manual refresh to ensure we get the latest data
+          await handleRefresh();
         } else {
           console.error('❌ Failed to turn ON location toggle:', result.error);
           setLocationError(result.error || 'Failed to enable location');
