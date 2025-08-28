@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon, CheckCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { PasswordResetScreen } from './PasswordResetScreen';
-import { sendSignupOTP, verifySignupOTP, setUserPassword, signInWithPassword, logTelemetry } from '../lib/auth';
+import { sendSignupOTP, verifySignupOTP, setUserPassword, signInWithPassword, logTelemetry, completeProfileSetup } from '../lib/auth';
 import { GradientLogo } from '../components/common/GradientLogo';
+import { UsernameInput } from '../components/common/UsernameInput';
 
 interface Props {
   onLogin: () => void;
@@ -12,19 +13,22 @@ interface Props {
 
 export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
   const [currentView, setCurrentView] = useState<'login' | 'signup' | 'passwordReset'>('signup');
-  const [signupStep, setSignupStep] = useState<'email' | 'otp' | 'password' | 'complete'>('email');
+  const [signupStep, setSignupStep] = useState<'email' | 'otp' | 'password' | 'basicProfile' | 'complete'>('email');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    otp: ''
+    otp: '',
+    displayName: '',
+    username: '',
+    dateOfBirth: '',
+    gender: '' as 'male' | 'female' | ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isUsernameValid, setIsUsernameValid] = useState(false);
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [showFallback, setShowFallback] = useState(false);
@@ -260,6 +264,13 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
     }
   };
 
+  const handleUsernameValidation = (isValid: boolean, username: string) => {
+    setIsUsernameValid(isValid);
+    if (username !== formData.username) {
+      handleInputChange('username', username);
+    }
+  };
+
   // SIGNUP STEP 3: Set password (CRITICAL FOR FUTURE LOGINS)
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,17 +299,74 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       
       if (result.success) {
         console.log('Password set successfully - user can now login with email/password');
-        setSignupStep('complete');
-        // Auto-proceed to app after a short delay
-        setTimeout(() => {
-          onLogin();
-        }, 2000);
+        setSignupStep('basicProfile');
       } else {
         console.error('Password set failed:', result.error);
         setError(result.error || 'Failed to set password');
       }
     } catch (error) {
       console.error('Password set error:', error);
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // SIGNUP STEP 4: Basic Profile Setup
+  const handleBasicProfileSetup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!formData.displayName.trim()) {
+      setError('Please enter your display name');
+      return;
+    }
+
+    if (!formData.username.trim()) {
+      setError('Please choose a username');
+      return;
+    }
+
+    if (!isUsernameValid) {
+      setError('Please choose a valid username');
+      return;
+    }
+
+    if (!formData.dateOfBirth) {
+      setError('Please enter your date of birth');
+      return;
+    }
+
+    if (!formData.gender) {
+      setError('Please select your gender');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      console.log('Completing basic profile setup');
+      const result = await completeProfileSetup({
+        fullName: formData.displayName,
+        username: formData.username,
+        bio: 'New to Zenlit! 👋', // Default bio
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender
+      });
+      
+      if (result.success) {
+        console.log('Basic profile setup completed successfully');
+        setSignupStep('complete');
+        // Auto-proceed to app after a short delay
+        setTimeout(() => {
+          onLogin();
+        }, 2000);
+      } else {
+        console.error('Basic profile setup failed:', result.error);
+        setError(result.error || 'Failed to complete profile setup');
+      }
+    } catch (error) {
+      console.error('Basic profile setup error:', error);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -341,9 +409,11 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       email: '',
       password: '',
       confirmPassword: '',
-      firstName: '',
-      lastName: '',
-      otp: ''
+      otp: '',
+      displayName: '',
+      username: '',
+      dateOfBirth: '',
+      gender: '' as 'male' | 'female' | ''
     });
     setError(null);
   };
@@ -355,9 +425,11 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       email: '',
       password: '',
       confirmPassword: '',
-      firstName: '',
-      lastName: '',
-      otp: ''
+      otp: '',
+      displayName: '',
+      username: '',
+      dateOfBirth: '',
+      gender: '' as 'male' | 'female' | ''
     });
     setError(null);
   };
@@ -378,6 +450,8 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
         setSignupStep('email');
       } else if (signupStep === 'password') {
         setSignupStep('otp');
+      } else if (signupStep === 'basicProfile') {
+        setSignupStep('password');
       }
     }
     setError(null);
@@ -442,6 +516,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                  signupStep === 'email' ? 'Join Zenlit' :
                  signupStep === 'otp' ? 'Verify Email' :
                  signupStep === 'password' ? 'Set Your Password' :
+                 signupStep === 'basicProfile' ? 'Complete Your Profile' :
                  'Account Created!'}
               </h2>
               <p className="text-gray-400 text-center mt-2">
@@ -449,6 +524,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                  signupStep === 'email' ? 'Create your account in seconds' :
                  signupStep === 'otp' ? `We sent a code to ${formData.email}` :
                  signupStep === 'password' ? 'This password will be used for future logins' :
+                 signupStep === 'basicProfile' ? 'Just a few quick details to get started' :
                  'Welcome to Zenlit!'}
               </p>
             </div>
@@ -720,6 +796,107 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                   </form>
                 )}
 
+                {/* STEP 4: Basic Profile Setup */}
+                {signupStep === 'basicProfile' && (
+                  <form onSubmit={handleBasicProfileSetup} className="space-y-4">
+                    <div className="bg-green-900/30 border border-green-700 rounded-lg p-3 mb-4">
+                      <div className="flex items-center gap-2">
+                        <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                        <span className="text-green-400 text-sm font-medium">
+                          Password set successfully!
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Display Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.displayName}
+                        onChange={(e) => handleInputChange('displayName', e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="How should people know you?"
+                        maxLength={50}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Username *
+                      </label>
+                      <UsernameInput
+                        value={formData.username}
+                        onChange={(value) => handleInputChange('username', value)}
+                        onValidationChange={handleUsernameValidation}
+                        placeholder="username123"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Date of Birth *
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.dateOfBirth}
+                        onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent [color-scheme:dark]"
+                        max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Gender *
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleInputChange('gender', 'male')}
+                          className={`p-3 rounded-lg border-2 transition-all ${
+                            formData.gender === 'male'
+                              ? 'border-blue-500 bg-blue-600/20 text-blue-400'
+                              : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+                          }`}
+                        >
+                          Male
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInputChange('gender', 'female')}
+                          className={`p-3 rounded-lg border-2 transition-all ${
+                            formData.gender === 'female'
+                              ? 'border-blue-500 bg-blue-600/20 text-blue-400'
+                              : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+                          }`}
+                        >
+                          Female
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isLoading || !formData.displayName.trim() || !formData.username.trim() || !isUsernameValid || !formData.dateOfBirth || !formData.gender}
+                      className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Completing Setup...
+                        </>
+                      ) : (
+                        "Complete Setup & Continue"
+                      )}
+                    </button>
+                  </form>
+                )}
+
                 {/* STEP 4: Complete */}
                 {signupStep === 'complete' && (
                   <div className="text-center space-y-4">
@@ -728,7 +905,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                     </div>
                     <h3 className="text-xl font-bold text-white">Account Created!</h3>
                     <p className="text-gray-400">
-                      Your account has been successfully created with password authentication. You can now sign in anytime using your email and password.
+                      Your profile has been set up successfully. Welcome to Zenlit!
                     </p>
                     <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
                   </div>

@@ -41,7 +41,8 @@ export const useProfileCompletion = (user: User | null) => {
     const completedSteps: string[] = [];
 
     // Check basic info completion - more lenient criteria
-    if (user.name && user.name.trim() !== '' && user.name !== 'New User') {
+    if (user.name && user.name.trim() !== '' && user.name !== 'New User' && 
+        user.username && user.username.trim() !== '' && !user.username.startsWith('user_')) {
       completedSteps.push('basic');
     }
 
