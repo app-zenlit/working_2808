@@ -321,6 +321,9 @@ export const RadarScreen: React.FC<Props> = ({
               await loadNearbyUsers(currentUser.id, managerState.currentLocation);
             }
           }
+          
+          // Trigger refresh to get latest nearby users when toggle is turned on
+          await handleRefresh();
         } else {
           console.error('❌ Failed to turn ON location toggle:', result.error);
           setLocationError(result.error || 'Failed to enable location');
