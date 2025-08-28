@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
-  const [currentView, setCurrentView] = useState<'login' | 'signup' | 'passwordReset'>('login');
+  const [currentView, setCurrentView] = useState<'login' | 'signup' | 'passwordReset'>('signup');
   const [signupStep, setSignupStep] = useState<'email' | 'otp' | 'password' | 'complete'>('email');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -416,7 +416,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
           {/* Header */}
           <div className="text-center mb-6 pt-4">
             {/* Back Button */}
-            {currentView === 'signup' && (
+            {currentView === 'signup' && signupStep !== 'email' && (
               <div className="flex items-center justify-start mb-4">
                 <button
                   onClick={handleBackButton}
@@ -439,14 +439,14 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-white text-center">
                 {currentView === 'login' ? 'Welcome Back' : 
-                 signupStep === 'email' ? 'Create Account' :
+                 signupStep === 'email' ? 'Join Zenlit' :
                  signupStep === 'otp' ? 'Verify Email' :
                  signupStep === 'password' ? 'Set Your Password' :
                  'Account Created!'}
               </h2>
               <p className="text-gray-400 text-center mt-2">
                 {currentView === 'login' ? 'Sign in with your email and password' : 
-                 signupStep === 'email' ? 'Enter your email to get started' :
+                 signupStep === 'email' ? 'Create your account in seconds' :
                  signupStep === 'otp' ? `We sent a code to ${formData.email}` :
                  signupStep === 'password' ? 'This password will be used for future logins' :
                  'Welcome to Zenlit!'}
@@ -737,15 +737,15 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
             )}
 
             {/* Toggle between login/signup */}
-            {signupStep === 'email' && (
+            {(signupStep === 'email' || currentView === 'login') && (
               <div className="mt-6 text-center">
                 <p className="text-gray-400">
-                  {currentView === 'login' ? "Don't have an account? " : "Already have an account? "}
+                  {currentView === 'signup' ? "Already have an account? " : "Don't have an account? "}
                   <button
-                    onClick={currentView === 'login' ? switchToSignup : switchToLogin}
+                    onClick={currentView === 'signup' ? switchToLogin : switchToSignup}
                     className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
                   >
-                    {currentView === 'login' ? 'Sign Up' : 'Sign In'}
+                    {currentView === 'signup' ? 'Sign In' : 'Sign Up'}
                   </button>
                 </p>
               </div>
@@ -753,7 +753,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
           </div>
 
           {/* Terms and Privacy */}
-          {signupStep === 'email' && (
+          {(signupStep === 'email' || currentView === 'login') && (
             <div className="mt-6 text-center pb-8">
               <p className="text-xs text-gray-500">
                 By continuing, you agree to our{' '}

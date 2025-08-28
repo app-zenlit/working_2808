@@ -18,6 +18,9 @@ import { transformProfileToUser } from '../lib/utils';
 import { usePWA } from './hooks/usePWA';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { ProfileCompletionModal } from './components/common/ProfileCompletionModal';
+import { ProfileCompletionBanner } from './components/common/ProfileCompletionBanner';
+import { useProfileCompletion } from './hooks/useProfileCompletion';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'welcome' | 'login' | 'profileSetup' | 'app'>('welcome');
@@ -34,9 +37,14 @@ export default function App() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editPlatform, setEditPlatform] = useState<string | null>(null);
   const [previousActiveTab, setPreviousActiveTab] = useState<string>('radar');
+  const [showProfileSetupFromModal, setShowProfileSetupFromModal] = useState(false);
 
   // PWA hooks
   const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
+
+  // Profile completion tracking
+  const profileUser = currentUser ? transformProfileToUser(currentUser) : null;
+  const profileCompletion = useProfileCompletion(profileUser);
 
   // Ensure we're on the client side before doing anything
   useEffect(() => {
@@ -183,7 +191,16 @@ export default function App() {
 
         if (!profile) {
           console.log('No profile found, redirecting to profile setup');
-          setCurrentScreen('profileSetup');
+          // Skip profile setup and go directly to app, show completion modal instead
+          setCurrentUser({
+            id: user.id,
+            name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
+            email: user.email,
+            bio: 'New to Zenlit! 👋',
+            profile_completed: false
+          });
+          setIsLoggedIn(true);
+          setCurrentScreen('app');
           return;
         }
 
@@ -201,7 +218,8 @@ export default function App() {
         if (isProfileComplete) {
           setCurrentScreen('app');
         } else {
-          setCurrentScreen('profileSetup');
+          // Go to app and show completion modal instead of blocking with profile setup
+          setCurrentScreen('app');
         }
       } catch (networkError) {
         console.error('Network error fetching profile:', networkError);
@@ -219,6 +237,7 @@ export default function App() {
   const handleLogin = async () => {
     console.log('Login successful, checking user state...');
     setIsLoggedIn(true);
+    setActiveTab('radar'); // Always start on radar screen after login
     
     // The auth state change listener will handle the rest
     // Just wait a moment for the session to be established
@@ -241,6 +260,7 @@ export default function App() {
     setSelectedUser(null);
     setSelectedChatUser(null);
     setIsNavigationVisible(true);
+    setShowProfileSetupFromModal(false);
     
     // Clear location toggle state on logout
     locationToggleManager.clearPersistedState();
@@ -342,6 +362,21 @@ export default function App() {
     }
   };
 
+  const handleContinueProfileSetup = () => {
+    profileCompletion.closeModal();
+    setShowProfileSetupFromModal(true);
+    setActiveTab('profile');
+    setIsEditingProfile(true);
+  };
+
+  const handleProfileSetupFromModalComplete = (updatedUser: User) => {
+    setShowProfileSetupFromModal(false);
+    setIsEditingProfile(false);
+    setEditPlatform(null);
+    setCurrentUser({ ...currentUser, ...updatedUser });
+    setActiveTab('radar'); // Return to radar after completing setup
+  };
+
   const handleBackFromUserProfile = () => {
     if (selectedUser) {
       // If viewing another user's profile, go back to previous tab
@@ -353,7 +388,7 @@ export default function App() {
     }
   };
 
-  const profileUser = selectedUser
+  const displayProfileUser = selectedUser
     ? selectedUser
     : currentUser
     ? transformProfileToUser(currentUser)
@@ -459,21 +494,26 @@ export default function App() {
                   />
                 </div>
               )}
-              {activeTab === 'profile' && profileUser && (
+              {activeTab === 'profile' && displayProfileUser && (
                 <div className="h-full overflow-y-auto mobile-scroll">
-                  {isEditingProfile ? (
+                  {isEditingProfile || showProfileSetupFromModal ? (
                     <EditProfileScreen
-                      user={profileUser}
+                      user={displayProfileUser}
                       onBack={() => {
-                        setIsEditingProfile(false);
-                        setEditPlatform(null);
+                        if (showProfileSetupFromModal) {
+                          setShowProfileSetupFromModal(false);
+                          setActiveTab('radar');
+                        } else {
+                          setIsEditingProfile(false);
+                          setEditPlatform(null);
+                        }
                       }}
-                      onSave={handleProfileSave}
+                      onSave={showProfileSetupFromModal ? handleProfileSetupFromModalComplete : handleProfileSave}
                       initialPlatform={editPlatform}
                     />
                   ) : (
                     <UserProfileScreen
-                      user={profileUser}
+                      user={displayProfileUser}
                       onBack={handleBackFromUserProfile}
                       onEditProfile={handleEditProfile}
                       isCurrentUser={!selectedUser}
@@ -546,6 +586,16 @@ export default function App() {
             </nav>
           )}
         </div>
+
+        {/* Profile Completion Banner - Above Navigation */}
+        {profileCompletion.showBanner && (
+          <ProfileCompletionBanner
+            isVisible={profileCompletion.showBanner}
+            completedSteps={profileCompletion.completedSteps.length}
+            totalSteps={profileCompletion.totalSteps}
+            onOpenModal={profileCompletion.openModal}
+          />
+        )}
       </div>
 
       {/* PWA Components */}
@@ -555,6 +605,15 @@ export default function App() {
         onDismiss={dismissInstallPrompt}
       />
       <OfflineIndicator isOffline={isOffline} />
+      
+      {/* Profile Completion Modal */}
+      <ProfileCompletionModal
+        isOpen={profileCompletion.showModal}
+        onClose={profileCompletion.closeModal}
+        onContinueSetup={handleContinueProfileSetup}
+        completedSteps={profileCompletion.completedSteps}
+        totalSteps={profileCompletion.totalSteps}
+      />
     </>
   );
 }
