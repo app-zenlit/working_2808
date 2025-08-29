@@ -236,7 +236,7 @@ export const RadarScreen: React.FC<Props> = ({
       // Clear users if location is null or toggle is OFF
       setUsers([]);
     }
-  }, [currentUser, isLocationEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentUser, isLocationEnabled]);
 
   // Handle location errors from toggle manager
   const handleLocationError = useCallback((error: string) => {
@@ -244,7 +244,7 @@ export const RadarScreen: React.FC<Props> = ({
 
     console.error('Location error:', error);
     setLocationError(error);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Keep callbacks in sync with manager
   useEffect(() => {
