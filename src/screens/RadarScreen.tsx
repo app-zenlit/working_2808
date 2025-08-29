@@ -249,6 +249,7 @@ export const RadarScreen: React.FC<Props> = ({
   // Keep callbacks in sync with manager
   useEffect(() => {
     locationToggleManager.setCallbacks(handleLocationUpdate, handleLocationError);
+  }, [handleLocationUpdate, handleLocationError]);
 
   // Load users with exact coordinate match
   const loadNearbyUsers = async (currentUserId: string, location: UserLocation) => {
@@ -372,7 +373,6 @@ export const RadarScreen: React.FC<Props> = ({
             result.error.includes('PERMISSION_DENIED')
           )) {
             setShowLocationDeniedBanner(true);
-          } else {
           }
         }
       } else {
@@ -549,8 +549,8 @@ export const RadarScreen: React.FC<Props> = ({
         permissionType="Location"
         onDismiss={() => setShowLocationDeniedBanner(false)}
         onRetry={() => {
-          setShowLocationDeniedBanner(false)
-          handleLocationToggle(true)
+          setShowLocationDeniedBanner(false);
+          handleLocationToggle(true);
         }}
       />
 
@@ -679,12 +679,12 @@ export const RadarScreen: React.FC<Props> = ({
                   )
                 ) : (
                   filteredUsers.map((user) => (
-                  <RadarUserCard
-                    key={user.id}
-                    user={user}
-                    onMessage={handleMessage}
-                    onViewProfile={() => handleViewProfile(user)}
-                  />
+                    <RadarUserCard
+                      key={user.id}
+                      user={user}
+                      onMessage={handleMessage}
+                      onViewProfile={() => handleViewProfile(user)}
+                    />
                   ))
                 )
               ) : (
