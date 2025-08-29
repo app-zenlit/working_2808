@@ -47,11 +47,14 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
         if (isGoogleUser) {
           console.log('Google OAuth user detected, pre-filling form data');
           
-          // Pre-fill form with Google account data
+          // Pre-fill form with Google account data (but keep username blank)
           setProfileData(prev => ({
             ...prev,
             displayName: user.user_metadata?.full_name || user.user_metadata?.name || '',
-            // Don't pre-fill username - let user choose their own
+            // Keep username blank - user must choose their own
+            // Try to get additional info from Google if available
+            dateOfBirth: user.user_metadata?.birthdate || user.user_metadata?.date_of_birth || '',
+            gender: user.user_metadata?.gender || ''
           }));
         }
 
