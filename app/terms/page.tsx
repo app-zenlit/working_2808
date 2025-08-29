@@ -33,7 +33,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-300 leading-relaxed">
-                By accessing and using Zenlit ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                By accessing and using Zenlit (&quot;the Service&quot;), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
               </p>
             </section>
 
@@ -115,7 +115,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">9. Disclaimers</h2>
               <p className="text-gray-300 leading-relaxed">
-                The Service is provided "as is" without warranties of any kind. We do not guarantee that the Service will be uninterrupted, secure, or error-free.
+                The Service is provided &quot;as is&quot; without warranties of any kind. We do not guarantee that the Service will be uninterrupted, secure, or error-free.
               </p>
             </section>
 
@@ -129,7 +129,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">11. Changes to Terms</h2>
               <p className="text-gray-300 leading-relaxed">
-                We reserve the right to modify these Terms at any time. We will notify users of significant changes by posting the new Terms on the Service and updating the "Last updated" date.
+                We reserve the right to modify these Terms at any time. We will notify users of significant changes by posting the new Terms on the Service and updating the &quot;Last updated&quot; date.
               </p>
             </section>
 

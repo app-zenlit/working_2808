@@ -174,7 +174,7 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">11. Changes to Privacy Policy</h2>
               <p className="text-gray-300 leading-relaxed">
-                We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+                We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
               </p>
             </section>
 
@@ -187,7 +187,7 @@ export default function PrivacyPolicy() {
                 <p className="text-white">Email: privacy@zenlit.com</p>
                 <p className="text-white">Support: support@zenlit.com</p>
                 <p className="text-gray-400 text-sm mt-2">
-                  We are committed to resolving privacy concerns promptly
+                  We automatically collect information about how you use our Service, including posts you create, messages you send, and interactions with other users.
                 </p>
               </div>
             </section>
