@@ -415,6 +415,50 @@ export const signInWithPassword = async (email: string, password: string): Promi
   }
 }
 
+// GOOGLE OAUTH: Sign in with Google
+export const signInWithGoogle = async (): Promise<AuthResponse> => {
+  if (!isSupabaseAvailable()) {
+    return { success: false, error: 'Service temporarily unavailable' }
+  }
+
+  try {
+    console.log('Initiating Google OAuth sign-in')
+    
+    const { data, error } = await supabase!.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        }
+      }
+    })
+
+    if (error) {
+      console.error('Google OAuth error:', error.message)
+      
+      if (error.message.includes('Provider not enabled')) {
+        return { 
+          success: false, 
+          error: 'Google sign-in is not configured. Please contact support or use email/password.' 
+        }
+      }
+      
+      return { success: false, error: error.message }
+    }
+
+    console.log('Google OAuth initiated successfully')
+    return { success: true, data }
+  } catch (error) {
+    console.error('Google OAuth catch error:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Failed to sign in with Google' 
+    }
+  }
+}
+
 // PASSWORD RESET FLOW: OTP-based password reset (NO AUTO LOGIN)
 
 // RESET STEP 1: Send OTP for password reset
