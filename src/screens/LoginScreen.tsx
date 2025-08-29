@@ -970,13 +970,13 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
             <div className="mt-6 text-center pb-8">
               <p className="text-xs text-gray-500">
                 By continuing, you agree to our{' '}
-                <button className="text-blue-400 hover:text-blue-300 transition-colors">
+                <a href="/terms" target="_blank" className="text-blue-400 hover:text-blue-300 transition-colors">
                   Terms of Service
-                </button>{' '}
+                </a>{' '}
                 and{' '}
-                <button className="text-blue-400 hover:text-blue-300 transition-colors">
+                <a href="/privacy" target="_blank" className="text-blue-400 hover:text-blue-300 transition-colors">
                   Privacy Policy
-                </button>
+                </a>
               </p>
             </div>
           )}
