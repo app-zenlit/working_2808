@@ -337,18 +337,15 @@ export const completeProfileSetup = async (profileData: {
       updateData.oauth_signup = false;
     }
     
-    // Fire and forget this update - don't block the profile setup completion
-    supabase!.auth.updateUser({ data: updateData })
-      .then(({ error: metadataError }) => {
-        if (metadataError) {
-          console.error('Failed to clear signup flags:', metadataError)
-        } else {
-          console.log('Signup flags cleared - user can now proceed to main app')
-        }
-      })
-      .catch(err => {
-        console.error('Error during signup flags update:', err)
-      });
+    // CRITICAL: Wait for this update to complete before proceeding
+    const { error: metadataError } = await supabase!.auth.updateUser({ data: updateData });
+    
+    if (metadataError) {
+      console.error('Failed to clear signup flags:', metadataError);
+      return { success: false, error: 'Failed to complete signup process. Please try again.' };
+    }
+    
+    console.log('Signup flags cleared - user can now proceed to main app');
 
     console.log('Profile setup completed successfully')
     return { success: true, data: profile }
