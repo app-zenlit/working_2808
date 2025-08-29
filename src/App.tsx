@@ -243,7 +243,7 @@ export default function App() {
     await new Promise(resolve => setTimeout(resolve, 500));
   };
 
-  const handleProfileSetupComplete = (profileData: any) => {
+  const handleProfileSetupComplete = async (profileData: any) => {
     console.log('Profile setup completed:', profileData);
     // Use the profile data directly from the setup screen
     // This data already includes profile_completed: true
