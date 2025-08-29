@@ -549,60 +549,34 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
               <ChevronLeftIcon className="w-5 h-5 text-white" />
             </button>
             
-            <div className="flex-1 mx-4">
-              <div className="w-full bg-gray-800 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${getStepProgress()}%` }}
-                />
-              </div>
-            </div>
-            
-            <span className="text-sm text-gray-400 min-w-0">
-              {step === 'basic' && '1/4'}
-              {step === 'photo' && '2/4'}
-              {step === 'bio' && '3/4'}
-              {step === 'social' && '4/4'}
-            </span>
+            <h1 className="text-lg font-semibold text-white flex-1 text-center">Setup Profile</h1>
+            <div className="w-10" /> {/* Spacer for centering */}
           </div>
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto mobile-scroll">
-            {step === 'basic' && renderBasicInfo()}
-            {step === 'photo' && renderPhotoStep()}
-            {step === 'bio' && renderBioStep()}
-            {step === 'social' && renderSocialStep()}
+            {renderBasicInfo()}
           </div>
 
           {/* Footer */}
           <div className="mt-6 pt-4">
-            {step === 'social' ? (
-              <button
-                onClick={handleComplete}
-                disabled={!canProceed() || isLoading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Creating Profile...
-                  </>
-                ) : (
-                  <>
-                    <CheckIcon className="w-5 h-5" />
-                    Complete Profile
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={handleNext}
-                disabled={!canProceed()}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed"
-              >
-                Continue
-              </button>
-            )}
+            <button
+              onClick={handleComplete}
+              disabled={!canProceed() || isLoading}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Creating Profile...
+                </>
+              ) : (
+                <>
+                  <CheckIcon className="w-5 h-5" />
+                  Complete Setup
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
