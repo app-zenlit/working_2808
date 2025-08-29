@@ -511,7 +511,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-white text-center">
                 {currentView === 'login' ? 'Welcome Back' : 
-                 signupStep === 'email' ? 'Join Zenlit' :
+                 signupStep === 'email' ? 'Sign Up' :
                  signupStep === 'otp' ? 'Verify Email' :
                  signupStep === 'password' ? 'Set Your Password' :
                  signupStep === 'basicProfile' ? 'Complete Your Profile' :
@@ -519,7 +519,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
               </h2>
               <p className="text-gray-400 text-center mt-2">
                 {currentView === 'login' ? 'Sign in with your email and password' : 
-                 signupStep === 'email' ? 'Create your account in seconds' :
+                 signupStep === 'email' ? 'Create your account' :
                  signupStep === 'otp' ? `We sent a code to ${formData.email}` :
                  signupStep === 'password' ? 'This password will be used for future logins' :
                  signupStep === 'basicProfile' ? 'Just a few quick details to get started' :
