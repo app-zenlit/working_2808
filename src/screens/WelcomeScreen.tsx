@@ -21,7 +21,6 @@ export const WelcomeScreen: React.FC<Props> = ({ onGetStarted }) => {
           <div className="mb-4">
             <GradientLogo size="xl" className="block mx-auto text-6xl" />
           </div>
-          <p className="text-sm text-gray-400">Built with Bolt.new</p>
         </div>
         
         {/* Get Started Button */}
