@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
-  const [step, setStep] = useState<'basic' | 'photo' | 'bio' | 'social'>('basic');
+  const [step, setStep] = useState<'basic'>('basic');
   const [isLoading, setIsLoading] = useState(false);
   const [isUsernameValid, setIsUsernameValid] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -24,13 +24,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
     username: '',
     dateOfBirth: '',
     gender: '' as 'male' | 'female' | '',
-    profilePhoto: null as string | null,
-    bio: '',
-    instagramUrl: '',
-    linkedInUrl: '',
-    twitterUrl: ''
   });
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load current user data and pre-fill form for Google users
   React.useEffect(() => {
@@ -84,19 +78,8 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
             displayName: existingProfile.name || prev.displayName,
             username: existingProfile.username || '',
             dateOfBirth: existingProfile.date_of_birth || '',
-            gender: existingProfile.gender || '',
-            bio: existingProfile.bio && existingProfile.bio !== 'New to Zenlit! 👋' ? existingProfile.bio : '',
-            instagramUrl: existingProfile.instagram_url || '',
-            linkedInUrl: existingProfile.linked_in_url || '',
-            twitterUrl: existingProfile.twitter_url || ''
+            gender: existingProfile.gender || ''
           }));
-
-          if (existingProfile.profile_photo_url) {
-            setProfileData(prev => ({
-              ...prev,
-              profilePhoto: existingProfile.profile_photo_url
-            }));
-          }
         }
 
       } catch (error) {

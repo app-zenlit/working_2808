@@ -204,22 +204,13 @@ export default function App() {
 
         console.log('Profile found:', profile);
         
-        // NEW: Check if Google user needs to complete onboarding
-        if (isGoogleUser && !profile.profile_completed) {
-          console.log('Google user needs to complete profile setup');
-          setCurrentScreen('profileSetup');
-          return;
-        }
+        // Check if profile has essential fields for app functionality
+        const hasEssentialFields = profile.username && 
+                                  profile.date_of_birth && 
+                                  profile.gender;
         
-        // NEW: Check if profile is incomplete (missing essential fields)
-        const isProfileIncomplete = !profile.username || 
-                                   !profile.bio || 
-                                   profile.bio === 'New to Zenlit! 👋' ||
-                                   !profile.date_of_birth ||
-                                   !profile.gender;
-        
-        if (isProfileIncomplete) {
-          console.log('Profile is incomplete, redirecting to profile setup');
+        if (!hasEssentialFields) {
+          console.log('User missing essential profile fields, redirecting to profile setup');
           setCurrentScreen('profileSetup');
           return;
         }
@@ -280,7 +271,7 @@ export default function App() {
         const {
           data: { user }
         } = await supabase.auth.getUser();
-
+        // Check if user has a complete profile with proper error handling
         if (user) {
           const { error: updateError } = await supabase
             .from('profiles')
