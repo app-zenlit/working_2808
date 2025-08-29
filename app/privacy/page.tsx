@@ -51,7 +51,7 @@ export default function PrivacyPolicy() {
                 <div>
                   <h3 className="text-lg font-medium text-white mb-2">Location Information</h3>
                   <p className="text-gray-300 leading-relaxed">
-                    With your explicit consent, we collect your device's location to help you discover nearby users. You can enable or disable location sharing at any time. Location data is automatically cleared when you log out or after 5 minutes of inactivity.
+                    With your explicit consent, we collect your device&apos;s location to help you discover nearby users. You can enable or disable location sharing at any time. Location data is automatically cleared when you log out or after 5 minutes of inactivity.
                   </p>
                 </div>
 
@@ -158,7 +158,7 @@ export default function PrivacyPolicy() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">9. Children's Privacy</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">9. Children&apos;s Privacy</h2>
               <p className="text-gray-300 leading-relaxed">
                 Zenlit is not intended for users under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware of such collection, we will delete the information immediately.
               </p>
