@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 import { Post } from '../../types';
 
@@ -15,9 +16,11 @@ export const PostCard: React.FC<Props> = ({ post, onUserClick }) => {
         className="w-full px-3 py-2 flex items-center space-x-2 hover:bg-gray-800 active:bg-gray-700 transition-colors text-left"
       >
         {post.userDpUrl ? (
-          <img
+          <Image
             src={post.userDpUrl}
             alt={post.userName}
+            width={32}
+            height={32}
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
@@ -29,9 +32,11 @@ export const PostCard: React.FC<Props> = ({ post, onUserClick }) => {
       </button>
       
       {post.mediaUrl ? (
-        <img
+        <Image
           src={post.mediaUrl}
           alt={post.title}
+          width={400}
+          height={300}
           className="w-full aspect-video object-cover"
         />
       ) : (

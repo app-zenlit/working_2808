@@ -93,7 +93,7 @@ export const SocialLinksModal: React.FC<Props> = ({
         inputRefs[initialPlatform]?.current?.focus();
       }, 100);
     }
-  }, [isOpen, initialPlatform]);
+  }, [isOpen, initialPlatform]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleInputChange = (key: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));

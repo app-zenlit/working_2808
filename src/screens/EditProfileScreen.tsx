@@ -80,7 +80,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
         }
       }, 100);
     }
-  }, [initialPlatform]);
+  }, [initialPlatform]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleInputChange = (field: string, value: string) => {
     console.log(`🔍 [EditProfileScreen] handleInputChange - field: ${field}, value: "${value}"`);

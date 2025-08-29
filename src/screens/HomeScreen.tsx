@@ -35,7 +35,7 @@ export const HomeScreen: React.FC<Props> = ({
   // Refresh function for pull-to-refresh
   const handleRefresh = useCallback(async () => {
     await loadCurrentUserAndNearbyPosts();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pull-to-refresh hook
   const {

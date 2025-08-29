@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 
 interface Props {
@@ -42,9 +43,11 @@ export const Avatar: React.FC<Props> = ({
 
   return (
     <div className="relative inline-block">
-      <img
+      <Image
         src={src}
         alt={alt}
+        width={size === 'sm' ? 40 : size === 'md' ? 48 : 64}
+        height={size === 'sm' ? 40 : size === 'md' ? 48 : 64}
         className={`
           ${sizeClasses[size]}
           rounded-full

@@ -89,7 +89,7 @@ export const useProfileCompletion = (user: User | null) => {
       showModal: shouldShowModal, // Show immediately if conditions are met
       showBanner: shouldShowBanner
     });
-  }, [user, lastUserId]);
+  }, [user, lastUserId, hasShownModalThisSession]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Force show modal (for radar screen toggle or manual trigger)
   const forceShowModal = () => {

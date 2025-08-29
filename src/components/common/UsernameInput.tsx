@@ -174,7 +174,7 @@ export const UsernameInput: React.FC<Props> = ({
           onChange={handleInputChange}
           className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12 ${getBorderColor()} ${className}`}
           placeholder={placeholder}
-          autocomplete="off"
+          autoComplete="off"
           required={required}
           maxLength={30}
         />

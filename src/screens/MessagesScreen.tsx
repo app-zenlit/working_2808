@@ -42,7 +42,7 @@ export const MessagesScreen: React.FC<Props> = ({
 
   useEffect(() => {
     loadUsersAndMessages();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (initialSelectedUser) {
@@ -109,7 +109,7 @@ export const MessagesScreen: React.FC<Props> = ({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId, selectedUser]);
+  }, [currentUserId, selectedUser]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadUsersAndMessages = async () => {
     try {

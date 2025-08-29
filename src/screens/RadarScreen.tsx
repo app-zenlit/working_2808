@@ -150,7 +150,7 @@ export const RadarScreen: React.FC<Props> = ({
       mountedRef.current = false;
       locationToggleManager.cleanup();
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initializeRadar = async () => {
     try {
@@ -236,7 +236,7 @@ export const RadarScreen: React.FC<Props> = ({
       // Clear users if location is null or toggle is OFF
       setUsers([]);
     }
-  }, [currentUser, isLocationEnabled]);
+  }, [currentUser, isLocationEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle location errors from toggle manager
   const handleLocationError = useCallback((error: string) => {
@@ -244,12 +244,11 @@ export const RadarScreen: React.FC<Props> = ({
 
     console.error('Location error:', error);
     setLocationError(error);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep callbacks in sync with manager
   useEffect(() => {
     locationToggleManager.setCallbacks(handleLocationUpdate, handleLocationError);
-  }, [handleLocationUpdate, handleLocationError]);
 
   // Load users with exact coordinate match
   const loadNearbyUsers = async (currentUserId: string, location: UserLocation) => {

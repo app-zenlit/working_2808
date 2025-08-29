@@ -1,6 +1,13 @@
+import { Inter } from 'next/font/google'
 import './globals.css'
 import type { ReactNode } from 'react'
 import { IOSInstallBanner } from '../src/components/IOSInstallBanner'
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+})
 
 export const metadata = {
   title: 'Zenlit - Connect Locally',
@@ -138,11 +145,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Manifest */}
         <link rel="manifest" href="/manifest.json" />
         
-        {/* Preload critical resources */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet" />
-        
         {/* DNS prefetch for external resources */}
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         
@@ -172,7 +174,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="apple-touch-startup-image" href="/apple-splash-828-1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
         <link rel="apple-touch-startup-image" href="/apple-splash-750-1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
       </head>
-      <body className="mobile-container bg-black text-white overflow-hidden" suppressHydrationWarning>
+      <body className={`mobile-container bg-black text-white overflow-hidden ${inter.className}`} suppressHydrationWarning>
         {children}
         <IOSInstallBanner />
       </body>
