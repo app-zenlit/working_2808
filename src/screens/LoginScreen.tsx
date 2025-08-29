@@ -349,7 +349,7 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
       const result = await completeProfileSetup({
         fullName: formData.displayName,
         username: formData.username,
-        bio: 'New to Zenlit! 👋', // Default bio
+        bio: '', // No default bio - let user add later
         dateOfBirth: formData.dateOfBirth,
         gender: formData.gender
       });

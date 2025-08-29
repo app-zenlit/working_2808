@@ -265,7 +265,6 @@ export const completeProfileSetup = async (profileData: {
   bio?: string
   dateOfBirth?: string
   gender?: string
-  profilePhotoUrl?: string
 }): Promise<AuthResponse> => {
   if (!isSupabaseAvailable()) {
     return { success: false, error: 'Service temporarily unavailable' }
@@ -308,10 +307,10 @@ export const completeProfileSetup = async (profileData: {
         name: profileData.fullName.trim(),
         username: profileData.username.trim().toLowerCase(),
         email: user.email, // Explicitly add email from authenticated user
-        bio: profileData.bio || 'New to Zenlit! 👋',
+        bio: profileData.bio || null, // Allow empty bio - no default text
         date_of_birth: profileData.dateOfBirth,
         gender: profileData.gender,
-        profile_photo_url: profileData.profilePhotoUrl,
+        profile_photo_url: null, // No auto profile photo from Google
         profile_completed: true,
         updated_at: new Date().toISOString()
       })

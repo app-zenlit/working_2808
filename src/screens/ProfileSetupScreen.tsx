@@ -20,7 +20,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
   const [error, setError] = useState<string | null>(null);
   const [profileData, setProfileData] = useState({
     displayName: '',
-    username: '',
+    username: '', // Always start blank - never auto-populate
     dateOfBirth: '',
     gender: '' as 'male' | 'female' | '',
   });
@@ -47,12 +47,11 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
         if (isGoogleUser) {
           console.log('Google OAuth user detected, pre-filling form data');
           
-          // Pre-fill form with Google account data (but keep username blank)
+          // Pre-fill form with Google account data (username and bio always blank)
           setProfileData(prev => ({
             ...prev,
             displayName: user.user_metadata?.full_name || user.user_metadata?.name || '',
-            // Keep username blank - user must choose their own
-            // Try to get additional info from Google if available
+            username: '', // ALWAYS blank - never auto-populate
             dateOfBirth: user.user_metadata?.birthdate || user.user_metadata?.date_of_birth || '',
             gender: user.user_metadata?.gender || ''
           }));
@@ -70,7 +69,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
           setProfileData(prev => ({
             ...prev,
             displayName: existingProfile.name || prev.displayName,
-            username: existingProfile.username || '',
+            username: '', // ALWAYS blank - never auto-populate from existing profile
             dateOfBirth: existingProfile.date_of_birth || '',
             gender: existingProfile.gender || ''
           }));
@@ -178,10 +177,9 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
       const result = await completeProfileSetup({
         fullName: profileData.displayName,
         username: profileData.username,
-        bio: 'New to Zenlit! 👋', // Default bio
+        bio: '', // No default bio - let user add later
         dateOfBirth: profileData.dateOfBirth,
         gender: profileData.gender,
-        profilePhotoUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture // Use Google photo if available
       });
 
       if (!result.success) {
