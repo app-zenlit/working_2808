@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { PhotoIcon, CheckIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { uploadProfileImage } from '../../lib/utils';
 import { completeProfileSetup } from '../lib/auth';
 import { reserveUsername, checkUsernameAvailability } from '../lib/username';
@@ -18,6 +18,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
   const [step, setStep] = useState<'basic' | 'photo' | 'bio' | 'social'>('basic');
   const [isLoading, setIsLoading] = useState(false);
   const [isUsernameValid, setIsUsernameValid] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [profileData, setProfileData] = useState({
     displayName: '',
     username: '',
@@ -30,6 +31,81 @@ export const ProfileSetupScreen: React.FC<Props> = ({ onComplete, onBack }) => {
     twitterUrl: ''
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load current user data and pre-fill form for Google users
+  React.useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error || !user) {
+          console.error('Error getting current user:', error);
+          return;
+        }
+
+        setCurrentUser(user);
+        console.log('Current user loaded:', user);
+        console.log('User metadata:', user.user_metadata);
+        console.log('User providers:', user.app_metadata?.providers);
+
+        // Check if this is a Google OAuth user
+        const isGoogleUser = user.app_metadata?.providers?.includes('google');
+        
+        if (isGoogleUser) {
+          console.log('Google OAuth user detected, pre-filling form data');
+          
+          // Pre-fill form with Google account data
+          setProfileData(prev => ({
+            ...prev,
+            displayName: user.user_metadata?.full_name || user.user_metadata?.name || '',
+            // Don't pre-fill username - let user choose their own
+          }));
+
+          // If user has a profile photo from Google, use it
+          if (user.user_metadata?.avatar_url || user.user_metadata?.picture) {
+            setProfileData(prev => ({
+              ...prev,
+              profilePhoto: user.user_metadata?.avatar_url || user.user_metadata?.picture
+            }));
+          }
+        }
+
+        // Check if user already has a profile and pre-fill existing data
+        const { data: existingProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!profileError && existingProfile) {
+          console.log('Existing profile found, pre-filling form');
+          setProfileData(prev => ({
+            ...prev,
+            displayName: existingProfile.name || prev.displayName,
+            username: existingProfile.username || '',
+            dateOfBirth: existingProfile.date_of_birth || '',
+            gender: existingProfile.gender || '',
+            bio: existingProfile.bio && existingProfile.bio !== 'New to Zenlit! 👋' ? existingProfile.bio : '',
+            instagramUrl: existingProfile.instagram_url || '',
+            linkedInUrl: existingProfile.linked_in_url || '',
+            twitterUrl: existingProfile.twitter_url || ''
+          }));
+
+          if (existingProfile.profile_photo_url) {
+            setProfileData(prev => ({
+              ...prev,
+              profilePhoto: existingProfile.profile_photo_url
+            }));
+          }
+        }
+
+      } catch (error) {
+        console.error('Error loading current user:', error);
+      }
+    };
+
+    loadCurrentUser();
+  }, []);
 
   const handleInputChange = (field: string, value: any) => {
     setProfileData(prev => ({

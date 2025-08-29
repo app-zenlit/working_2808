@@ -300,6 +300,9 @@ export const completeProfileSetup = async (profileData: {
       return { success: false, error: 'Username is required' }
     }
 
+    // Check if this is a Google OAuth user
+    const isGoogleUser = user.app_metadata?.providers?.includes('google');
+    console.log('Completing profile setup for Google user:', isGoogleUser);
     // Create/update profile
     const { data: profile, error: profileError } = await supabase!
       .from('profiles')
@@ -332,17 +335,24 @@ export const completeProfileSetup = async (profileData: {
       return { success: false, error: 'Failed to save profile. Please try again.' }
     }
 
-    // CRITICAL: Clear the signup_flow flag ONLY after basic profile is complete
-    console.log('Basic profile completed, clearing signup_flow flag...')
+    // CRITICAL: Clear signup flags after profile is complete
+    console.log('Profile completed, clearing signup flags...')
+    const updateData: any = { signup_flow: false };
+    
+    // Clear OAuth signup flag if it exists
+    if (isGoogleUser) {
+      updateData.oauth_signup = false;
+    }
+    
     const { error: metadataError } = await supabase!.auth.updateUser({
-      data: { signup_flow: false }
+      data: updateData
     })
 
     if (metadataError) {
-      console.error('Failed to clear signup_flow flag:', metadataError)
+      console.error('Failed to clear signup flags:', metadataError)
       // Don't fail the whole operation for this
     } else {
-      console.log('Signup flow flag cleared - user can now proceed to main app')
+      console.log('Signup flags cleared - user can now proceed to main app')
     }
 
     console.log('Profile setup completed successfully')
