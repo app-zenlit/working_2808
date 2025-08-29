@@ -22,6 +22,7 @@ export const UsernameInput: React.FC<Props> = ({
   const [isChecking, setIsChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<UsernameCheckResult | null>(null);
   const [formatError, setFormatError] = useState<string | null>(null);
+  const [lastCheckedValue, setLastCheckedValue] = useState<string>('');
 
   // Debounced username checking
   const checkUsername = useCallback(
@@ -29,15 +30,21 @@ export const UsernameInput: React.FC<Props> = ({
       if (!username) {
         setCheckResult(null);
         setFormatError(null);
+        setLastCheckedValue('');
         onValidationChange?.(false, username);
         return;
       }
 
+      // Don't check if we already checked this exact value
+      if (username === lastCheckedValue) {
+        return;
+      }
       // First check format
       const formatValidation = validateUsernameFormat(username);
       if (!formatValidation.valid) {
         setFormatError(formatValidation.error || 'Invalid format');
         setCheckResult(null);
+        setLastCheckedValue('');
         onValidationChange?.(false, username);
         return;
       }
@@ -48,37 +55,50 @@ export const UsernameInput: React.FC<Props> = ({
       try {
         const result = await checkUsernameAvailability(username);
         setCheckResult(result);
+        setLastCheckedValue(username);
         onValidationChange?.(result.available, username);
       } catch (error) {
         console.error('Username check error:', error);
         setCheckResult({ available: false, error: 'Unable to check availability' });
+        setLastCheckedValue('');
         onValidationChange?.(false, username);
       } finally {
         setIsChecking(false);
       }
     },
-    [onValidationChange]
+    [onValidationChange, lastCheckedValue]
   );
 
   // Debounce username checking
   useEffect(() => {
-    // Don't check if value hasn't actually changed
     const trimmedValue = value.trim();
     
-    // Only check if there's a value and it's different from what we last checked
+    // Only check if there's a value
     if (!trimmedValue) {
       setCheckResult(null);
       setFormatError(null);
+      setLastCheckedValue('');
       onValidationChange?.(false, trimmedValue);
       return;
     }
 
+    // Only trigger check if the value has actually changed from what we last checked
+    if (trimmedValue === lastCheckedValue) {
+      return;
+    }
+    // Clear previous results immediately when value changes
+    if (trimmedValue !== lastCheckedValue) {
+      setCheckResult(null);
+      setFormatError(null);
+      setIsChecking(false);
+    }
+
     const timeoutId = setTimeout(() => {
       checkUsername(trimmedValue);
-    }, 800); // Increased debounce time to reduce API calls
+    }, 1000); // Increased debounce time to 1 second
 
     return () => clearTimeout(timeoutId);
-  }, [value, checkUsername, onValidationChange]);
+  }, [value, checkUsername, lastCheckedValue]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value.toLowerCase();
@@ -91,6 +111,12 @@ export const UsernameInput: React.FC<Props> = ({
       newValue = newValue.slice(0, 30);
     }
 
+    // Clear previous check results when user types
+    if (newValue !== value) {
+      setCheckResult(null);
+      setFormatError(null);
+      setIsChecking(false);
+    }
     onChange(newValue);
   };
 
