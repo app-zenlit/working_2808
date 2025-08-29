@@ -542,14 +542,6 @@ export const LoginScreen: React.FC<Props> = ({ onLogin }) => {
                  signupStep === 'basicProfile' ? 'Complete Your Profile' :
                  'Account Created!'}
               </h2>
-              <p className="text-gray-400 text-center mt-2">
-                {currentView === 'login' ? 'Sign in with your email and password' : 
-                 signupStep === 'email' ? 'Create your account' :
-                 signupStep === 'otp' ? `We sent a code to ${formData.email}` :
-                 signupStep === 'password' ? 'This password will be used for future logins' :
-                 signupStep === 'basicProfile' ? 'Just a few quick details to get started' :
-                 'Welcome to Zenlit!'}
-              </p>
             </div>
 
             {/* Error Message */}
