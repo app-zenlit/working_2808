@@ -157,6 +157,8 @@ export default function App() {
     try {
       console.log('Handling authenticated user:', user.id);
       console.log('User metadata:', user.user_metadata);
+      console.log('User app metadata:', user.app_metadata);
+      console.log('User providers:', user.app_metadata?.providers);
 
       // CRITICAL: Check if user is still in signup flow
       if (user.user_metadata?.signup_flow === true) {
@@ -166,6 +168,10 @@ export default function App() {
       }
 
       console.log('User has completed signup flow, proceeding with profile check...');
+
+      // NEW: Check if this is a Google OAuth user who needs onboarding
+      const isGoogleUser = user.app_metadata?.providers?.includes('google');
+      console.log('Is Google OAuth user:', isGoogleUser);
 
       // Check if user has a profile with proper error handling
       try {
@@ -179,80 +185,60 @@ export default function App() {
           if (profileError.code === 'PGRST116') {
             // No profile found (not an error)
             console.log('No profile found, redirecting to profile setup');
-            // Create a basic profile and go to app instead of blocking with profile setup
-            setCurrentUser({
-              id: user.id,
-              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
-              email: user.email,
-              bio: 'New to Zenlit! 👋',
-              profile_completed: false
-            });
-            setIsLoggedIn(true);
-            setCurrentScreen('app');
+            // Always go to profile setup for new users
+            setCurrentScreen('profileSetup');
             return;
           } else {
             console.error('Profile fetch error:', profileError);
-            // For other database errors, go to app with basic profile
-            setCurrentUser({
-              id: user.id,
-              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
-              email: user.email,
-              bio: 'New to Zenlit! 👋',
-              profile_completed: false
-            });
-            setIsLoggedIn(true);
-            setCurrentScreen('app');
+            // For database errors, go to profile setup
+            setCurrentScreen('profileSetup');
             return;
           }
         }
 
         if (!profile) {
           console.log('No profile found, redirecting to profile setup');
-          // Skip profile setup and go directly to app, show completion modal instead
-          setCurrentUser({
-            id: user.id,
-            name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
-            email: user.email,
-            bio: 'New to Zenlit! 👋',
-            profile_completed: false
-          });
-          setIsLoggedIn(true);
-          setCurrentScreen('app');
+          setCurrentScreen('profileSetup');
           return;
         }
 
         console.log('Profile found:', profile);
+        
+        // NEW: Check if Google user needs to complete onboarding
+        if (isGoogleUser && !profile.profile_completed) {
+          console.log('Google user needs to complete profile setup');
+          setCurrentScreen('profileSetup');
+          return;
+        }
+        
+        // NEW: Check if profile is incomplete (missing essential fields)
+        const isProfileIncomplete = !profile.username || 
+                                   !profile.bio || 
+                                   profile.bio === 'New to Zenlit! 👋' ||
+                                   !profile.date_of_birth ||
+                                   !profile.gender;
+        
+        if (isProfileIncomplete) {
+          console.log('Profile is incomplete, redirecting to profile setup');
+          setCurrentScreen('profileSetup');
+          return;
+        }
+
         setCurrentUser(profile);
         setIsLoggedIn(true);
 
-        // Always go to app - profile completion will be handled by modal/banner
+        // Profile is complete, go to app
         setCurrentScreen('app');
       } catch (networkError) {
         console.error('Network error fetching profile:', networkError);
-        // If we can't fetch the profile due to network issues, go to app with basic profile
-        setCurrentUser({
-          id: user.id,
-          name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
-          email: user.email,
-          bio: 'New to Zenlit! 👋',
-          profile_completed: false
-        });
-        setIsLoggedIn(true);
-        setCurrentScreen('app');
+        // If we can't fetch the profile due to network issues, go to profile setup
+        setCurrentScreen('profileSetup');
         return;
       }
     } catch (error) {
       console.error('Error handling authenticated user:', error);
-      // Even on error, go to app with basic profile
-      setCurrentUser({
-        id: user.id,
-        name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
-        email: user.email,
-        bio: 'New to Zenlit! 👋',
-        profile_completed: false
-      });
-      setIsLoggedIn(true);
-      setCurrentScreen('app');
+      // On error, go to profile setup to ensure proper onboarding
+      setCurrentScreen('profileSetup');
     }
   };
 
