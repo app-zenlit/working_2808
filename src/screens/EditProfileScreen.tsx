@@ -19,7 +19,7 @@ interface Props {
 export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initialPlatform }) => {
   const [formData, setFormData] = useState({
     name: user.name,
-    bio: user.bio,
+    bio: user.bio || '',
     instagramUrl: user.instagramUrl,
     linkedInUrl: user.linkedInUrl,
     twitterUrl: user.twitterUrl,
