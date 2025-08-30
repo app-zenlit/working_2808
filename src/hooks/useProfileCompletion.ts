@@ -65,21 +65,33 @@ export const useProfileCompletion = (user: User | null) => {
     // Show banner only if profile is incomplete AND modal is not showing AND modal has been dismissed
     const shouldShowBanner = !isComplete && !shouldShowModal && hasShownModalThisSession;
 
-    console.log('Profile completion check:', {
-      user: user.name,
-      completedSteps,
-      isComplete,
-      shouldShowModal,
-      shouldShowBanner,
-      hasShownModalThisSession
-    });
-
-    setState({
-      completedSteps,
-      totalSteps: 4,
-      isComplete,
-      showModal: shouldShowModal, // Show immediately if conditions are met
-      showBanner: shouldShowBanner
+    // Only update state if values have actually changed
+    setState(prevState => {
+      const stepsChanged = JSON.stringify(prevState.completedSteps) !== JSON.stringify(completedSteps);
+      const isCompleteChanged = prevState.isComplete !== isComplete;
+      const showModalChanged = prevState.showModal !== shouldShowModal;
+      const showBannerChanged = prevState.showBanner !== shouldShowBanner;
+      
+      if (!stepsChanged && !isCompleteChanged && !showModalChanged && !showBannerChanged) {
+        return prevState; // No changes, return existing state to prevent re-render
+      }
+      
+      console.log('Profile completion check:', {
+        user: user.name,
+        completedSteps,
+        isComplete,
+        shouldShowModal,
+        shouldShowBanner,
+        hasShownModalThisSession
+      });
+      
+      return {
+        completedSteps,
+        totalSteps: 4,
+        isComplete,
+        showModal: shouldShowModal,
+        showBanner: shouldShowBanner
+      };
     });
   }, [user, hasShownModalThisSession]);
 
