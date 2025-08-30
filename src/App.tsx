@@ -326,7 +326,19 @@ export default function App() {
       setSelectedUser(updatedUser);
     }
     if (currentUser && currentUser.id === updatedUser.id) {
-      setCurrentUser({ ...currentUser, ...updatedUser });
+      // Transform the updated User back to the database profile format
+      const updatedProfile = {
+        ...currentUser,
+        name: updatedUser.name,
+        bio: updatedUser.bio,
+        profile_photo_url: updatedUser.dpUrl,
+        cover_photo_url: updatedUser.coverPhotoUrl,
+        instagram_url: updatedUser.instagramUrl,
+        linked_in_url: updatedUser.linkedInUrl,
+        twitter_url: updatedUser.twitterUrl,
+        updated_at: new Date().toISOString()
+      };
+      setCurrentUser(updatedProfile);
     }
   };
 
@@ -538,7 +550,7 @@ export default function App() {
                   isVisible={true}
                   completedSteps={profileCompletion.completedSteps.length}
                   totalSteps={profileCompletion.totalSteps}
-                  onClickAction={handleContinueProfileSetup}
+                  onClickAction={profileCompletion.openModal}
                 />
               </div>
             )}
