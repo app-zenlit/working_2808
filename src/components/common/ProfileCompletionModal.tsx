@@ -44,7 +44,7 @@ export const ProfileCompletionModal: React.FC<Props> = ({
     },
     {
       id: 'bio',
-      title: 'Bio & Story',
+      title: 'Bio',
       description: 'Tell others about yourself',
       completed: completedSteps.includes('bio'),
       icon: DocumentTextIcon

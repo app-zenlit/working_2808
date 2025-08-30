@@ -17,17 +17,9 @@ export const useProfileCompletion = (user: User | null) => {
     showModal: false,
     showBanner: false
   });
-  const [lastUserId, setLastUserId] = useState<string | null>(null);
   const [hasShownModalThisSession, setHasShownModalThisSession] = useState(false);
 
   useEffect(() => {
-    // Prevent unnecessary re-renders by checking if user actually changed
-    const currentUserId = user?.id || null;
-    if (currentUserId === lastUserId) {
-      return;
-    }
-    setLastUserId(currentUserId);
-
     if (!user) {
       setState(prev => ({
         ...prev,
@@ -89,7 +81,7 @@ export const useProfileCompletion = (user: User | null) => {
       showModal: shouldShowModal, // Show immediately if conditions are met
       showBanner: shouldShowBanner
     });
-  }, [user, lastUserId, hasShownModalThisSession]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, hasShownModalThisSession]);
 
   // Force show modal (for radar screen toggle or manual trigger)
   const forceShowModal = () => {
