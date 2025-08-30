@@ -6,14 +6,14 @@ interface Props {
   isVisible: boolean;
   completedSteps: number;
   totalSteps: number;
-  onOpenModal: () => void;
+  onClickAction: () => void;
 }
 
 export const ProfileCompletionBanner: React.FC<Props> = ({
   isVisible = true,
   completedSteps,
   totalSteps,
-  onOpenModal
+  onClickAction
 }) => {
   const completionPercentage = Math.round((completedSteps / totalSteps) * 100);
 
@@ -26,7 +26,7 @@ export const ProfileCompletionBanner: React.FC<Props> = ({
       className="bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm border border-blue-500/30 rounded-xl shadow-lg"
     >
       <button
-        onClick={onOpenModal}
+        onClick={onClickAction}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5 active:bg-white/10 transition-colors rounded-xl"
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">

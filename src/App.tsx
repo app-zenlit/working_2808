@@ -538,7 +538,7 @@ export default function App() {
                   isVisible={true}
                   completedSteps={profileCompletion.completedSteps.length}
                   totalSteps={profileCompletion.totalSteps}
-                  onOpenModal={profileCompletion.openModal}
+                  onClickAction={handleContinueProfileSetup}
                 />
               </div>
             )}
