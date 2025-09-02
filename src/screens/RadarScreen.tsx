@@ -6,6 +6,7 @@ import { User, UserLocation, LocationPermissionStatus, Post } from '../types';
 import { MapPinIcon, ExclamationTriangleIcon, ChevronLeftIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabase';
 import { transformProfileToUser } from '../../lib/utils';
+import { normalizeUser } from '../features/radar/normalizeUser';
 import { getUserPosts } from '../lib/posts';
 import { 
   getNearbyUsers, 
@@ -277,7 +278,7 @@ export const RadarScreen: React.FC<Props> = ({
 
       // Transform profiles to User type
       const transformedUsers: User[] = (result.users || []).map(profile => {
-        const user = transformProfileToUser(profile);
+        const user = transformProfileToUser(normalizeUser(profile));
         user.distance = 0; // All users in same bucket have distance 0
         return user;
       });
@@ -420,7 +421,7 @@ export const RadarScreen: React.FC<Props> = ({
       console.log('Profile loaded:', profile);
 
       // Transform database profile to User type
-      const transformedUser: User = transformProfileToUser(profile);
+      const transformedUser: User = transformProfileToUser(normalizeUser(profile));
       
       console.log('Transformed user:', transformedUser);
 
