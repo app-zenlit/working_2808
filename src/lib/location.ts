@@ -3,12 +3,19 @@ import { UserLocation, LocationPermissionStatus } from '../types';
 
 // Check if geolocation is supported
 export const isGeolocationSupported = (): boolean => {
-  return 'geolocation' in navigator;
+  return typeof navigator !== 'undefined' && 'geolocation' in navigator;
 };
 
 // Check if we're in a secure context (required for geolocation)
 export const isSecureContext = (): boolean => {
-  return window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
+  if (typeof window === 'undefined' || typeof window.location === 'undefined') {
+    return false;
+  }
+  return (
+    window.isSecureContext ||
+    window.location.protocol === 'https:' ||
+    window.location.hostname === 'localhost'
+  );
 };
 
 // Request user's current location
@@ -31,6 +38,13 @@ export const requestUserLocation = async (): Promise<{
       return {
         success: false,
         error: 'Location access requires a secure connection (HTTPS)'
+      };
+    }
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      return {
+        success: false,
+        error: 'Geolocation is not available in this environment'
       };
     }
 
@@ -107,6 +121,11 @@ export const watchUserLocation = (
       return null;
     }
 
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      onError('Geolocation is not available in this environment');
+      return null;
+    }
+
     console.log('Starting location watch...');
 
     const watchId = navigator.geolocation.watchPosition(
@@ -162,8 +181,10 @@ export const watchUserLocation = (
 // Stop watching user's location
 export const stopWatchingLocation = (watchId: number): void => {
   try {
-    navigator.geolocation.clearWatch(watchId);
-    console.log('Location watch stopped');
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchId);
+      console.log('Location watch stopped');
+    }
   } catch (error) {
     console.error('Error stopping location watch:', error);
   }
@@ -422,7 +443,7 @@ export const checkLocationPermission = async (): Promise<LocationPermissionStatu
     }
 
     // Check if Permissions API is available
-    if (!('permissions' in navigator)) {
+    if (typeof navigator === 'undefined' || !('permissions' in navigator)) {
       console.warn('Permissions API not available, falling back to feature detection');
       // We can't determine permission state directly, so we'll have to assume it's available
       // and let the actual geolocation request handle permissions
@@ -431,6 +452,9 @@ export const checkLocationPermission = async (): Promise<LocationPermissionStatu
 
     try {
       // Check permission using the Permissions API
+      if (typeof navigator === 'undefined' || !navigator.permissions?.query) {
+        return { granted: false, denied: false, pending: true };
+      }
       const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
       
       switch (permission.state) {
