@@ -10,15 +10,21 @@ interface Props {
   onViewProfile: () => void;
 }
 
-export const RadarUserCard: React.FC<Props> = ({ user, onMessage, onViewProfile }) => {
+export const RadarUserCard: React.FC<Props> = ({ user: rawUser, onMessage, onViewProfile }) => {
+  // Ensure we always work with sanitized user props
+  const user: User = {
+    ...rawUser,
+    bio: rawUser.bio ?? '',
+  };
+
   const [showModal, setShowModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Check if bio is longer than approximately 2-3 lines (around 100 characters)
-  const shouldTruncate = user.bio.length > 100;
-  const displayBio = shouldTruncate && !isExpanded 
-    ? user.bio.substring(0, 100) 
-    : user.bio;
+  const shouldTruncate = (user.bio ?? '').length > 100;
+  const displayBio = shouldTruncate && !isExpanded
+    ? (user.bio ?? '').substring(0, 100)
+    : (user.bio ?? '');
 
   // Helper function to check if a URL is valid and not a placeholder
   const isValidUrl = (url: string | undefined | null): boolean => {
