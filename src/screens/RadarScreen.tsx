@@ -583,7 +583,7 @@ export const RadarScreen: React.FC<Props> = ({
               </div>
               
               {/* Search Icon - Only show when location is enabled and we have users */}
-              {isLocationEnabled && users.length > 0 && (
+              {isLocationEnabled && (users?.length ?? 0) > 0 && (
                 <button
                   onClick={toggleSearchBar}
                   className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
@@ -625,9 +625,9 @@ export const RadarScreen: React.FC<Props> = ({
                 {/* Search Results Count */}
                 {searchQuery && (
                   <p className="text-sm text-gray-400 mt-2">
-                    {filteredUsers.length === 0 
-                      ? 'No users found' 
-                      : `${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''} found`
+                    {(filteredUsers?.length ?? 0) === 0
+                      ? 'No users found'
+                      : `${filteredUsers?.length ?? 0} user${(filteredUsers?.length ?? 0) !== 1 ? 's' : ''} found`
                     }
                   </p>
                 )}
@@ -650,9 +650,9 @@ export const RadarScreen: React.FC<Props> = ({
         <div className="px-4 py-4 space-y-4 pb-20">
           {isLocationEnabled ? (
             currentLocation ? (
-              users.length > 0 ? (
+              (users?.length ?? 0) > 0 ? (
                 searchQuery ? (
-                  filteredUsers.length > 0 ? (
+                  (filteredUsers?.length ?? 0) > 0 ? (
                     filteredUsers.map((user) => (
                       <RadarUserCard
                         key={user.id}
