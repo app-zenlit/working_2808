@@ -6,6 +6,7 @@ import { User, UserLocation, LocationPermissionStatus, Post } from '../types';
 import { MapPinIcon, ExclamationTriangleIcon, ChevronLeftIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { supabase } from '../lib/supabase';
 import { transformProfileToUser } from '../../lib/utils';
+import { normalizeUser } from '../features/radar/normalizeUser';
 import { getUserPosts } from '../lib/posts';
 import { 
   getNearbyUsers, 
@@ -277,7 +278,7 @@ export const RadarScreen: React.FC<Props> = ({
 
       // Transform profiles to User type
       const transformedUsers: User[] = (result.users || []).map(profile => {
-        const user = transformProfileToUser(profile);
+        const user = transformProfileToUser(normalizeUser(profile));
         user.distance = 0; // All users in same bucket have distance 0
         return user;
       });
@@ -420,7 +421,7 @@ export const RadarScreen: React.FC<Props> = ({
       console.log('Profile loaded:', profile);
 
       // Transform database profile to User type
-      const transformedUser: User = transformProfileToUser(profile);
+      const transformedUser: User = transformProfileToUser(normalizeUser(profile));
       
       console.log('Transformed user:', transformedUser);
 
@@ -582,7 +583,7 @@ export const RadarScreen: React.FC<Props> = ({
               </div>
               
               {/* Search Icon - Only show when location is enabled and we have users */}
-              {isLocationEnabled && users.length > 0 && (
+              {isLocationEnabled && (users?.length ?? 0) > 0 && (
                 <button
                   onClick={toggleSearchBar}
                   className="p-2 rounded-full hover:bg-gray-800 active:scale-95 transition-all"
@@ -624,9 +625,9 @@ export const RadarScreen: React.FC<Props> = ({
                 {/* Search Results Count */}
                 {searchQuery && (
                   <p className="text-sm text-gray-400 mt-2">
-                    {filteredUsers.length === 0 
-                      ? 'No users found' 
-                      : `${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''} found`
+                    {(filteredUsers?.length ?? 0) === 0
+                      ? 'No users found'
+                      : `${filteredUsers?.length ?? 0} user${(filteredUsers?.length ?? 0) !== 1 ? 's' : ''} found`
                     }
                   </p>
                 )}
@@ -649,9 +650,9 @@ export const RadarScreen: React.FC<Props> = ({
         <div className="px-4 py-4 space-y-4 pb-20">
           {isLocationEnabled ? (
             currentLocation ? (
-              users.length > 0 ? (
+              (users?.length ?? 0) > 0 ? (
                 searchQuery ? (
-                  filteredUsers.length > 0 ? (
+                  (filteredUsers?.length ?? 0) > 0 ? (
                     filteredUsers.map((user) => (
                       <RadarUserCard
                         key={user.id}
