@@ -42,6 +42,16 @@ export default function App() {
   // PWA hooks
   const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
 
+  // Control navigation visibility based on chat state
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (isNavigationVisible) {
+        document.body.classList.remove('hide-controls');
+      } else {
+        document.body.classList.add('hide-controls');
+      }
+    }
+  }, [isNavigationVisible]);
   // Profile completion tracking
   const profileUser = currentUser ? transformProfileToUser(currentUser) : null;
   const profileCompletion = useProfileCompletion(profileUser && currentScreen === 'app' ? profileUser : null);

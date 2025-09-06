@@ -52,8 +52,15 @@ export const MessagesScreen: React.FC<Props> = ({
 
   // NEW: Control navigation visibility based on chat state
   useEffect(() => {
-    // Always show navigation - remove the hiding logic
-    // The navigation should always be visible for better UX
+    if (onNavigationVisibilityChange) {
+      if (isMobile && selectedUser) {
+        // Hide navigation when viewing a chat on mobile
+        onNavigationVisibilityChange(false);
+      } else {
+        // Show navigation when viewing chat list or on desktop
+        onNavigationVisibilityChange(true);
+      }
+    }
   }, [selectedUser, isMobile, onNavigationVisibilityChange]);
 
   useEffect(() => {
