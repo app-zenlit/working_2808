@@ -25,19 +25,15 @@ export const ChatWindow = ({
   onViewProfile,
 }: ChatWindowProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const hydratedRef = useRef(false);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
 
   const scrollToBottom = () =>
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  // Hydrate once from props
+  // Update chat messages when props change
   useEffect(() => {
-    if (!hydratedRef.current && messages?.length) {
-      setChatMessages(messages);
-      hydratedRef.current = true;
-      scrollToBottom();
-    }
+    setChatMessages(messages || []);
+    scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
@@ -56,7 +52,7 @@ export const ChatWindow = ({
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-        filter: `sender_id=eq.${user.id}&receiver_id=eq.${currentUserId}`,
+        filter: `sender_id=eq.${user.id},receiver_id=eq.${currentUserId}`,
       },
       (payload) => {
         const d: any = payload.new;
@@ -100,13 +96,18 @@ export const ChatWindow = ({
       timestamp: new Date().toISOString(),
       read: false,
     };
+    
+    // Immediately add optimistic message to UI
     setChatMessages((prev) => [...prev, optimistic]);
 
     const saved = await onSendMessage(text);
     if (!saved) {
+      // Remove optimistic message if send failed
       setChatMessages((prev) => prev.filter((m) => m.id !== tempId));
       return;
     }
+    
+    // Replace optimistic message with confirmed message
     setChatMessages((prev) => {
       const withoutTemp = prev.filter((m) => m.id !== tempId);
       if (withoutTemp.some((m) => m.id === saved.id)) return withoutTemp;

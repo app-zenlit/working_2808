@@ -85,7 +85,12 @@ export const MessagesScreen: React.FC<Props> = ({
 
     channel.on(
       'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${currentUserId}` },
+      { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages', 
+        filter: `sender_id=eq.${currentUserId},receiver_id=eq.${currentUserId}` 
+      },
       (payload) => {
         const data = payload.new as any;
         const incoming: Message = {
@@ -102,10 +107,11 @@ export const MessagesScreen: React.FC<Props> = ({
           return [...prev, incoming];
         });
 
-        if (selectedUser?.id !== incoming.senderId) {
+        // Only mark as unread if it's an incoming message (not sent by current user)
+        if (incoming.senderId !== currentUserId && selectedUser?.id !== incoming.senderId) {
           setHasUnread(true);
           setUnreadByUser((prev) => ({ ...prev, [incoming.senderId]: true }));
-        } else if (isValidUuid(currentUserId) && isValidUuid(incoming.senderId)) {
+        } else if (incoming.senderId !== currentUserId && isValidUuid(currentUserId) && isValidUuid(incoming.senderId)) {
           markMessagesAsRead(currentUserId, incoming.senderId);
         }
       }
