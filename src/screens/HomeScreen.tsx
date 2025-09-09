@@ -11,6 +11,8 @@ import { transformProfileToUser } from '../../lib/utils';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
 import { GradientLogo } from '../components/common/GradientLogo';
+import { useScrollEndEffect } from '../hooks/useScrollEndEffect';
+import { RibbonEffect } from '../components/common/RibbonEffect';
 
 interface Props {
   userGender: 'male' | 'female';
@@ -31,6 +33,9 @@ export const HomeScreen: React.FC<Props> = ({
   const [currentUserLocation, setCurrentUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingUserProfile, setIsLoadingUserProfile] = useState(false);
+  const [showRibbon, setShowRibbon] = useState(false);
+  
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Refresh function for pull-to-refresh
   const handleRefresh = useCallback(async () => {
@@ -49,6 +54,12 @@ export const HomeScreen: React.FC<Props> = ({
     enabled: true
   });
 
+  // Scroll end effect hook
+  useScrollEndEffect(scrollContainerRef, {
+    onScrollEnd: () => setShowRibbon(true),
+    onScrollUp: () => setShowRibbon(false),
+    offset: 100
+  });
   // Listen for refresh events from tab clicks
   useEffect(() => {
     const handleRefreshEvent = () => {
@@ -284,6 +295,7 @@ export const HomeScreen: React.FC<Props> = ({
 
       {/* Scrollable container with pull-to-refresh */}
       <div ref={containerRef} className="min-h-full overflow-y-auto">
+        <div ref={scrollContainerRef} className="min-h-full overflow-y-auto relative">
         {/* Header */}
         <div className="bg-black border-b border-gray-800">
           <div className="px-4 py-3 flex items-center justify-between">
@@ -294,7 +306,7 @@ export const HomeScreen: React.FC<Props> = ({
         </div>
 
         {/* Posts Feed - Only showing posts from nearby users */}
-        <div className="px-4 py-4 space-y-6 pb-20">
+        <div className="px-4 py-4 space-y-6 pb-ribbon-safe">
           {posts.length > 0 ? (
             <PostsFeed posts={posts} onUserClick={handleUserClick} />
           ) : (
@@ -314,6 +326,14 @@ export const HomeScreen: React.FC<Props> = ({
               </p>
             </div>
           )}
+        </div>
+        
+        {/* Ribbon Effect */}
+        <RibbonEffect 
+          isVisible={showRibbon} 
+          message="That's all for now! ✨"
+          variant="info"
+        />
         </div>
       </div>
     </div>

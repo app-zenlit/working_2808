@@ -20,6 +20,8 @@ import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndica
 import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
 import { ProfileCompletionBanner } from '../components/common/ProfileCompletionBanner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useScrollEndEffect } from '../hooks/useScrollEndEffect';
+import { RibbonEffect } from '../components/common/RibbonEffect';
 
 interface Props {
   userGender: 'male' | 'female';
@@ -58,6 +60,7 @@ export const RadarScreen: React.FC<Props> = ({
   const [isRequestingLocation, setIsRequestingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showRibbon, setShowRibbon] = useState(false);
   
   // Location toggle state - get from persistent manager
   const [isLocationEnabled, setIsLocationEnabled] = useState(locationToggleManager.isEnabled());
@@ -74,6 +77,7 @@ export const RadarScreen: React.FC<Props> = ({
 
   // Refs for cleanup
   const mountedRef = useRef(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Filter users based on search query
   const filteredUsers = useMemo(() => {
@@ -130,6 +134,12 @@ export const RadarScreen: React.FC<Props> = ({
     enabled: isLocationEnabled && !!currentLocation
   });
 
+  // Scroll end effect hook
+  useScrollEndEffect(scrollContainerRef, {
+    onScrollEnd: () => setShowRibbon(true),
+    onScrollUp: () => setShowRibbon(false),
+    offset: 100
+  });
   // Listen for refresh events from tab clicks
   useEffect(() => {
     const handleRefreshEvent = () => {
@@ -557,6 +567,7 @@ export const RadarScreen: React.FC<Props> = ({
 
       {/* Scrollable container with pull-to-refresh */}
       <div ref={containerRef} className="min-h-full overflow-y-auto">
+        <div ref={scrollContainerRef} className="min-h-full overflow-y-auto relative">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
           <div className="px-4 py-4">
@@ -647,7 +658,7 @@ export const RadarScreen: React.FC<Props> = ({
         )}
 
         {/* Users List */}
-        <div className="px-4 py-4 space-y-4 pb-20">
+        <div className="px-4 py-4 space-y-4 pb-ribbon-safe">
           {isLocationEnabled ? (
             currentLocation ? (
               (users?.length ?? 0) > 0 ? (
@@ -736,7 +747,21 @@ export const RadarScreen: React.FC<Props> = ({
             </div>
           )}
         </div>
+        
+        {/* Ribbon Effect */}
+        <RibbonEffect 
+          isVisible={showRibbon} 
+          message={isLocationEnabled && (users?.length ?? 0) > 0 ? "You've seen everyone nearby! 🎯" : "Ready to explore! 🚀"}
+          variant="default"
+        />
+        </div>
       </div>
     </div>
   );
 };
+  // Scroll end effect hook
+  useScrollEndEffect(scrollContainerRef, {
+    onScrollEnd: () => setShowRibbon(true),
+    onScrollUp: () => setShowRibbon(false),
+    offset: 100
+  });
