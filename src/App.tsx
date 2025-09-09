@@ -20,7 +20,6 @@ import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { ProfileCompletionModal } from './components/common/ProfileCompletionModal';
 import { ProfileCompletionBanner } from './components/common/ProfileCompletionBanner';
-import { useProfileCompletion } from './hooks/useProfileCompletion';
 import { locationToggleManager } from './lib/locationToggle';
 
 export default function App() {
