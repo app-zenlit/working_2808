@@ -5,6 +5,7 @@ import {
   watchUserLocation, 
   stopWatchingLocation,
   saveUserLocation,
+  clearUserLocation,
   isGeolocationSupported,
   isSecureContext,
   hasLocationChanged
@@ -15,8 +16,10 @@ interface LocationToggleState {
   isEnabled: boolean;
   isTracking: boolean;
   watchId: number | null;
-  intervalId: NodeJS.Timeout | null;
+  keepAliveIntervalId: NodeJS.Timeout | null;
   currentLocation: UserLocation | null;
+  failureCount: number;
+  lastError: string | null;
 }
 
 // Storage key for persisting toggle state
@@ -27,17 +30,24 @@ class LocationToggleManager {
     isEnabled: false,
     isTracking: false,
     watchId: null,
-    intervalId: null,
-    currentLocation: null
+    keepAliveIntervalId: null,
+    currentLocation: null,
+    failureCount: 0,
+    lastError: null
   };
 
   private userId: string | null = null;
   private onLocationUpdate?: (location: UserLocation | null) => void;
   private onError?: (error: string) => void;
+  private onToggleChange?: (enabled: boolean) => void;
+  private visibilityChangeHandler?: () => void;
 
   constructor() {
     // Load persisted state from localStorage (only in browser)
     this.loadPersistedState();
+    
+    // Set up visibility change handler
+    this.setupVisibilityHandler();
   }
 
   // Load persisted toggle state from localStorage
@@ -81,15 +91,34 @@ class LocationToggleManager {
     }
   }
 
+  // Set up visibility change handler for background/foreground detection
+  private setupVisibilityHandler() {
+    if (typeof document === 'undefined') return;
+
+    this.visibilityChangeHandler = () => {
+      if (document.hidden) {
+        console.log('🔄 Location Toggle: Document hidden, pausing tracking');
+        this.pauseTracking();
+      } else {
+        console.log('🔄 Location Toggle: Document visible, resuming tracking');
+        this.resumeTracking();
+      }
+    };
+
+    document.addEventListener('visibilitychange', this.visibilityChangeHandler);
+  }
+
   // Initialize the manager with user ID and callbacks
   initialize(
     userId: string, 
     onLocationUpdate?: (location: UserLocation | null) => void,
-    onError?: (error: string) => void
+    onError?: (error: string) => void,
+    onToggleChange?: (enabled: boolean) => void
   ) {
     this.userId = userId;
     this.onLocationUpdate = onLocationUpdate;
     this.onError = onError;
+    this.onToggleChange = onToggleChange;
 
     console.log('🔄 Location Toggle: Initializing with user:', userId, 'enabled:', this.state.isEnabled);
 
@@ -107,6 +136,13 @@ class LocationToggleManager {
       return;
     }
 
+    // Check if geolocation is still supported and secure
+    if (!isGeolocationSupported() || !isSecureContext()) {
+      console.log('🔄 Location Toggle: Geolocation no longer supported, turning OFF');
+      await this.turnOff();
+      return;
+    }
+
     try {
       console.log('🔄 Location Toggle: Restoring location tracking...');
       
@@ -115,6 +151,7 @@ class LocationToggleManager {
       
       if (locationResult.success && locationResult.location) {
         this.state.currentLocation = locationResult.location;
+        this.state.failureCount = 0; // Reset failure count on success
         
         // Save to database
         await saveUserLocation(this.userId, locationResult.location);
@@ -130,16 +167,18 @@ class LocationToggleManager {
         console.log('✅ Location Toggle: Successfully restored location tracking');
       } else {
         console.error('❌ Location Toggle: Failed to restore location:', locationResult.error);
-        // Don't disable toggle, just show error
-        if (this.onError) {
-          this.onError(locationResult.error || 'Failed to restore location');
+        
+        // Handle permission denied or other critical errors
+        if (locationResult.error && locationResult.error.includes('denied')) {
+          await this.turnOff();
+        } else {
+          // For other errors, increment failure count
+          this.handleGeolocationError(locationResult.error || 'Failed to restore location');
         }
       }
     } catch (error) {
       console.error('❌ Location Toggle: Error restoring location tracking:', error);
-      if (this.onError) {
-        this.onError('Failed to restore location tracking');
-      }
+      this.handleGeolocationError('Failed to restore location tracking');
     }
   }
 
@@ -151,10 +190,12 @@ class LocationToggleManager {
   // Update callbacks without reinitializing
   setCallbacks(
     onLocationUpdate?: (location: UserLocation | null) => void,
-    onError?: (error: string) => void
+    onError?: (error: string) => void,
+    onToggleChange?: (enabled: boolean) => void
   ) {
     this.onLocationUpdate = onLocationUpdate;
     this.onError = onError;
+    this.onToggleChange = onToggleChange;
   }
 
   // Check if toggle is enabled (for UI state)
@@ -201,6 +242,7 @@ class LocationToggleManager {
       // Update state
       this.state.isEnabled = true;
       this.state.currentLocation = locationResult.location;
+      this.state.failureCount = 0; // Reset failure count on success
 
       // Persist state
       this.savePersistedState();
@@ -208,9 +250,12 @@ class LocationToggleManager {
       // Start continuous tracking
       this.startTracking();
 
-      // Notify callback
+      // Notify callbacks
       if (this.onLocationUpdate) {
         this.onLocationUpdate(locationResult.location);
+      }
+      if (this.onToggleChange) {
+        this.onToggleChange(true);
       }
 
       console.log('✅ Location Toggle: Successfully turned ON');
@@ -239,30 +284,27 @@ class LocationToggleManager {
       this.stopTracking();
 
       // Clear location from database (set to null)
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          latitude: null,
-          longitude: null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', this.userId);
-
-      if (error) {
-        console.error('Failed to clear location from database:', error);
-        return { success: false, error: 'Failed to clear location from database' };
+      const clearResult = await clearUserLocation(this.userId);
+      if (!clearResult.success) {
+        console.error('Failed to clear location from database:', clearResult.error);
+        return { success: false, error: clearResult.error || 'Failed to clear location from database' };
       }
 
       // Update state
       this.state.isEnabled = false;
       this.state.currentLocation = null;
+      this.state.failureCount = 0;
+      this.state.lastError = null;
 
       // Persist state
       this.savePersistedState();
 
-      // Notify callback
+      // Notify callbacks
       if (this.onLocationUpdate) {
         this.onLocationUpdate(null);
+      }
+      if (this.onToggleChange) {
+        this.onToggleChange(false);
       }
 
       console.log('✅ Location Toggle: Successfully turned OFF');
@@ -276,8 +318,8 @@ class LocationToggleManager {
 
   // Start continuous location tracking
   private startTracking() {
-    if (this.state.isTracking) {
-      return; // Already tracking
+    if (this.state.isTracking || !this.state.isEnabled) {
+      return; // Already tracking or toggle is OFF
     }
 
     console.log('🎯 Starting continuous location tracking');
@@ -288,10 +330,7 @@ class LocationToggleManager {
         this.handleLocationUpdate(location);
       },
       (error: string) => {
-        console.error('Location watch error:', error);
-        if (this.onError) {
-          this.onError(error);
-        }
+        this.handleGeolocationError(error);
       }
     );
 
@@ -299,10 +338,10 @@ class LocationToggleManager {
       this.state.watchId = watchId;
     }
 
-    // Start interval for periodic updates (every 60 seconds)
-    this.state.intervalId = setInterval(() => {
-      this.updateLocationPeriodically();
-    }, 60000); // 60 seconds
+    // Start keep-alive interval (every 5 minutes)
+    this.state.keepAliveIntervalId = setInterval(() => {
+      this.performKeepAliveUpdate();
+    }, 5 * 60 * 1000); // 5 minutes
 
     this.state.isTracking = true;
   }
@@ -321,13 +360,45 @@ class LocationToggleManager {
       this.state.watchId = null;
     }
 
-    // Clear interval
-    if (this.state.intervalId !== null) {
-      clearInterval(this.state.intervalId);
-      this.state.intervalId = null;
+    // Clear keep-alive interval
+    if (this.state.keepAliveIntervalId !== null) {
+      clearInterval(this.state.keepAliveIntervalId);
+      this.state.keepAliveIntervalId = null;
     }
 
     this.state.isTracking = false;
+  }
+
+  // Pause tracking when document is hidden
+  private pauseTracking() {
+    if (!this.state.isTracking) return;
+
+    console.log('⏸️ Pausing location tracking (document hidden)');
+
+    // Stop watching location
+    if (this.state.watchId !== null) {
+      stopWatchingLocation(this.state.watchId);
+      this.state.watchId = null;
+    }
+
+    // Clear keep-alive interval
+    if (this.state.keepAliveIntervalId !== null) {
+      clearInterval(this.state.keepAliveIntervalId);
+      this.state.keepAliveIntervalId = null;
+    }
+  }
+
+  // Resume tracking when document becomes visible
+  private resumeTracking() {
+    if (!this.state.isEnabled || this.state.isTracking) return;
+
+    console.log('▶️ Resuming location tracking (document visible)');
+
+    // Restart tracking
+    this.startTracking();
+
+    // Perform immediate location update
+    this.performKeepAliveUpdate();
   }
 
   // Handle location updates from watch
@@ -335,6 +406,10 @@ class LocationToggleManager {
     if (!this.state.isEnabled || !this.userId) {
       return; // Don't update if toggle is OFF
     }
+
+    // Reset failure count on successful location update
+    this.state.failureCount = 0;
+    this.state.lastError = null;
 
     // Use the hasLocationChanged utility function for proper 2-decimal comparison
     const changed = !this.state.currentLocation || hasLocationChanged(this.state.currentLocation, location);
@@ -351,24 +426,69 @@ class LocationToggleManager {
         if (this.onLocationUpdate) {
           this.onLocationUpdate(location);
         }
+      } else {
+        console.error('Failed to save location update:', saveResult.error);
+        if (this.onError) {
+          this.onError(saveResult.error || 'Failed to save location');
+        }
       }
     }
   }
 
-  // Periodic location update (every 60 seconds)
-  private async updateLocationPeriodically() {
+  // Handle geolocation errors with failure policy
+  private async handleGeolocationError(error: string) {
+    console.error('🚨 Geolocation error:', error);
+
+    this.state.lastError = error;
+
+    // Check for permission denied - immediately turn OFF
+    if (error.includes('denied') || error.includes('PERMISSION_DENIED')) {
+      console.log('🚨 Permission denied, auto-turning OFF toggle');
+      await this.turnOff();
+      if (this.onError) {
+        this.onError('Location access was denied. Toggle turned off automatically.');
+      }
+      return;
+    }
+
+    // Increment failure count for other errors
+    this.state.failureCount++;
+    console.log('🚨 Failure count:', this.state.failureCount);
+
+    // Check if we've reached the failure threshold (2 consecutive failures)
+    if (this.state.failureCount >= 2) {
+      console.log('🚨 Reached failure threshold, auto-turning OFF toggle');
+      await this.turnOff();
+      if (this.onError) {
+        this.onError('Location tracking failed repeatedly. Toggle turned off automatically.');
+      }
+      return;
+    }
+
+    // For non-critical errors, just notify but keep trying
+    if (this.onError) {
+      this.onError(error);
+    }
+  }
+
+  // Keep-alive location update (every 5 minutes)
+  private async performKeepAliveUpdate() {
     if (!this.state.isEnabled || !this.userId) {
       return; // Don't update if toggle is OFF
     }
 
     try {
+      console.log('🔄 Performing keep-alive location update');
       const locationResult = await requestUserLocation();
       
       if (locationResult.success && locationResult.location) {
         await this.handleLocationUpdate(locationResult.location);
+      } else {
+        this.handleGeolocationError(locationResult.error || 'Keep-alive location update failed');
       }
     } catch (error) {
-      console.error('Periodic location update error:', error);
+      console.error('Keep-alive location update error:', error);
+      this.handleGeolocationError(error instanceof Error ? error.message : 'Keep-alive update failed');
     }
   }
 
@@ -386,6 +506,7 @@ class LocationToggleManager {
         
         if (saveResult.success) {
           this.state.currentLocation = locationResult.location;
+          this.state.failureCount = 0; // Reset failure count on success
           
           // Notify callback
           if (this.onLocationUpdate) {
@@ -397,10 +518,13 @@ class LocationToggleManager {
           return { success: false, error: saveResult.error };
         }
       } else {
+        this.handleGeolocationError(locationResult.error || 'Manual refresh failed');
         return { success: false, error: locationResult.error };
       }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.handleGeolocationError(errorMessage);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -408,9 +532,17 @@ class LocationToggleManager {
   cleanup() {
     console.log('🧹 Cleaning up location toggle manager');
     this.stopTracking();
+    
+    // Remove visibility change listener
+    if (this.visibilityChangeHandler && typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
+      this.visibilityChangeHandler = undefined;
+    }
+    
     // Don't clear currentLocation or isEnabled state - keep for next initialization
     this.onLocationUpdate = undefined;
     this.onError = undefined;
+    this.onToggleChange = undefined;
   }
 
   // Clear all persisted state (for logout)

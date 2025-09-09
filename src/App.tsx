@@ -21,6 +21,7 @@ import { OfflineIndicator } from './components/OfflineIndicator';
 import { ProfileCompletionModal } from './components/common/ProfileCompletionModal';
 import { ProfileCompletionBanner } from './components/common/ProfileCompletionBanner';
 import { useProfileCompletion } from './hooks/useProfileCompletion';
+import { locationToggleManager } from './lib/locationToggle';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'welcome' | 'login' | 'profileSetup' | 'app'>('welcome');
@@ -276,6 +277,9 @@ export default function App() {
     
     // Clear location toggle state on logout
     locationToggleManager.clearPersistedState();
+    
+    // Clear location toggle state on logout
+    locationToggleManager.clearPersistedState();
   };
 
   const handleLogout = async () => {
@@ -286,17 +290,8 @@ export default function App() {
         } = await supabase.auth.getUser();
         // Check if user has a complete profile with proper error handling
         if (user) {
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({
-              latitude: null,
-              longitude: null,
-              location_last_updated_at: null
-            })
-            .eq('id', user.id);
-          if (updateError) {
-            console.error('Failed to clear location on logout:', updateError);
-          }
+          // Use location toggle manager to properly clear location
+          await locationToggleManager.turnOff();
         }
 
         const { error } = await supabase.auth.signOut();

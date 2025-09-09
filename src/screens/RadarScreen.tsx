@@ -55,7 +55,6 @@ export const RadarScreen: React.FC<Props> = ({
     denied: false,
     pending: true
   });
-  const [isRequestingLocation, setIsRequestingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   
@@ -169,12 +168,14 @@ export const RadarScreen: React.FC<Props> = ({
       locationToggleManager.initialize(
         currentUser.id,
         handleLocationUpdate,
-        handleLocationError
+        handleLocationError,
+        handleToggleChange
       );
 
       // Get the current toggle state from the manager
       const toggleState = locationToggleManager.getState();
       setIsLocationEnabled(toggleState.isEnabled);
+      setLocationError(toggleState.lastError);
 
       // --- NEW: Check initial permission status and set banner if denied ---
       const initialPermissionStatus = await checkLocationPermission();
@@ -229,6 +230,7 @@ export const RadarScreen: React.FC<Props> = ({
 
     console.log('📍 RADAR: Location update received:', location);
     setCurrentLocation(location);
+    setLocationError(null); // Clear error on successful update
     
     if (location && currentUser && isLocationEnabled) {
       // Load nearby users only if toggle is ON
@@ -245,12 +247,32 @@ export const RadarScreen: React.FC<Props> = ({
 
     console.error('Location error:', error);
     setLocationError(error);
+    
+    // Check if this is a permission denied error
+    if (error.includes('denied') || error.includes('PERMISSION_DENIED')) {
+      setShowLocationDeniedBanner(true);
+    }
+  }, []);
+
+  // Handle toggle state changes from manager
+  const handleToggleChange = useCallback((enabled: boolean) => {
+    if (!mountedRef.current) return;
+
+    console.log('🔄 RADAR: Toggle state changed:', enabled);
+    setIsLocationEnabled(enabled);
+    
+    if (!enabled) {
+      // Clear location and users when toggle is turned OFF
+      setCurrentLocation(null);
+      setUsers([]);
+      setLocationError(null);
+    }
   }, []);
 
   // Keep callbacks in sync with manager
   useEffect(() => {
-    locationToggleManager.setCallbacks(handleLocationUpdate, handleLocationError);
-  }, [handleLocationUpdate, handleLocationError]);
+    locationToggleManager.setCallbacks(handleLocationUpdate, handleLocationError, handleToggleChange);
+  }, [handleLocationUpdate, handleLocationError, handleToggleChange]);
 
   // Load users with exact coordinate match
   const loadNearbyUsers = async (currentUserId: string, location: UserLocation) => {
@@ -313,27 +335,10 @@ export const RadarScreen: React.FC<Props> = ({
       if (enabled) {
         console.log('🔄 Turning location toggle ON');
         
-        // --- NEW: Check geolocation permission status before turning on ---
-        try {
-          const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-          console.log('Geolocation permission status:', permissionStatus.state);
-
-          if (permissionStatus.state === 'denied') {
-            setShowLocationDeniedBanner(true);
-            setIsTogglingLocation(false);
-            return; // Do not proceed if permission is denied
-          }
-        } catch (permError) {
-          console.warn('Could not query geolocation permission status:', permError);
-          // Continue anyway, the location request will handle permission errors
-        }
-        // --- END NEW ---
-
         // Turn ON location tracking
         const result = await locationToggleManager.turnOn();
         
         if (result.success) {
-          setIsLocationEnabled(true);
           console.log('✅ Location toggle turned ON successfully');
 
           // Show profile completion modal when location is enabled
@@ -342,32 +347,9 @@ export const RadarScreen: React.FC<Props> = ({
               onShowProfileCompletion();
             }, 1000); // Show after 1 second delay
           }
-          // Get fresh location and load nearby users after successful toggle
-          const managerState = locationToggleManager.getState();
-          if (managerState.currentLocation) {
-            setCurrentLocation(managerState.currentLocation);
-            if (currentUser) {
-              await loadNearbyUsers(currentUser.id, managerState.currentLocation);
-            }
-          }
-
-          // Force a fresh location update and load users
-          try {
-            const refreshResult = await locationToggleManager.refreshLocation();
-            if (refreshResult.success) {
-              const updatedState = locationToggleManager.getState();
-              if (updatedState.currentLocation && currentUser) {
-                setCurrentLocation(updatedState.currentLocation);
-                await loadNearbyUsers(currentUser.id, updatedState.currentLocation);
-              }
-            }
-          } catch (refreshError) {
-            console.error('Failed to refresh location after toggle on:', refreshError);
-          }
         } else {
           console.error('❌ Failed to turn ON location toggle:', result.error);
           setLocationError(result.error || 'Failed to enable location');
-          setIsLocationEnabled(false);
           if (result.error && (
             result.error.includes('denied') || 
             result.error.includes('permission') ||
@@ -383,9 +365,6 @@ export const RadarScreen: React.FC<Props> = ({
         const result = await locationToggleManager.turnOff();
         
         if (result.success) {
-          setIsLocationEnabled(false);
-          setCurrentLocation(null);
-          setUsers([]); // Clear users immediately
           console.log('✅ Location toggle turned OFF successfully');
         } else {
           console.error('❌ Failed to turn OFF location toggle:', result.error);

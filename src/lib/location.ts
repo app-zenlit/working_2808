@@ -18,6 +18,23 @@ export const isSecureContext = (): boolean => {
   );
 };
 
+// Check if geolocation is supported
+export const isGeolocationSupported = (): boolean => {
+  return typeof navigator !== 'undefined' && 'geolocation' in navigator;
+};
+
+// Check if we're in a secure context (required for geolocation)
+export const isSecureContext = (): boolean => {
+  if (typeof window === 'undefined' || typeof window.location === 'undefined') {
+    return false;
+  }
+  return (
+    window.isSecureContext ||
+    window.location.protocol === 'https:' ||
+    window.location.hostname === 'localhost'
+  );
+};
+
 // Request user's current location
 export const requestUserLocation = async (): Promise<{
   success: boolean;
@@ -25,6 +42,29 @@ export const requestUserLocation = async (): Promise<{
   error?: string;
 }> => {
   try {
+    // Check if geolocation is supported
+    if (!isGeolocationSupported()) {
+      return {
+        success: false,
+        error: 'Geolocation is not supported by this browser'
+      };
+    }
+
+    // Check if we're in a secure context
+    if (!isSecureContext()) {
+      return {
+        success: false,
+        error: 'Location access requires a secure connection (HTTPS)'
+      };
+    }
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      return {
+        success: false,
+        error: 'Geolocation is not available in this environment'
+      };
+    }
+
     // Check if geolocation is supported
     if (!isGeolocationSupported()) {
       return {
@@ -63,6 +103,7 @@ export const requestUserLocation = async (): Promise<{
       );
     });
 
+    // Round coordinates to 2 decimal places for privacy and performance
     // Round coordinates to 2 decimal places for privacy and performance
     const location: UserLocation = {
       latitude: Number(position.coords.latitude.toFixed(2)),
@@ -105,6 +146,210 @@ export const requestUserLocation = async (): Promise<{
   }
 };
 
+// Watch user's location for changes (dynamic tracking)
+export const watchUserLocation = (
+  onLocationUpdate: (location: UserLocation) => void,
+  onError: (error: string) => void
+): number | null => {
+  try {
+    if (!isGeolocationSupported()) {
+      onError('Geolocation is not supported by this browser');
+      return null;
+    }
+
+    if (!isSecureContext()) {
+      onError('Location access requires a secure connection (HTTPS)');
+      return null;
+    }
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      onError('Geolocation is not available in this environment');
+      return null;
+    }
+
+    console.log('Starting location watch...');
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        // Round coordinates to 2 decimal places for privacy and performance
+        const location: UserLocation = {
+          latitude: Number(position.coords.latitude.toFixed(2)),
+          longitude: Number(position.coords.longitude.toFixed(2)),
+          accuracy: position.coords.accuracy,
+          timestamp: Date.now()
+        };
+
+        console.log('Location updated:', location);
+        onLocationUpdate(location);
+      },
+      (error) => {
+        console.error('Location watch error:', error);
+        
+        let errorMessage = 'Failed to track location. ';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Location access was denied.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information is unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out.';
+            break;
+          default:
+            errorMessage += error.message || 'Unknown error occurred.';
+            break;
+        }
+        
+        onError(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 60000, // Increased to 60 seconds timeout for watch
+        maximumAge: 30000 // 30 seconds cache for dynamic updates
+      }
+    );
+
+    return watchId;
+
+  } catch (error: any) {
+    console.error('Error starting location watch:', error);
+    onError('Failed to start location tracking');
+    return null;
+  }
+};
+
+// Stop watching user's location
+export const stopWatchingLocation = (watchId: number): void => {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchId);
+      console.log('Location watch stopped');
+    }
+  } catch (error) {
+    console.error('Error stopping location watch:', error);
+  }
+};
+
+// Save user's location to their profile (with rounded coordinates)
+export const saveUserLocation = async (
+  userId: string,
+  location: UserLocation
+): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
+  try {
+    // Validate userId before proceeding
+    if (!userId || userId === 'null' || userId === 'undefined' || typeof userId !== 'string') {
+      console.error('Invalid user ID provided:', userId);
+      return {
+        success: false,
+        error: 'Invalid user ID provided'
+      };
+    }
+
+    console.log('Saving user location to profile:', userId, location);
+
+    // Round coordinates to 2 decimal places before saving
+    const latRounded = Number(location.latitude.toFixed(2));
+    const lonRounded = Number(location.longitude.toFixed(2));
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        latitude: latRounded,
+        longitude: lonRounded,
+        location_accuracy: location.accuracy,
+        nearby_enabled: true,
+        updated_at: new Date().toISOString(),
+        location_last_updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Location save error:', error);
+      return {
+        success: false,
+        error: 'Failed to save location to profile'
+      };
+    }
+
+    console.log('Location saved successfully');
+    return { success: true };
+
+  } catch (error) {
+    console.error('Location save error:', error);
+    return {
+      success: false,
+      error: 'Failed to save location'
+    };
+  }
+};
+
+// Check if location coordinates have changed (rounded comparison)
+export const hasLocationChanged = (
+  oldLocation: UserLocation,
+  newLocation: UserLocation
+): boolean => {
+  const oldLatRounded = Number(oldLocation.latitude.toFixed(2));
+  const oldLonRounded = Number(oldLocation.longitude.toFixed(2));
+  const newLatRounded = Number(newLocation.latitude.toFixed(2));
+  const newLonRounded = Number(newLocation.longitude.toFixed(2));
+  
+  return oldLatRounded !== newLatRounded || oldLonRounded !== newLonRounded;
+};
+
+// Clear user's location from their profile
+export const clearUserLocation = async (
+  userId: string
+): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
+  try {
+    // Validate userId before proceeding
+    if (!userId || userId === 'null' || userId === 'undefined' || typeof userId !== 'string') {
+      console.error('Invalid user ID provided:', userId);
+      return {
+        success: false,
+        error: 'Invalid user ID provided'
+      };
+    }
+
+    console.log('Clearing user location from profile:', userId);
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        latitude: null,
+        longitude: null,
+        location_accuracy: null,
+        nearby_enabled: false,
+        updated_at: new Date().toISOString(),
+        location_last_updated_at: null
+      })
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Location clear error:', error);
+      return {
+        success: false,
+        error: 'Failed to clear location from profile'
+      };
+    }
+
+    console.log('Location cleared successfully');
+    return { success: true };
+
+  } catch (error) {
+    console.error('Location clear error:', error);
+    return {
+      success: false,
+      error: 'Failed to clear location'
+    };
+  }
+};
 // Watch user's location for changes (dynamic tracking)
 export const watchUserLocation = (
   onLocationUpdate: (location: UserLocation) => void,
