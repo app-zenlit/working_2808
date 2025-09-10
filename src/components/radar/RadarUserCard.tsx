@@ -62,10 +62,6 @@ export const RadarUserCard: React.FC<Props> = ({ user: rawUser, onMessage, onVie
                     <IconComponent className="w-7 h-7 text-gray-400" />
                   </div>
                 )}
-                {/* Online indicator for users in same location bucket */}
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900 flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full" />
-                </div>
               </div>
             </button>
             
