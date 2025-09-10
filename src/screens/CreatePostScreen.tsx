@@ -8,8 +8,6 @@ import { generatePlaceholderImage, checkStorageAvailability } from '../lib/stora
 import { createPost } from '../lib/posts';
 import { compressImage, validateImageFile, formatFileSize, CompressionResult } from '../utils/imageCompression';
 import { ImageCompressionModal } from '../components/common/ImageCompressionModal';
-import { useScrollEndEffect } from '../hooks/useScrollEndEffect';
-import { RibbonEffect } from '../components/common/RibbonEffect';
 
 interface Props {
   onBack?: () => void; // Add back button handler
@@ -27,7 +25,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     available: boolean;
     message: string;
   }>({ available: true, message: '' });
-  const [showRibbon, setShowRibbon] = useState(false);
   
   // Image compression states
   const [isCompressing, setIsCompressing] = useState(false);
@@ -39,14 +36,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Scroll end effect hook
-  useScrollEndEffect(scrollContainerRef, {
-    onScrollEnd: () => setShowRibbon(true),
-    onScrollUp: () => setShowRibbon(false),
-    offset: 100
-  });
   // Load current user data and check storage
   useEffect(() => {
     loadCurrentUser();
@@ -352,7 +342,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   }
 
   return (
-    <div className="min-h-full bg-black relative">
+    <div className="min-h-full bg-black">
       {/* Image Compression Modal */}
       <ImageCompressionModal
         isOpen={isCompressing}
@@ -393,8 +383,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         </div>
       </div>
 
-      <div ref={scrollContainerRef} className="overflow-y-auto relative">
-        <div className="p-4 space-y-6 pb-ribbon-safe">
+      <div className="p-4 space-y-6 pb-20">
         {/* Storage Status Info (only show if there might be issues) */}
         {!storageStatus.available && (
           <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
@@ -501,14 +490,6 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
           accept="image/jpeg,image/jpg,image/png"
           onChange={handleFileSelect}
           className="hidden"
-        />
-        </div>
-        
-        {/* Ribbon Effect */}
-        <RibbonEffect 
-          isVisible={showRibbon} 
-          message="Ready to share your moment! 📱"
-          variant="success"
         />
       </div>
     </div>

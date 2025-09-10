@@ -3,8 +3,6 @@ import React from 'react';
 import { User } from '../../types';
 import { Avatar } from '../common/Avatar';
 import { SocialLinks } from '../common/SocialLinks';
-import { useScrollEndEffect } from '../../hooks/useScrollEndEffect';
-import { RibbonEffect } from '../common/RibbonEffect';
 
 interface Props {
   user: User;
@@ -23,20 +21,10 @@ export const UserProfile: React.FC<Props> = ({
   isCurrentUser = false,
   onAddSocialLink,
 }) => {
-  const [showRibbon, setShowRibbon] = React.useState(false);
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-
-  // Scroll end effect hook
-  useScrollEndEffect(scrollContainerRef, {
-    onScrollEnd: () => setShowRibbon(true),
-    onScrollUp: () => setShowRibbon(false),
-    offset: 100
-  });
-
   // Only use real posts passed as props - no more mock data generation
 
   return (
-    <div ref={scrollContainerRef} className="min-h-screen bg-black overflow-y-auto relative">
+    <div className="min-h-screen bg-black">
       {/* Cover Image - Fixed to show actual cover photo */}
       <div className="relative h-48 bg-gradient-to-b from-blue-900 to-black">
         {user.coverPhotoUrl && user.coverPhotoUrl.trim() !== '' ? (
@@ -51,7 +39,7 @@ export const UserProfile: React.FC<Props> = ({
       </div>
 
       {/* Profile Info */}
-      <div className="relative px-4 pb-ribbon-safe">
+      <div className="relative px-4 pb-4">
         <div className="flex flex-col items-center -mt-8">
           <Avatar
             src={user.dpUrl}
@@ -112,13 +100,6 @@ export const UserProfile: React.FC<Props> = ({
           )}
         </div>
       </div>
-      
-      {/* Ribbon Effect */}
-      <RibbonEffect 
-        isVisible={showRibbon} 
-        message={posts.length > 0 ? "You've seen all posts! 📸" : "Profile complete! ✨"}
-        variant="success"
-      />
     </div>
   );
 };

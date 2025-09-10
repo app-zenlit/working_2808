@@ -8,8 +8,6 @@ import { sendMessage, getConversationsForUser, markMessagesAsRead } from '../lib
 import { getNearbyUsers } from '../lib/location';
 import { MagnifyingGlassIcon, XMarkIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { isValidUuid } from '../utils/uuid';
-import { useScrollEndEffect } from '../hooks/useScrollEndEffect';
-import { RibbonEffect } from '../components/common/RibbonEffect';
 
 interface Props {
   selectedUser?: User | null;
@@ -38,16 +36,7 @@ export const MessagesScreen: React.FC<Props> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasUnread, setHasUnread] = useState(false);
   const [unreadByUser, setUnreadByUser] = useState<Record<string, boolean>>({});
-  const [showRibbon, setShowRibbon] = useState(false);
-  
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Scroll end effect hook
-  useScrollEndEffect(scrollContainerRef, {
-    onScrollEnd: () => setShowRibbon(true),
-    onScrollUp: () => setShowRibbon(false),
-    offset: 100
-  });
   useEffect(() => {
     onUnreadChange?.(hasUnread);
   }, [hasUnread, onUnreadChange]);
@@ -313,7 +302,7 @@ export const MessagesScreen: React.FC<Props> = ({
       {isMobile ? (
         <>
           {!selectedUser ? (
-            <div className="w-full flex flex-col relative">
+            <div className="w-full flex flex-col">
               {/* Header with Search and Back Button */}
               <div className="px-4 py-3 bg-black border-b border-gray-800 flex-shrink-0">
                 <div className="flex items-center justify-between mb-3">
@@ -363,7 +352,7 @@ export const MessagesScreen: React.FC<Props> = ({
               </div>
               
               {/* Chat List */}
-              <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative">
+              <div className="flex-1 overflow-hidden">
                 <ChatList
                   users={filteredUsers}
                   messages={allMessages}
@@ -372,13 +361,6 @@ export const MessagesScreen: React.FC<Props> = ({
                   onSelectUser={handleSelectUser}
                   searchQuery={searchQuery}
                   unreadByUser={unreadByUser}
-                />
-                
-                {/* Ribbon Effect */}
-                <RibbonEffect 
-                  isVisible={showRibbon} 
-                  message="All conversations shown! 💬"
-                  variant="info"
                 />
               </div>
             </div>
@@ -398,7 +380,7 @@ export const MessagesScreen: React.FC<Props> = ({
       ) : (
         /* Desktop: Show both panels */
         <>
-          <div className="w-80 border-r border-gray-800 flex flex-col relative">
+          <div className="w-80 border-r border-gray-800 flex flex-col">
             {/* Header with Search and Back Button */}
             <div className="px-4 py-3 bg-black border-b border-gray-800 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
@@ -452,7 +434,7 @@ export const MessagesScreen: React.FC<Props> = ({
             </div>
             
             {/* Chat List */}
-            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative">
+            <div className="flex-1 overflow-hidden">
               <ChatList
                 users={filteredUsers}
                 messages={allMessages}
@@ -461,13 +443,6 @@ export const MessagesScreen: React.FC<Props> = ({
                 onSelectUser={handleSelectUser}
                 searchQuery={searchQuery}
                 unreadByUser={unreadByUser}
-              />
-              
-              {/* Ribbon Effect */}
-              <RibbonEffect 
-                isVisible={showRibbon} 
-                message="All conversations shown! 💬"
-                variant="info"
               />
             </div>
           </div>

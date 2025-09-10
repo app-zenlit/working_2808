@@ -7,8 +7,6 @@ import { isValidUuid } from '../../utils/uuid';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
-import { useScrollEndEffect } from '../../hooks/useScrollEndEffect';
-import { RibbonEffect } from '../common/RibbonEffect';
 
 interface ChatWindowProps {
   user: User; // partner
@@ -29,16 +27,7 @@ export const ChatWindow = ({
 }: ChatWindowProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
-  const [showRibbon, setShowRibbon] = useState(false);
-  
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Scroll end effect hook
-  useScrollEndEffect(scrollContainerRef, {
-    onScrollEnd: () => setShowRibbon(true),
-    onScrollUp: () => setShowRibbon(false),
-    offset: 100
-  });
   const scrollToBottom = () =>
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
@@ -178,7 +167,7 @@ export const ChatWindow = ({
       </div>
 
       {/* Messages */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 relative pb-ribbon-safe">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {chatMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -202,13 +191,6 @@ export const ChatWindow = ({
             <div ref={messagesEndRef} />
           </>
         )}
-        
-        {/* Ribbon Effect */}
-        <RibbonEffect 
-          isVisible={showRibbon} 
-          message={chatMessages.length > 0 ? "That's the whole conversation! 💭" : "Start chatting! 👋"}
-          variant="default"
-        />
       </div>
 
       <div className="border-t border-gray-800 p-4">
