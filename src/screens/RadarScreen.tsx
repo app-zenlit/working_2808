@@ -18,9 +18,10 @@ import {
 import { locationToggleManager } from '../lib/locationToggle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
-import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
-import { ProfileCompletionBanner } from '../components/common/ProfileCompletionBanner';
-import { motion, AnimatePresence } from 'framer-motion';
+  import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
+  import { ProfileCompletionBanner } from '../components/common/ProfileCompletionBanner';
+  import { RibbonEffect } from '../components/common/RibbonEffect';
+  import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
   userGender: 'male' | 'female';
@@ -741,7 +742,6 @@ export const RadarScreen: React.FC<Props> = ({
           message={isLocationEnabled && (users?.length ?? 0) > 0 ? "You've seen everyone nearby! 🎯" : "Ready to explore! 🚀"}
           variant="default"
         />
-        </div>
       </div>
     </div>
   );
