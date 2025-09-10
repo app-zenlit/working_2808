@@ -54,7 +54,7 @@ export const Avatar: React.FC<Props> = ({
   return (
     <div className="relative inline-block">
       <Image
-        src={src}
+        src={src as string}
         alt={alt}
         width={size === 'sm' ? 40 : size === 'md' ? 48 : 64}
         height={size === 'sm' ? 40 : size === 'md' ? 48 : 64}
