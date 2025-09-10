@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import { ProfileSetupScreen } from './screens/ProfileSetupScreen';
@@ -96,74 +96,16 @@ export default function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, [isClient]);
+  }, [isClient, handleAuthenticatedUser]);
 
   // Check authentication status on app load
   useEffect(() => {
     if (isClient) {
       checkAuthStatus();
     }
-  }, [isClient]);
+  }, [isClient, checkAuthStatus]);
 
-  const checkAuthStatus = async () => {
-    try {
-      // Check if Supabase is available
-      if (!supabase) {
-        console.warn('Supabase not available, using offline mode');
-        setCurrentScreen('welcome');
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('Checking authentication status...');
-
-      // Check if we have a valid session with network error handling
-      const sessionResult = await checkSession();
-      
-      if (!sessionResult.success) {
-        console.log('No valid session found:', sessionResult.error);
-        setCurrentScreen('welcome');
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const { data: sessionData, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Session fetch error:', error);
-          setCurrentScreen('welcome');
-          setIsLoading(false);
-          return;
-        }
-        
-        if (!sessionData.session) {
-          console.log('No active session found');
-          setCurrentScreen('welcome');
-          setIsLoading(false);
-          return;
-        }
-
-        const user = sessionData.session.user;
-        console.log('Valid session found for user:', user.id);
-
-        await handleAuthenticatedUser(user);
-      } catch (networkError) {
-        console.error('Network error during session check:', networkError);
-        // If there's a network error, fall back to welcome screen
-        setCurrentScreen('welcome');
-        setIsLoading(false);
-        return;
-      }
-      
-    } catch (error) {
-      console.error('Auth check error:', error);
-      setCurrentScreen('welcome');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAuthenticatedUser = async (user: any) => {
+  const handleAuthenticatedUser = useCallback(async (user: any) => {
     try {
       console.log('Handling authenticated user:', user.id);
       console.log('User metadata:', user.user_metadata);
@@ -213,12 +155,11 @@ export default function App() {
         }
 
         console.log('Profile found:', profile);
-        
+
         // Check if profile has essential fields for app functionality
-        const hasEssentialFields = profile.username && 
-                                  profile.date_of_birth && 
-                                  profile.gender;
-        
+        const hasEssentialFields =
+          profile.username && profile.date_of_birth && profile.gender;
+
         if (!hasEssentialFields) {
           console.log('User missing essential profile fields, redirecting to profile setup');
           setCurrentScreen('profileSetup');
@@ -241,7 +182,65 @@ export default function App() {
       // On error, go to profile setup to ensure proper onboarding
       setCurrentScreen('profileSetup');
     }
-  };
+  }, []);
+
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      // Check if Supabase is available
+      if (!supabase) {
+        console.warn('Supabase not available, using offline mode');
+        setCurrentScreen('welcome');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Checking authentication status...');
+
+      // Check if we have a valid session with network error handling
+      const sessionResult = await checkSession();
+      
+      if (!sessionResult.success) {
+        console.log('No valid session found:', sessionResult.error);
+        setCurrentScreen('welcome');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data: sessionData, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session fetch error:', error);
+          setCurrentScreen('welcome');
+          setIsLoading(false);
+          return;
+        }
+        
+        if (!sessionData.session) {
+          console.log('No active session found');
+          setCurrentScreen('welcome');
+          setIsLoading(false);
+          return;
+        }
+
+        const user = sessionData.session.user;
+        console.log('Valid session found for user:', user.id);
+
+        await handleAuthenticatedUser(user);
+      } catch (networkError) {
+        console.error('Network error during session check:', networkError);
+        // If there's a network error, fall back to welcome screen
+        setCurrentScreen('welcome');
+        setIsLoading(false);
+        return;
+      }
+
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setCurrentScreen('welcome');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [handleAuthenticatedUser]);
 
   const handleLogin = async () => {
     console.log('Login successful, checking user state...');
