@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { RadarUserCard } from '../components/radar/RadarUserCard';
 import { UserProfile } from '../components/profile/UserProfile';
@@ -16,9 +17,11 @@ import {
 } from '../lib/location';
 import { locationToggleManager } from '../lib/locationToggle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import { useScrollEndEffect } from '../hooks/useScrollEndEffect';
 import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
 import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
 import { ProfileCompletionBanner } from '../components/common/ProfileCompletionBanner';
+import { RibbonEffect } from '../components/common/RibbonEffect';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
@@ -66,6 +69,9 @@ export const RadarScreen: React.FC<Props> = ({
   // New state for permission denied banner
   const [showLocationDeniedBanner, setShowLocationDeniedBanner] = useState(false);
 
+  // Ribbon visibility state
+  const [showRibbon, setShowRibbon] = useState(false);
+
   // Profile viewing state
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
   const [selectedProfileUserPosts, setSelectedProfileUserPosts] = useState<Post[]>([]);
@@ -92,15 +98,64 @@ export const RadarScreen: React.FC<Props> = ({
     });
   }, [users, searchQuery]);
 
+  // Load users with exact coordinate match
+  const loadNearbyUsers = useCallback(async (currentUserId: string, location: UserLocation) => {
+    if (!isLocationEnabled) {
+      // Don't load users if toggle is OFF
+      setUsers([]);
+      return;
+    }
+
+    try {
+      console.log('🔄 RADAR DEBUG: Loading users with exact coordinate match');
+
+      setIsRefreshing(true);
+
+      // Use the updated getNearbyUsers function with coordinate matching
+      const result = await getNearbyUsers(currentUserId, location, 20);
+
+      if (!result.success) {
+        console.error('Error loading nearby users:', result.error);
+        if (mountedRef.current) {
+          setUsers([]);
+        }
+        return;
+      }
+
+      // Transform profiles to User type
+      const transformedUsers: User[] = (result.users || []).map(profile => {
+        const user = transformProfileToUser(normalizeUser(profile));
+        user.distance = 0; // All users in same bucket have distance 0
+        return user;
+      });
+
+      console.log('🔄 RADAR DEBUG: Final users in same location bucket:', transformedUsers);
+
+      if (mountedRef.current) {
+        setUsers(transformedUsers);
+        console.log(`🔄 RADAR DEBUG: Set ${transformedUsers.length} users in same location bucket`);
+      }
+    } catch (error) {
+      console.error('🔄 RADAR DEBUG: Error in loadNearbyUsers:', error);
+      if (mountedRef.current) {
+        setUsers([]);
+      }
+    } finally {
+      if (mountedRef.current) {
+        setIsRefreshing(false);
+      }
+    }
+  }, [isLocationEnabled]);
+
   // Refresh function for pull-to-refresh
   const handleRefresh = useCallback(async () => {
     if (!currentUser || !isLocationEnabled) return;
-    
+
     setIsRefreshing(true);
     try {
       // Use location toggle manager's refresh method to get fresh location and users
       const refreshResult = await locationToggleManager.refreshLocation();
-      
+
       if (refreshResult.success) {
         // Get the updated location from the manager
         const managerState = locationToggleManager.getState();
@@ -116,7 +171,7 @@ export const RadarScreen: React.FC<Props> = ({
     } finally {
       setIsRefreshing(false);
     }
-  }, [currentUser, isLocationEnabled, currentLocation]);
+  }, [currentUser, isLocationEnabled, loadNearbyUsers]);
 
   // Pull-to-refresh hook
   const {
@@ -128,6 +183,13 @@ export const RadarScreen: React.FC<Props> = ({
   } = usePullToRefresh({
     onRefresh: handleRefresh,
     enabled: isLocationEnabled && !!currentLocation
+  });
+
+  // Show ribbon when reaching the end of the list
+  useScrollEndEffect(containerRef, {
+    onScrollEnd: () => setShowRibbon(true),
+    onScrollUp: () => setShowRibbon(false),
+    offset: 100
   });
 
   // Listen for refresh events from tab clicks
@@ -142,18 +204,34 @@ export const RadarScreen: React.FC<Props> = ({
     };
   }, [triggerRefresh]);
 
+  // Handle location updates from toggle manager
+  const handleLocationUpdate = useCallback(async (location: UserLocation | null) => {
+    if (!mountedRef.current) return;
+
+    console.log('📍 RADAR: Location update received:', location);
+    setCurrentLocation(location);
+
+    if (location && currentUser && isLocationEnabled) {
+      // Load nearby users only if toggle is ON
+      await loadNearbyUsers(currentUser.id, location);
+    } else {
+      // Clear users if location is null or toggle is OFF
+      setUsers([]);
+    }
+  }, [currentUser, isLocationEnabled, loadNearbyUsers]);
+
+  const handleLocationError = useCallback((error: string) => {
+    if (!mountedRef.current) return;
+
+    console.error('Location error:', error);
+    setLocationError(error);
+  }, []);
+
   useEffect(() => {
-    mountedRef.current = true;
-    initializeRadar();
+    locationToggleManager.setCallbacks(handleLocationUpdate, handleLocationError);
+  }, [handleLocationUpdate, handleLocationError]);
 
-    // Cleanup on unmount
-    return () => {
-      mountedRef.current = false;
-      locationToggleManager.cleanup();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const initializeRadar = async () => {
+  const initializeRadar = useCallback(async () => {
     try {
       console.log('🚀 RADAR DEBUG: Initializing radar screen');
       
@@ -221,85 +299,18 @@ export const RadarScreen: React.FC<Props> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser, loadNearbyUsers, handleLocationUpdate, handleLocationError]);
 
-  // Handle location updates from toggle manager
-  const handleLocationUpdate = useCallback(async (location: UserLocation | null) => {
-    if (!mountedRef.current) return;
-
-    console.log('📍 RADAR: Location update received:', location);
-    setCurrentLocation(location);
-    
-    if (location && currentUser && isLocationEnabled) {
-      // Load nearby users only if toggle is ON
-      await loadNearbyUsers(currentUser.id, location);
-    } else {
-      // Clear users if location is null or toggle is OFF
-      setUsers([]);
-    }
-  }, [currentUser, isLocationEnabled]);
-
-  // Handle location errors from toggle manager
-  const handleLocationError = useCallback((error: string) => {
-    if (!mountedRef.current) return;
-
-    console.error('Location error:', error);
-    setLocationError(error);
-  }, []);
-
-  // Keep callbacks in sync with manager
   useEffect(() => {
-    locationToggleManager.setCallbacks(handleLocationUpdate, handleLocationError);
-  }, [handleLocationUpdate, handleLocationError]);
+    mountedRef.current = true;
+    initializeRadar();
 
-  // Load users with exact coordinate match
-  const loadNearbyUsers = async (currentUserId: string, location: UserLocation) => {
-    if (!isLocationEnabled) {
-      // Don't load users if toggle is OFF
-      setUsers([]);
-      return;
-    }
-
-    try {
-      console.log('🔄 RADAR DEBUG: Loading users with exact coordinate match');
-      
-      setIsRefreshing(true);
-
-      // Use the updated getNearbyUsers function with coordinate matching
-      const result = await getNearbyUsers(currentUserId, location, 20);
-
-      if (!result.success) {
-        console.error('Error loading nearby users:', result.error);
-        if (mountedRef.current) {
-          setUsers([]);
-        }
-        return;
-      }
-
-      // Transform profiles to User type
-      const transformedUsers: User[] = (result.users || []).map(profile => {
-        const user = transformProfileToUser(normalizeUser(profile));
-        user.distance = 0; // All users in same bucket have distance 0
-        return user;
-      });
-
-      console.log('🔄 RADAR DEBUG: Final users in same location bucket:', transformedUsers);
-
-      if (mountedRef.current) {
-        setUsers(transformedUsers);
-        console.log(`🔄 RADAR DEBUG: Set ${transformedUsers.length} users in same location bucket`);
-      }
-    } catch (error) {
-      console.error('🔄 RADAR DEBUG: Error in loadNearbyUsers:', error);
-      if (mountedRef.current) {
-        setUsers([]);
-      }
-    } finally {
-      if (mountedRef.current) {
-        setIsRefreshing(false);
-      }
-    }
-  };
+    // Cleanup on unmount
+    return () => {
+      mountedRef.current = false;
+      locationToggleManager.cleanup();
+    };
+  }, [initializeRadar]);
 
   // Handle location toggle change
   const handleLocationToggle = async (enabled: boolean) => {
@@ -736,7 +747,14 @@ export const RadarScreen: React.FC<Props> = ({
             </div>
           )}
         </div>
+        {/* Ribbon Effect */}
+        <RibbonEffect
+          isVisible={showRibbon}
+          message={isLocationEnabled && (users?.length ?? 0) > 0 ? "You've seen everyone nearby! 🎯" : "Ready to explore! 🚀"}
+          variant="default"
+        />
       </div>
     </div>
   );
 };
+

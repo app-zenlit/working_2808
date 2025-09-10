@@ -1,3 +1,4 @@
+'use client';
 // src/screens/EditProfileScreen.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { User } from '../types';
@@ -57,7 +58,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
       if (data) {
         setProfileUrl(data.profile_photo_url || profileUrl);
         setCoverUrl(data.cover_photo_url || '');
-        
+
         // Update formData with the latest social media URLs from database
         setFormData(prev => ({
           ...prev,
@@ -67,7 +68,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
         }));
       }
     })();
-  }, []);
+  }, [user.id, profileUrl]);
 
   // NEW: Auto-open specific platform modal when initialPlatform is provided
   useEffect(() => {
@@ -80,7 +81,7 @@ export const EditProfileScreen: React.FC<Props> = ({ user, onBack, onSave, initi
         }
       }, 100);
     }
-  }, [initialPlatform]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialPlatform]);
 
   const handleInputChange = (field: string, value: string) => {
     console.log(`🔍 [EditProfileScreen] handleInputChange - field: ${field}, value: "${value}"`);

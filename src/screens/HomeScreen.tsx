@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+'use client';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PostsFeed } from '../components/post/PostsFeed';
 import { UserProfile } from '../components/profile/UserProfile';
 import { PostsGalleryScreen } from './PostsGalleryScreen';

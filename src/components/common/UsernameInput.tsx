@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { checkUsernameAvailability, validateUsernameFormat, UsernameCheckResult } from '../../lib/username';
@@ -98,7 +99,7 @@ export const UsernameInput: React.FC<Props> = ({
     }, 1000); // Increased debounce time to 1 second
 
     return () => clearTimeout(timeoutId);
-  }, [value, checkUsername, lastCheckedValue]);
+  }, [value, checkUsername, lastCheckedValue, onValidationChange]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value.toLowerCase();
