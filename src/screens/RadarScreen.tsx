@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { RadarUserCard } from '../components/radar/RadarUserCard';
 import { UserProfile } from '../components/profile/UserProfile';

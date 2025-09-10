@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import { XMarkIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
