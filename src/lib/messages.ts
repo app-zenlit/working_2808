@@ -99,6 +99,7 @@ export async function getConversationsForUser(
       timestamp: row.created_at,
       read: row.read,
     }));
+  } catch (err) {
     console.error('Error fetching conversations:', err);
     return [];
   }
