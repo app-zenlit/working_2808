@@ -99,7 +99,6 @@ export async function getConversationsForUser(
       timestamp: row.created_at,
       read: row.read,
     }));
-        dpUrl: profile.profile_photo_url || null,
     console.error('Error fetching conversations:', err);
     return [];
   }
@@ -118,8 +117,8 @@ export async function markMessagesAsRead(
       .from('messages')
       .update({ read: true })
       .match({
-          return { ...u, name: 'Anonymous', dpUrl: null };
         receiver_id: currentUserId,
+        sender_id: partnerId,
         read: false,
       });
   } catch (err) {
