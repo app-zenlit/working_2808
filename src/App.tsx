@@ -42,69 +42,6 @@ export default function App() {
   // PWA hooks
   const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
 
-  // Control navigation visibility based on chat state
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      if (isNavigationVisible) {
-        document.body.classList.remove('hide-controls');
-      } else {
-        document.body.classList.add('hide-controls');
-      }
-    }
-  }, [isNavigationVisible]);
-  // Profile completion tracking
-  const profileUser = currentUser ? transformProfileToUser(currentUser) : null;
-  const profileCompletion = useProfileCompletion(profileUser && currentScreen === 'app' ? profileUser : null);
-
-  // Ensure we're on the client side before doing anything
-  useEffect(() => {
-    setIsClient(true);
-    
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js', { scope: '/' })
-        .then((registration) => {
-          console.log('Service Worker registered successfully:', registration);
-        })
-        .catch((error) => {
-          console.log('Service Worker registration failed:', error);
-        });
-    }
-  }, []);
-
-  // Set up auth state listener
-  useEffect(() => {
-    if (!isClient) return;
-
-    const { data: { subscription } } = onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session?.user?.id);
-      
-      if (event === 'SIGNED_IN' && session) {
-        console.log('User signed in, checking profile...');
-        await handleAuthenticatedUser(session.user);
-      } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
-        handleSignOut();
-      } else if (event === 'TOKEN_REFRESHED' && session) {
-        console.log('Token refreshed successfully');
-        // Session is automatically updated by Supabase
-      } else if (event === 'TOKEN_REFRESH_FAILED') {
-        console.error('Token refresh failed');
-        await handleRefreshTokenError();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [isClient, handleAuthenticatedUser]);
-
-  // Check authentication status on app load
-  useEffect(() => {
-    if (isClient) {
-      checkAuthStatus();
-    }
-  }, [isClient, checkAuthStatus]);
-
   const handleAuthenticatedUser = useCallback(async (user: any) => {
     try {
       console.log('Handling authenticated user:', user.id);
@@ -198,7 +135,7 @@ export default function App() {
 
       // Check if we have a valid session with network error handling
       const sessionResult = await checkSession();
-      
+
       if (!sessionResult.success) {
         console.log('No valid session found:', sessionResult.error);
         setCurrentScreen('welcome');
@@ -214,7 +151,7 @@ export default function App() {
           setIsLoading(false);
           return;
         }
-        
+
         if (!sessionData.session) {
           console.log('No active session found');
           setCurrentScreen('welcome');
@@ -233,7 +170,6 @@ export default function App() {
         setIsLoading(false);
         return;
       }
-
     } catch (error) {
       console.error('Auth check error:', error);
       setCurrentScreen('welcome');
@@ -241,6 +177,69 @@ export default function App() {
       setIsLoading(false);
     }
   }, [handleAuthenticatedUser]);
+
+  // Control navigation visibility based on chat state
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (isNavigationVisible) {
+        document.body.classList.remove('hide-controls');
+      } else {
+        document.body.classList.add('hide-controls');
+      }
+    }
+  }, [isNavigationVisible]);
+  // Profile completion tracking
+  const profileUser = currentUser ? transformProfileToUser(currentUser) : null;
+  const profileCompletion = useProfileCompletion(profileUser && currentScreen === 'app' ? profileUser : null);
+
+  // Ensure we're on the client side before doing anything
+  useEffect(() => {
+    setIsClient(true);
+    
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js', { scope: '/' })
+        .then((registration) => {
+          console.log('Service Worker registered successfully:', registration);
+        })
+        .catch((error) => {
+          console.log('Service Worker registration failed:', error);
+        });
+    }
+  }, []);
+
+  // Set up auth state listener
+  useEffect(() => {
+    if (!isClient) return;
+
+    const { data: { subscription } } = onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.id);
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log('User signed in, checking profile...');
+        await handleAuthenticatedUser(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
+        handleSignOut();
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        console.log('Token refreshed successfully');
+        // Session is automatically updated by Supabase
+      } else if (event === 'TOKEN_REFRESH_FAILED') {
+        console.error('Token refresh failed');
+        await handleRefreshTokenError();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [isClient, handleAuthenticatedUser]);
+
+  // Check authentication status on app load
+  useEffect(() => {
+    if (isClient) {
+      checkAuthStatus();
+    }
+  }, [isClient, checkAuthStatus]);
 
   const handleLogin = async () => {
     console.log('Login successful, checking user state...');
