@@ -98,7 +98,7 @@ export const UsernameInput: React.FC<Props> = ({
     }, 1000); // Increased debounce time to 1 second
 
     return () => clearTimeout(timeoutId);
-  }, [value, checkUsername, lastCheckedValue]);
+  }, [value, checkUsername, lastCheckedValue, onValidationChange]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value.toLowerCase();

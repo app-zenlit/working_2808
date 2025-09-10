@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import { ProfileSetupScreen } from './screens/ProfileSetupScreen';
@@ -41,6 +41,142 @@ export default function App() {
 
   // PWA hooks
   const { isInstallable, isOffline, installApp, showInstallPrompt, dismissInstallPrompt } = usePWA();
+
+  const handleAuthenticatedUser = useCallback(async (user: any) => {
+    try {
+      console.log('Handling authenticated user:', user.id);
+      console.log('User metadata:', user.user_metadata);
+      console.log('User app metadata:', user.app_metadata);
+      console.log('User providers:', user.app_metadata?.providers);
+
+      // CRITICAL: Check if user is still in signup flow
+      if (user.user_metadata?.signup_flow === true) {
+        console.log('User is still in signup flow - keeping LoginScreen mounted for password setup');
+        setCurrentScreen('login'); // Keep LoginScreen mounted for password/profile setup
+        return; // Don't proceed to profile setup yet
+      }
+
+      console.log('User has completed signup flow, proceeding with profile check...');
+
+      // NEW: Check if this is a Google OAuth user who needs onboarding
+      const isGoogleUser = user.app_metadata?.providers?.includes('google');
+      console.log('Is Google OAuth user:', isGoogleUser);
+
+      // Check if user has a profile with proper error handling
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          if (profileError.code === 'PGRST116') {
+            // No profile found (not an error)
+            console.log('No profile found, redirecting to profile setup');
+            // Always go to profile setup for new users
+            setCurrentScreen('profileSetup');
+            return;
+          } else {
+            console.error('Profile fetch error:', profileError);
+            // For database errors, go to profile setup
+            setCurrentScreen('profileSetup');
+            return;
+          }
+        }
+
+        if (!profile) {
+          console.log('No profile found, redirecting to profile setup');
+          setCurrentScreen('profileSetup');
+          return;
+        }
+
+        console.log('Profile found:', profile);
+
+        // Check if profile has essential fields for app functionality
+        const hasEssentialFields =
+          profile.username && profile.date_of_birth && profile.gender;
+
+        if (!hasEssentialFields) {
+          console.log('User missing essential profile fields, redirecting to profile setup');
+          setCurrentScreen('profileSetup');
+          return;
+        }
+
+        setCurrentUser(profile);
+        setIsLoggedIn(true);
+
+        // Profile is complete, go to app
+        setCurrentScreen('app');
+      } catch (networkError) {
+        console.error('Network error fetching profile:', networkError);
+        // If we can't fetch the profile due to network issues, go to profile setup
+        setCurrentScreen('profileSetup');
+        return;
+      }
+    } catch (error) {
+      console.error('Error handling authenticated user:', error);
+      // On error, go to profile setup to ensure proper onboarding
+      setCurrentScreen('profileSetup');
+    }
+  }, []);
+
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      // Check if Supabase is available
+      if (!supabase) {
+        console.warn('Supabase not available, using offline mode');
+        setCurrentScreen('welcome');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Checking authentication status...');
+
+      // Check if we have a valid session with network error handling
+      const sessionResult = await checkSession();
+
+      if (!sessionResult.success) {
+        console.log('No valid session found:', sessionResult.error);
+        setCurrentScreen('welcome');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data: sessionData, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session fetch error:', error);
+          setCurrentScreen('welcome');
+          setIsLoading(false);
+          return;
+        }
+
+        if (!sessionData.session) {
+          console.log('No active session found');
+          setCurrentScreen('welcome');
+          setIsLoading(false);
+          return;
+        }
+
+        const user = sessionData.session.user;
+        console.log('Valid session found for user:', user.id);
+
+        await handleAuthenticatedUser(user);
+      } catch (networkError) {
+        console.error('Network error during session check:', networkError);
+        // If there's a network error, fall back to welcome screen
+        setCurrentScreen('welcome');
+        setIsLoading(false);
+        return;
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setCurrentScreen('welcome');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [handleAuthenticatedUser]);
 
   // Control navigation visibility based on chat state
   useEffect(() => {
@@ -96,152 +232,14 @@ export default function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, [isClient]);
+  }, [isClient, handleAuthenticatedUser]);
 
   // Check authentication status on app load
   useEffect(() => {
     if (isClient) {
       checkAuthStatus();
     }
-  }, [isClient]);
-
-  const checkAuthStatus = async () => {
-    try {
-      // Check if Supabase is available
-      if (!supabase) {
-        console.warn('Supabase not available, using offline mode');
-        setCurrentScreen('welcome');
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('Checking authentication status...');
-
-      // Check if we have a valid session with network error handling
-      const sessionResult = await checkSession();
-      
-      if (!sessionResult.success) {
-        console.log('No valid session found:', sessionResult.error);
-        setCurrentScreen('welcome');
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const { data: sessionData, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Session fetch error:', error);
-          setCurrentScreen('welcome');
-          setIsLoading(false);
-          return;
-        }
-        
-        if (!sessionData.session) {
-          console.log('No active session found');
-          setCurrentScreen('welcome');
-          setIsLoading(false);
-          return;
-        }
-
-        const user = sessionData.session.user;
-        console.log('Valid session found for user:', user.id);
-
-        await handleAuthenticatedUser(user);
-      } catch (networkError) {
-        console.error('Network error during session check:', networkError);
-        // If there's a network error, fall back to welcome screen
-        setCurrentScreen('welcome');
-        setIsLoading(false);
-        return;
-      }
-      
-    } catch (error) {
-      console.error('Auth check error:', error);
-      setCurrentScreen('welcome');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAuthenticatedUser = async (user: any) => {
-    try {
-      console.log('Handling authenticated user:', user.id);
-      console.log('User metadata:', user.user_metadata);
-      console.log('User app metadata:', user.app_metadata);
-      console.log('User providers:', user.app_metadata?.providers);
-
-      // CRITICAL: Check if user is still in signup flow
-      if (user.user_metadata?.signup_flow === true) {
-        console.log('User is still in signup flow - keeping LoginScreen mounted for password setup');
-        setCurrentScreen('login'); // Keep LoginScreen mounted for password/profile setup
-        return; // Don't proceed to profile setup yet
-      }
-
-      console.log('User has completed signup flow, proceeding with profile check...');
-
-      // NEW: Check if this is a Google OAuth user who needs onboarding
-      const isGoogleUser = user.app_metadata?.providers?.includes('google');
-      console.log('Is Google OAuth user:', isGoogleUser);
-
-      // Check if user has a profile with proper error handling
-      try {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          if (profileError.code === 'PGRST116') {
-            // No profile found (not an error)
-            console.log('No profile found, redirecting to profile setup');
-            // Always go to profile setup for new users
-            setCurrentScreen('profileSetup');
-            return;
-          } else {
-            console.error('Profile fetch error:', profileError);
-            // For database errors, go to profile setup
-            setCurrentScreen('profileSetup');
-            return;
-          }
-        }
-
-        if (!profile) {
-          console.log('No profile found, redirecting to profile setup');
-          setCurrentScreen('profileSetup');
-          return;
-        }
-
-        console.log('Profile found:', profile);
-        
-        // Check if profile has essential fields for app functionality
-        const hasEssentialFields = profile.username && 
-                                  profile.date_of_birth && 
-                                  profile.gender;
-        
-        if (!hasEssentialFields) {
-          console.log('User missing essential profile fields, redirecting to profile setup');
-          setCurrentScreen('profileSetup');
-          return;
-        }
-
-        setCurrentUser(profile);
-        setIsLoggedIn(true);
-
-        // Profile is complete, go to app
-        setCurrentScreen('app');
-      } catch (networkError) {
-        console.error('Network error fetching profile:', networkError);
-        // If we can't fetch the profile due to network issues, go to profile setup
-        setCurrentScreen('profileSetup');
-        return;
-      }
-    } catch (error) {
-      console.error('Error handling authenticated user:', error);
-      // On error, go to profile setup to ensure proper onboarding
-      setCurrentScreen('profileSetup');
-    }
-  };
+  }, [isClient, checkAuthStatus]);
 
   const handleLogin = async () => {
     console.log('Login successful, checking user state...');
