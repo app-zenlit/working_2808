@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+'use client';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ChatList } from '../components/messaging/ChatList';
 import { ChatWindow } from '../components/messaging/ChatWindow';
 import { User, Message } from '../types';

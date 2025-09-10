@@ -1,3 +1,4 @@
+'use client';
 import { useEffect, useState } from 'react';
 import { User, Post } from '../types';
 import { UserProfile } from '../components/profile/UserProfile';

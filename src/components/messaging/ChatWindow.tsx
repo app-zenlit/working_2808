@@ -1,3 +1,4 @@
+'use client';
 import { useState, useEffect, useRef } from 'react';
 import { Message, User } from '../../types';
 import { supabase } from '../../lib/supabase';

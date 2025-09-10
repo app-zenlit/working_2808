@@ -1,3 +1,4 @@
+'use client';
 // src/screens/EditProfileScreen.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { User } from '../types';

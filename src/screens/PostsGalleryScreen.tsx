@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect } from 'react';
 import { User, Post } from '../types';
 import { ChevronLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
