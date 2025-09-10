@@ -17,9 +17,11 @@ import {
 } from '../lib/location';
 import { locationToggleManager } from '../lib/locationToggle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import { useScrollEndEffect } from '../hooks/useScrollEndEffect';
 import { PullToRefreshIndicator } from '../components/common/PullToRefreshIndicator';
 import { PermissionDeniedBanner } from '../components/common/PermissionDeniedBanner';
 import { ProfileCompletionBanner } from '../components/common/ProfileCompletionBanner';
+import { RibbonEffect } from '../components/common/RibbonEffect';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
@@ -66,6 +68,9 @@ export const RadarScreen: React.FC<Props> = ({
 
   // New state for permission denied banner
   const [showLocationDeniedBanner, setShowLocationDeniedBanner] = useState(false);
+
+  // Ribbon visibility state
+  const [showRibbon, setShowRibbon] = useState(false);
 
   // Profile viewing state
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
@@ -178,6 +183,13 @@ export const RadarScreen: React.FC<Props> = ({
   } = usePullToRefresh({
     onRefresh: handleRefresh,
     enabled: isLocationEnabled && !!currentLocation
+  });
+
+  // Show ribbon when reaching the end of the list
+  useScrollEndEffect(containerRef, {
+    onScrollEnd: () => setShowRibbon(true),
+    onScrollUp: () => setShowRibbon(false),
+    offset: 100
   });
 
   // Listen for refresh events from tab clicks
@@ -741,7 +753,6 @@ export const RadarScreen: React.FC<Props> = ({
           message={isLocationEnabled && (users?.length ?? 0) > 0 ? "You've seen everyone nearby! 🎯" : "Ready to explore! 🚀"}
           variant="default"
         />
-        </div>
       </div>
     </div>
   );
