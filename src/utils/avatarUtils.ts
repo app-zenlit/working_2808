@@ -1,3 +1,4 @@
+// utils/avatarUtils.ts
 import { 
   UserIcon, 
   PhotoIcon, 
@@ -33,12 +34,16 @@ export const getRandomIcon = (seed: string) => {
   return avatarIcons[index];
 };
 
-// Check if a profile photo URL is valid (not null, empty, or a placeholder)
-export const isValidProfilePhotoUrl = (url: string | null | undefined): boolean => {
+/**
+ * ✅ Type guard: narrows `string | null | undefined` to `string`
+ */
+export function isValidProfilePhotoUrl(
+  url: string | null | undefined
+): url is string {
   if (!url) return false;
   if (url.trim() === '') return false;
   if (url.includes('/images/default-avatar')) return false;
   if (url.includes('default-avatar.png')) return false;
   if (url.includes('placeholder')) return false;
   return true;
-};
+}
