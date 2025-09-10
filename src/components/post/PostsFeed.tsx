@@ -1,39 +1,6 @@
 import React from 'react';
 import { Post } from '../../types';
-import { 
-  UserIcon, 
-  PhotoIcon, 
-  FaceSmileIcon, 
-  HeartIcon, 
-  StarIcon,
-  SparklesIcon,
-  SunIcon,
-  MoonIcon
-} from '@heroicons/react/24/outline';
-
-// Array of available avatar icons
-const avatarIcons = [
-  UserIcon,
-  PhotoIcon,
-  FaceSmileIcon,
-  HeartIcon,
-  StarIcon,
-  SparklesIcon,
-  SunIcon,
-  MoonIcon
-];
-
-// Generate a consistent random icon based on user name
-const getRandomIcon = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  const index = Math.abs(hash) % avatarIcons.length;
-  return avatarIcons[index];
-};
+import { getRandomIcon, isValidProfilePhotoUrl } from '../../utils/avatarUtils';
 
 interface Props {
   posts: Post[];
@@ -55,7 +22,7 @@ export const PostsFeed: React.FC<Props> = ({ posts, onUserClick }) => {
             onClick={() => onUserClick?.(post.userId)}
             className="w-full px-3 py-2 flex items-center space-x-2 hover:bg-gray-800 active:bg-gray-700 transition-colors text-left"
           >
-            {post.userDpUrl ? (
+            {isValidProfilePhotoUrl(post.userDpUrl) ? (
               <img
                 src={post.userDpUrl}
                 alt={post.userName}

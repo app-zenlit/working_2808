@@ -21,30 +21,7 @@ import { generatePlaceholderImage, checkStorageAvailability } from '../lib/stora
 import { createPost } from '../lib/posts';
 import { compressImage, validateImageFile, formatFileSize, CompressionResult } from '../utils/imageCompression';
 import { ImageCompressionModal } from '../components/common/ImageCompressionModal';
-
-// Array of available avatar icons
-const avatarIcons = [
-  UserIcon,
-  PhotoIcon,
-  FaceSmileIcon,
-  HeartIcon,
-  StarIcon,
-  SparklesIcon,
-  SunIcon,
-  MoonIcon
-];
-
-// Generate a consistent random icon based on user name
-const getRandomIcon = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  const index = Math.abs(hash) % avatarIcons.length;
-  return avatarIcons[index];
-};
+import { getRandomIcon, isValidProfilePhotoUrl } from '../utils/avatarUtils';
 
 interface Props {
   onBack?: () => void; // Add back button handler
@@ -441,7 +418,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
 
         {/* User Info */}
         <div className="flex items-center space-x-3">
-          {currentUser.profile_photo_url ? (
+          {isValidProfilePhotoUrl(currentUser.profile_photo_url) ? (
             <img
               src={currentUser.profile_photo_url}
               alt="Your profile"

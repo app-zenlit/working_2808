@@ -1,15 +1,6 @@
 import Image from 'next/image';
 import React from 'react';
-import { 
-  UserIcon, 
-  PhotoIcon, 
-  FaceSmileIcon, 
-  HeartIcon, 
-  StarIcon,
-  SparklesIcon,
-  SunIcon,
-  MoonIcon
-} from '@heroicons/react/24/outline';
+import { getRandomIcon, isValidProfilePhotoUrl } from '../../utils/avatarUtils';
 
 interface Props {
   src: string | null;
@@ -18,29 +9,6 @@ interface Props {
   onClick?: () => void;
 }
 
-// Array of available avatar icons
-const avatarIcons = [
-  UserIcon,
-  PhotoIcon,
-  FaceSmileIcon,
-  HeartIcon,
-  StarIcon,
-  SparklesIcon,
-  SunIcon,
-  MoonIcon
-];
-
-// Generate a consistent random icon based on alt text (user name)
-const getRandomIcon = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  const index = Math.abs(hash) % avatarIcons.length;
-  return avatarIcons[index];
-};
 export const Avatar: React.FC<Props> = ({
   src,
   alt,
@@ -59,8 +27,8 @@ export const Avatar: React.FC<Props> = ({
     lg: 'w-8 h-8'
   };
 
-  // Don't render image if src is null
-  if (!src) {
+  // Don't render image if src is null, empty, or a placeholder
+  if (!isValidProfilePhotoUrl(src)) {
     const IconComponent = getRandomIcon(alt);
     
     return (

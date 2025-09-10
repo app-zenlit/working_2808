@@ -8,39 +8,9 @@ import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { 
   ChevronLeftIcon,
-  UserIcon, 
-  PhotoIcon, 
-  FaceSmileIcon, 
-  HeartIcon, 
-  StarIcon,
-  SparklesIcon,
-  SunIcon,
-  MoonIcon
+  UserIcon
 } from '@heroicons/react/24/outline';
-
-// Array of available avatar icons
-const avatarIcons = [
-  UserIcon,
-  PhotoIcon,
-  FaceSmileIcon,
-  HeartIcon,
-  StarIcon,
-  SparklesIcon,
-  SunIcon,
-  MoonIcon
-];
-
-// Generate a consistent random icon based on user name
-const getRandomIcon = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  const index = Math.abs(hash) % avatarIcons.length;
-  return avatarIcons[index];
-};
+import { getRandomIcon, isValidProfilePhotoUrl } from '../../utils/avatarUtils';
 
 interface ChatWindowProps {
   user: User; // partner
@@ -183,7 +153,7 @@ export const ChatWindow = ({
                 : 'hover:bg-gray-800/50 active:scale-95'
             }`}
           >
-            {user.dpUrl ? (
+            {isValidProfilePhotoUrl(user.dpUrl) ? (
               <img
                 src={user.dpUrl}
                 alt={user.name}
@@ -206,7 +176,7 @@ export const ChatWindow = ({
         {chatMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              {user.dpUrl ? (
+              {isValidProfilePhotoUrl(user.dpUrl) ? (
                 <img
                   src={user.dpUrl}
                   alt={user.name}

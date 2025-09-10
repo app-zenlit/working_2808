@@ -4,41 +4,11 @@ import { User } from '../../types';
 import { IconBrandInstagram, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react';
 import { 
   ChatBubbleLeftIcon, 
-  UserIcon, 
-  MapPinIcon,
-  PhotoIcon, 
-  FaceSmileIcon, 
-  HeartIcon, 
-  StarIcon,
-  SparklesIcon,
-  SunIcon,
-  MoonIcon
+  UserIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline';
 import { UserProfileModal } from './UserProfileModal';
-
-// Array of available avatar icons
-const avatarIcons = [
-  UserIcon,
-  PhotoIcon,
-  FaceSmileIcon,
-  HeartIcon,
-  StarIcon,
-  SparklesIcon,
-  SunIcon,
-  MoonIcon
-];
-
-// Generate a consistent random icon based on user name
-const getRandomIcon = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  const index = Math.abs(hash) % avatarIcons.length;
-  return avatarIcons[index];
-};
+import { getRandomIcon, isValidProfilePhotoUrl } from '../../utils/avatarUtils';
 
 interface Props {
   user: User;
@@ -81,7 +51,7 @@ export const RadarUserCard: React.FC<Props> = ({ user: rawUser, onMessage, onVie
               className="flex-shrink-0 active:scale-95 transition-transform"
             >
               <div className="relative">
-                {user.dpUrl ? (
+                {isValidProfilePhotoUrl(user.dpUrl) ? (
                   <img
                     src={user.dpUrl}
                     alt={user.name}
