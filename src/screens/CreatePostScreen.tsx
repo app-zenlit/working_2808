@@ -9,6 +9,8 @@ import { compressImage, validateImageFile, formatFileSize, CompressionResult } f
 import { ImageCompressionModal } from '../components/common/ImageCompressionModal';
 import { useScrollEndEffect } from '../hooks/useScrollEndEffect';
 import { RibbonEffect } from '../components/common/RibbonEffect';
+import { useScrollEndEffect } from '../hooks/useScrollEndEffect';
+import { RibbonEffect } from '../components/common/RibbonEffect';
 
 interface Props {
   onBack?: () => void; // Add back button handler
@@ -27,6 +29,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     message: string;
   }>({ available: true, message: '' });
   const [showRibbon, setShowRibbon] = useState(false);
+  const [showRibbon, setShowRibbon] = useState(false);
   
   // Image compression states
   const [isCompressing, setIsCompressing] = useState(false);
@@ -38,6 +41,7 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Scroll end effect hook
@@ -360,6 +364,12 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
         originalSizeKB={selectedFile ? Math.round(selectedFile.size / 1024) : undefined}
       />
 
+  // Scroll end effect hook
+  useScrollEndEffect(scrollContainerRef, {
+    onScrollEnd: () => setShowRibbon(true),
+    onScrollUp: () => setShowRibbon(false),
+    offset: 100
+  });
 
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-gray-800">
@@ -386,7 +396,8 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
                 Sharing...
               </>
             ) : (
-              'Share'
+      <div ref={scrollContainerRef} className="overflow-y-auto relative">
+        <div className="p-4 space-y-6 pb-ribbon-safe">
             )}
           </button>
         </div>
@@ -500,6 +511,14 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
           accept="image/jpeg,image/jpg,image/png"
           onChange={handleFileSelect}
           className="hidden"
+        />
+        </div>
+        
+        {/* Ribbon Effect */}
+        <RibbonEffect 
+          isVisible={showRibbon} 
+          message="Ready to share your moment! 📱"
+          variant="success"
         />
         </div>
         

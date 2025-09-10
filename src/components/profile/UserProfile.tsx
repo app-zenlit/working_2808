@@ -4,6 +4,8 @@ import { Avatar } from '../common/Avatar';
 import { SocialLinks } from '../common/SocialLinks';
 import { useScrollEndEffect } from '../../hooks/useScrollEndEffect';
 import { RibbonEffect } from '../common/RibbonEffect';
+import { useScrollEndEffect } from '../../hooks/useScrollEndEffect';
+import { RibbonEffect } from '../common/RibbonEffect';
 
 interface Props {
   user: User;
@@ -22,6 +24,16 @@ export const UserProfile: React.FC<Props> = ({
   isCurrentUser = false,
   onAddSocialLink,
 }) => {
+  const [showRibbon, setShowRibbon] = React.useState(false);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Scroll end effect hook
+  useScrollEndEffect(scrollContainerRef, {
+    onScrollEnd: () => setShowRibbon(true),
+    onScrollUp: () => setShowRibbon(false),
+    offset: 100
+  });
+
   const [showRibbon, setShowRibbon] = React.useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -111,6 +123,13 @@ export const UserProfile: React.FC<Props> = ({
           )}
         </div>
       </div>
+      
+      {/* Ribbon Effect */}
+      <RibbonEffect 
+        isVisible={showRibbon} 
+        message={posts.length > 0 ? "You've seen all posts! 📸" : "Profile complete! ✨"}
+        variant="success"
+      />
       
       {/* Ribbon Effect */}
       <RibbonEffect 
