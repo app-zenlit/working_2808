@@ -2,6 +2,40 @@
 import { useState, useEffect } from 'react';
 import { User, Message } from '../../types';
 import { format } from 'date-fns';
+import { 
+  UserIcon, 
+  PhotoIcon, 
+  FaceSmileIcon, 
+  HeartIcon, 
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+} from '@heroicons/react/24/outline';
+
+// Array of available avatar icons
+const avatarIcons = [
+  UserIcon,
+  PhotoIcon,
+  FaceSmileIcon,
+  HeartIcon,
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+];
+
+// Generate a consistent random icon based on user name
+const getRandomIcon = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  const index = Math.abs(hash) % avatarIcons.length;
+  return avatarIcons[index];
+};
 
 interface Contact extends User {
   latitude?: number;
@@ -90,6 +124,7 @@ export const ChatList = ({
       <div className="flex-1 overflow-y-auto">
         {nearbyContacts.map((user) => {
           const latestMessage = getLatestMessage(user.id);
+          const IconComponent = getRandomIcon(user.name);
 
           return (
             <button
@@ -110,8 +145,8 @@ export const ChatList = ({
                       className="w-11 h-11 rounded-full object-cover ring-2 ring-blue-500"
                     />
                   ) : (
-                    <div className="w-11 h-11 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500">
-                      <span className="text-gray-400 text-xs">?</span>
+                    <div className="w-11 h-11 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500 hover:bg-gray-600 transition-colors">
+                      <IconComponent className="w-5 h-5 text-gray-400" />
                     </div>
                   )}
                   {unreadByUser[user.id] && (

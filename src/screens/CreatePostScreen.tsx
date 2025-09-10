@@ -1,6 +1,19 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { PhotoIcon, XMarkIcon, CheckIcon, ExclamationTriangleIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { 
+  PhotoIcon, 
+  XMarkIcon, 
+  CheckIcon, 
+  ExclamationTriangleIcon, 
+  ChevronLeftIcon,
+  UserIcon, 
+  FaceSmileIcon, 
+  HeartIcon, 
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+} from '@heroicons/react/24/outline';
 import { generateId } from '../utils/generateId';
 import { supabase } from '../lib/supabase';
 import { uploadPostImage } from '../lib/storage';
@@ -8,6 +21,30 @@ import { generatePlaceholderImage, checkStorageAvailability } from '../lib/stora
 import { createPost } from '../lib/posts';
 import { compressImage, validateImageFile, formatFileSize, CompressionResult } from '../utils/imageCompression';
 import { ImageCompressionModal } from '../components/common/ImageCompressionModal';
+
+// Array of available avatar icons
+const avatarIcons = [
+  UserIcon,
+  PhotoIcon,
+  FaceSmileIcon,
+  HeartIcon,
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+];
+
+// Generate a consistent random icon based on user name
+const getRandomIcon = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  const index = Math.abs(hash) % avatarIcons.length;
+  return avatarIcons[index];
+};
 
 interface Props {
   onBack?: () => void; // Add back button handler
@@ -294,6 +331,9 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
     setCompressionResult(null);
   };
 
+  // Get the random icon component for the current user
+  const CurrentUserIconComponent = getRandomIcon(currentUser?.name || 'User');
+
   // Show loading if user not loaded yet
   if (isLoading) {
     return (
@@ -408,8 +448,8 @@ export const CreatePostScreen: React.FC<Props> = ({ onBack }) => {
               className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500">
-              <span className="text-gray-400 text-xs">You</span>
+            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500 hover:bg-gray-600 transition-colors">
+              <CurrentUserIconComponent className="w-5 h-5 text-gray-400" />
             </div>
           )}
           <div>

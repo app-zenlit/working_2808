@@ -6,7 +6,41 @@ import { markMessagesAsRead } from '../../lib/messages';
 import { isValidUuid } from '../../utils/uuid';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
-import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { 
+  ChevronLeftIcon,
+  UserIcon, 
+  PhotoIcon, 
+  FaceSmileIcon, 
+  HeartIcon, 
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+} from '@heroicons/react/24/outline';
+
+// Array of available avatar icons
+const avatarIcons = [
+  UserIcon,
+  PhotoIcon,
+  FaceSmileIcon,
+  HeartIcon,
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+];
+
+// Generate a consistent random icon based on user name
+const getRandomIcon = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  const index = Math.abs(hash) % avatarIcons.length;
+  return avatarIcons[index];
+};
 
 interface ChatWindowProps {
   user: User; // partner
@@ -117,6 +151,7 @@ export const ChatWindow = ({
   };
 
   const isAnonymous = user.name === 'Anonymous';
+  const IconComponent = getRandomIcon(user.name);
 
   const handleProfileClick = () => {
     if (isAnonymous) return;
@@ -155,8 +190,8 @@ export const ChatWindow = ({
                 className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500 mr-3"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500 mr-3">
-                <span className="text-gray-400 text-xs">?</span>
+              <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500 mr-3 hover:bg-gray-600 transition-colors">
+                <IconComponent className="w-4 h-4 text-gray-400" />
               </div>
             )}
             <div className="text-left">
@@ -171,11 +206,17 @@ export const ChatWindow = ({
         {chatMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <img
-                src={user.dpUrl ?? '/images/default-avatar.png'}
-                alt={user.name}
-                className="w-16 h-16 rounded-full mx-auto mb-4"
-              />
+              {user.dpUrl ? (
+                <img
+                  src={user.dpUrl}
+                  alt={user.name}
+                  className="w-16 h-16 rounded-full mx-auto mb-4 object-cover ring-2 ring-blue-500"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center mx-auto mb-4 ring-2 ring-blue-500">
+                  <IconComponent className="w-8 h-8 text-gray-400" />
+                </div>
+              )}
               <p className="text-gray-400">Start a conversation with {user.name}</p>
             </div>
           </div>

@@ -2,8 +2,43 @@
 import React, { useState } from 'react';
 import { User } from '../../types';
 import { IconBrandInstagram, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react';
-import { ChatBubbleLeftIcon, UserIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { 
+  ChatBubbleLeftIcon, 
+  UserIcon, 
+  MapPinIcon,
+  PhotoIcon, 
+  FaceSmileIcon, 
+  HeartIcon, 
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+} from '@heroicons/react/24/outline';
 import { UserProfileModal } from './UserProfileModal';
+
+// Array of available avatar icons
+const avatarIcons = [
+  UserIcon,
+  PhotoIcon,
+  FaceSmileIcon,
+  HeartIcon,
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+];
+
+// Generate a consistent random icon based on user name
+const getRandomIcon = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  const index = Math.abs(hash) % avatarIcons.length;
+  return avatarIcons[index];
+};
 
 interface Props {
   user: User;
@@ -32,6 +67,9 @@ export const RadarUserCard: React.FC<Props> = ({ user: rawUser, onMessage, onVie
     return !!(url && url.trim() !== '' && url !== '#');
   };
 
+  // Get the random icon component for this user
+  const IconComponent = getRandomIcon(user.name);
+
   return (
     <>
       <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:border-gray-700">
@@ -50,8 +88,8 @@ export const RadarUserCard: React.FC<Props> = ({ user: rawUser, onMessage, onVie
                     className="w-14 h-14 rounded-full object-cover ring-2 ring-blue-500"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500">
-                    <span className="text-gray-400 text-xs">No Photo</span>
+                  <div className="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500 hover:bg-gray-600 transition-colors">
+                    <IconComponent className="w-7 h-7 text-gray-400" />
                   </div>
                 )}
                 {/* Online indicator for users in same location bucket */}

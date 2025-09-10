@@ -1,10 +1,45 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { User, Post } from '../types';
-import { ChevronLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { 
+  ChevronLeftIcon, 
+  TrashIcon,
+  UserIcon, 
+  PhotoIcon, 
+  FaceSmileIcon, 
+  HeartIcon, 
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+} from '@heroicons/react/24/outline';
 import { formatPostDate } from '../utils/dateUtils';
 import { deletePost } from '../lib/posts';
 import { supabase } from '../lib/supabase';
+
+// Array of available avatar icons
+const avatarIcons = [
+  UserIcon,
+  PhotoIcon,
+  FaceSmileIcon,
+  HeartIcon,
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+];
+
+// Generate a consistent random icon based on user name
+const getRandomIcon = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  const index = Math.abs(hash) % avatarIcons.length;
+  return avatarIcons[index];
+};
 
 interface Props {
   user: User;
@@ -26,6 +61,9 @@ export const PostsGalleryScreen: React.FC<Props> = ({
   
   // Only use real posts from props - no more mock data generation
   const displayPosts = posts;
+  
+  // Get the random icon component for the user
+  const UserIconComponent = getRandomIcon(user.name);
 
   useEffect(() => {
     // Get current user ID to show delete buttons only for own posts
@@ -81,11 +119,17 @@ export const PostsGalleryScreen: React.FC<Props> = ({
             <ChevronLeftIcon className="w-5 h-5 text-white" />
           </button>
           <div className="flex items-center">
-            <img
-              src={user.dpUrl ?? '/images/default-avatar.png'}
-              alt={user.name}
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500 mr-3"
-            />
+            {user.dpUrl ? (
+              <img
+                src={user.dpUrl}
+                alt={user.name}
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500 mr-3"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500 mr-3">
+                <UserIconComponent className="w-4 h-4 text-gray-400" />
+              </div>
+            )}
             <div>
               <h1 className="text-lg font-semibold text-white">{user.name}&apos;s Posts</h1>
               {displayPosts.length > 0 && (
@@ -103,6 +147,11 @@ export const PostsGalleryScreen: React.FC<Props> = ({
         {displayPosts.length > 0 ? (
           <div className="space-y-6">
             {displayPosts.map((post) => (
+              (() => {
+                // Get the random icon component for this post's user
+                const PostUserIconComponent = getRandomIcon(post.userName);
+                
+                return (
               <div key={post.id} className="bg-gray-900 rounded-lg overflow-hidden">
                 {/* Post Header */}
                 <div className="flex items-center justify-between px-4 py-3">
@@ -117,8 +166,8 @@ export const PostsGalleryScreen: React.FC<Props> = ({
                         className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500">
-                        <span className="text-gray-400 text-xs">?</span>
+                      <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center ring-2 ring-blue-500 hover:bg-gray-600 transition-colors">
+                        <PostUserIconComponent className="w-5 h-5 text-gray-400" />
                       </div>
                     )}
                     <div className="text-left">
@@ -164,6 +213,8 @@ export const PostsGalleryScreen: React.FC<Props> = ({
                   <p className="text-gray-200 leading-relaxed">{post.caption}</p>
                 </div>
               </div>
+                );
+              })()
             ))}
           </div>
         ) : (

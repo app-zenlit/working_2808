@@ -1,6 +1,40 @@
 import Image from 'next/image';
 import React from 'react';
 import { Post } from '../../types';
+import { 
+  UserIcon, 
+  PhotoIcon, 
+  FaceSmileIcon, 
+  HeartIcon, 
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+} from '@heroicons/react/24/outline';
+
+// Array of available avatar icons
+const avatarIcons = [
+  UserIcon,
+  PhotoIcon,
+  FaceSmileIcon,
+  HeartIcon,
+  StarIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
+];
+
+// Generate a consistent random icon based on user name
+const getRandomIcon = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  const index = Math.abs(hash) % avatarIcons.length;
+  return avatarIcons[index];
+};
 
 interface Props {
   post: Post;
@@ -8,6 +42,9 @@ interface Props {
 }
 
 export const PostCard: React.FC<Props> = ({ post, onUserClick }) => {
+  // Get the random icon component for this user
+  const IconComponent = getRandomIcon(post.userName);
+
   return (
     <div className="bg-gray-900 rounded-lg overflow-hidden">
       {/* Clickable header area - optimized */}
@@ -24,8 +61,8 @@ export const PostCard: React.FC<Props> = ({ post, onUserClick }) => {
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-            <span className="text-gray-400 text-xs">?</span>
+          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600 transition-colors">
+            <IconComponent className="w-4 h-4 text-gray-400" />
           </div>
         )}
         <h3 className="font-medium text-base">{post.userName}</h3>
